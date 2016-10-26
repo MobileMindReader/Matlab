@@ -11,11 +11,6 @@ for i=2:maxIterations
     A = alpha*eye(M) + beta * (Phi'*Phi);
     mN = beta * (A\Phi')*t;
     
-    % In the case where N >> M, gamma can be approximated by M, and thus it
-    % follows:
-    %     alpha = M / (mN'*mN);
-    
-    % Other
     lambda = eig(beta*(Phi'*Phi));
     
     gamma = 0;

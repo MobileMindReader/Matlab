@@ -6,7 +6,7 @@ model.noiseMean = 0;
 model.sigma = 0.2; % Noise std deviation
 
 model.beta = (1/model.sigma.^2);
-model.alpha = 0.28; % 2? 
+
 
 model.dimension = 1;
 
@@ -34,8 +34,10 @@ s = 0.5;      % spatial scale
 % };
 
 functions = {};
-for i=1:100
-    mu_j=-25+i/2;
+numFuncs = 20;
+limit = numFuncs/2;
+for i=1:numFuncs
+    mu_j=-limit/2+i/2;
     functions{i} = @(x) exp(-((x-mu_j).^2)/(2*s^2));
 end
 
@@ -44,7 +46,10 @@ end
 
 
 % Should this be multi variate ?!?!?!?!?
-model.w = normrnd(0,(1/model.alpha), [1 length(functions)+1]);  %*eye(model.dimension)
+
+model.alpha = 0.28*ones(1,length(functions)+1); % 2? 
+
+model.w = normrnd(0,(1./model.alpha), [1 length(functions)+1]);  %*eye(model.dimension)
 % model.w
 
 
@@ -62,7 +67,6 @@ model.w = normrnd(0,(1/model.alpha), [1 length(functions)+1]);  %*eye(model.dime
 %% Plot model lines
 
 numLines = 6;
-limit = 25;
 x = -limit:0.1:limit;
 
 figure(1)
@@ -77,8 +81,8 @@ plot(x, phi(functions, model.w, x) - model.sigma, 'r');
 
 
 %% Sampling
-numSamples = 50;
-trainX = unifrnd(-18,18, [model.dimension numSamples]);
+numSamples = 200;
+trainX = unifrnd(-limit,limit, [model.dimension numSamples]);
 targets= zeros(model.dimension, length(trainX));
 targetNoise = zeros(model.dimension, length(trainX));
 
@@ -116,11 +120,12 @@ beta_ml = 1/(invBeta_ml/length(trainX));
 
 
 %% Alpha and Beta estimations
-
-alpha_init = rand; %normrnd(model.alpha, 0.2);
+alpha_init = eye(length(functions)+1);
+alpha_init(logical(eye(size(alpha_init)))) = rand(1,length(functions)+1);
+% alpha_init = rand(1,length(functions)+1)*; %normrnd(model.alpha, 0.2);
 beta_init = rand;
-% [alpha_em, beta_em] = EM_bayes(alpha_init,rand,Phi,targets');
-[alpha_ev, beta_ev, mn, llh] = maximum_evidence(alpha_init, beta_init, Phi, targets');
+
+[alpha_ev, beta_ev, mn, llh] = maximum_evidence_multi(alpha_init, beta_init, Phi, targets');
 
 
 %% Hessian
@@ -215,22 +220,30 @@ disp(alpha_ev/beta_ev);
 
 %%%%%%% N( t | m_N'*phi(x) , sigma_N(x)^2)
 
+sparseW = mn(abs(mn) > 1);
+sparseFunctions = functions(find(abs(mn(2:end)) > 1));
+
 newLines = zeros(numLines,length(x));
+newLines2 = zeros(numLines,length(x));
 for i=1:numLines
 
     %%% Noise on drawing w from w_ml (sigma)
 %     w_noisy = normrnd(w_ml', sigma, [1 length(functions)+1]);
 %     if i ==1 disp('Noise on drawn w from w_ml'); end
 %     newLines(i,:) = phi(functions, w_noisy, x);
-
+    
     %%% Noise on target values, w=w_ml (sigma)
     if i == 1, disp('Noise on targets only'); end
     temp = phi(functions, mn', x);
-    newLines(i,:) = temp +  normrnd(model.noiseMean, sigma);
+    noise = normrnd(model.noiseMean, sigma);
+    newLines(i,:) = temp + noise;
 
 %     w_noisy = normrnd(w_ml', sigma, [1 length(functions)+1]);
 %     if i ==1 disp('Noise on drawn w from w_ml'); end
 %     newLines(i,:) = phi(functions, w_noisy, x);
+
+    temp = phi(sparseFunctions, sparseW', x);
+    newLines2(i,:) = temp + noise;
 end
 
 figure(1)
@@ -238,5 +251,5 @@ plot(x, newLines, 'b')
 
 figure(2)
 plot(x, newLines, 'b')
-
+plot(x, newLines2, 'k')
 
