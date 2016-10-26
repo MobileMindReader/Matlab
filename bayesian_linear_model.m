@@ -220,8 +220,13 @@ disp(alpha_ev/beta_ev);
 
 %%%%%%% N( t | m_N'*phi(x) , sigma_N(x)^2)
 
-sparseW = mn(abs(mn) > 1);
-sparseFunctions = functions(find(abs(mn(2:end)) > 1));
+sparsityTolerance = 1;
+
+idx = ((abs(mn(1:end)) > sparsityTolerance));
+idx(1)=1;
+sparseW = mn(idx);
+sparseFunctions = functions(abs(mn(2:end)) > sparsityTolerance);
+numel(sparseFunctions)
 
 newLines = zeros(numLines,length(x));
 newLines2 = zeros(numLines,length(x));
