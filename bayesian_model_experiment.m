@@ -31,7 +31,7 @@ logLikelihood = zeros(1,iterations);
 
 for iter = 1:iterations
     
-    for intraIter = 1:50
+    for intraIter = 1:100
         
         functions = {};
         numFuncs = 10; %iter;
@@ -50,7 +50,7 @@ for iter = 1:iterations
         numSamples = 10*iter;
         
         % Random values of w
-        model.w = normrnd(0,(1/model.alpha), [1 length(functions)+1]);  %*eye(model.dimension)
+        model.w = normrnd(0,sqrt(1/model.alpha), [1 length(functions)+1]);  %*eye(model.dimension)
         
         trainX = unifrnd(-2,2, [model.dimension numSamples]);
         targets= zeros(model.dimension, length(trainX));

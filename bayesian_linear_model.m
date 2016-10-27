@@ -47,9 +47,11 @@ end
 
 % Should this be multi variate ?!?!?!?!?
 
-model.alpha = 0.28*ones(1,length(functions)+1); % 2? 
+model.alpha = ones(1,length(functions)+1); % 2? 
 
-model.w = normrnd(0,(1./model.alpha), [1 length(functions)+1]);  %*eye(model.dimension)
+tempW = ones(1,10); %normrnd(0,sqrt(1./0.28*ones(1,1)), [1 10]);
+dummy = zeros(1,11);
+model.w = [tempW dummy] ;  %*eye(model.dimension)
 % model.w
 
 
@@ -81,7 +83,7 @@ plot(x, phi(functions, model.w, x) - model.sigma, 'r');
 
 
 %% Sampling
-numSamples = 200;
+numSamples = 1000;
 trainX = unifrnd(-limit,limit, [model.dimension numSamples]);
 targets= zeros(model.dimension, length(trainX));
 targetNoise = zeros(model.dimension, length(trainX));
@@ -156,10 +158,10 @@ disp('beta true & sigma true');
 disp([model.beta model.sigma]);
 disp('beta estimate & sigma estimate');
 disp([beta_ev sigma(1)]);
-disp('True alpha/beta');
-disp(model.alpha/model.beta);
-disp('Estimated alpha/beta');
-disp(alpha_ev/beta_ev);
+disp('True alpha/beta & Estimated alpha/beta');
+disp([(model.alpha/model.beta)' diag(alpha_ev)/beta_ev]);
+% disp('');
+% disp();
 
 %% Model precision estimation
 
