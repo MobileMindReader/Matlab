@@ -78,7 +78,7 @@ tbar = mean(trainY,2);
 % trainY = bsxfun(@minus,trainY,tbar);
 
 w = (trainX'*trainX)\(trainX'*trainY);     % 3.15 w_ml = (Phi' * Phi)^-1 * (Phi' * t)
-w0 = tbar-dot(w,xbar); % 3.19 - Currently not sure why this is so?
+% w0 = tbar-dot(w,xbar); % 3.19 - Currently not sure why this is so?
 
 model.w = w;
 model.w0 = w0;

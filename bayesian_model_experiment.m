@@ -24,17 +24,19 @@ mu_j = 0;   % location of basis function in input space
 % };
 
 
-iterations = 10;
+iterations = 1;
 ratios = zeros(1, iterations);
 % wDiffer = zeros(iterations, length(functions)+1);
 logLikelihood = zeros(1,iterations);
 
 for iter = 1:iterations
     
-    for intraIter = 1:100
+    for intraIter = 1:1
+        
+        numSamples = 100;
         
         functions = {};
-        numFuncs = 10; %iter;
+        numFuncs = 10000; %iter;
         limit = numFuncs/2;
         
         for i=1:numFuncs
@@ -47,7 +49,7 @@ for iter = 1:iterations
         
         % Sampling
         
-        numSamples = 10*iter;
+        
         
         % Random values of w
         model.w = normrnd(0,sqrt(1/model.alpha), [1 length(functions)+1]);  %*eye(model.dimension)

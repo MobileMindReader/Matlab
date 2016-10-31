@@ -1,17 +1,35 @@
 function [alpha, beta, mN, llh] = maximum_evidence(alpha, beta, Phi, t)
 
 tolerance = 1e-4;
-maxIterations = 200;
+maxIterations = 50;
 
 llh = zeros(1,maxIterations);
 M = size(Phi,2);
 N = length(t);
 
+PhiTPhi = (Phi'*Phi);
+PhiTPhiEig = eig(PhiTPhi);
+
 for i=2:maxIterations
-    A = alpha*eye(M) + beta * (Phi'*Phi);
+%     betaPtP = 
+    lambda = beta*PhiTPhiEig;
+    min(lambda);
+    max(lambda);
+    alphaMin = max(lambda)*1e-7;
+    if alphaMin > alpha 
+        alpha = alphaMin;
+    end
+    
+%     if (alpha+alphaMin > alpha) {
+%         cout << "Bound alpha" << endl;
+%     }
+%     alpha = MAX(alpha, (alpha+alphaMin));       // Alpha is "artificially" bounded!!!
+        
+    
+    A = alpha*eye(M) + beta * PhiTPhi;
     mN = beta * (A\Phi')*t;
     
-    lambda = eig(beta*(Phi'*Phi));
+%     lambda = eig(beta*);
     
     gamma = 0;
     for j=1:M
@@ -36,13 +54,14 @@ for i=2:maxIterations
     Em = beta/2 * Ew + alpha/2*(mN'*mN);
     
     %%% Multiplying Em by 2, because terms are already halfed
-    llh(i) = 0.5*(M*log(alpha) + N*log(beta) - 2*Em - log(det(A)) - N*log(2*pi)); % 3.86
+    llh(i) = 0.5*(M*log(alpha) + N*log(beta) - 2*Em - log(det(A)) - N*log(2*pi));   % 3.86
+    llh(i)
     if abs(llh(i)-llh(i-1)) < tolerance*abs(llh(i-1)); 
-        A = alpha*eye(M) + beta * (Phi'*Phi);
-        mN = beta * (A\Phi')*t;
+        % Should this be done again? After alpha and beta are "chosen"?
+%         A = alpha*eye(M) + beta * (Phi'*Phi);
+%         mN = beta * (A\Phi')*t;
         break; 
     end
-%     llh2 = M/2 * log(alpha) + N/2*log(beta) - Em - log(det(A))/2 - N/2*log(2*pi)
 end
 llh = llh(i);
     
