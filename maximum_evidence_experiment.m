@@ -1,4 +1,4 @@
-function [alpha, beta, mN, llh] = maximum_evidence(alpha, beta, Phi, t)
+function [alpha, alpha_approx, beta, mN, llh] = maximum_evidence_experiment(alpha, beta, Phi, t)
 
 tolerance = 1e-4;
 maxIterations = 50;
@@ -40,12 +40,18 @@ for i=2:maxIterations
     
     alpha = gamma/(mN'*mN);
     
+    alpha_approx = M/(mN'*mN);
+    
 %     ew_mn_sum = 0;
 %     for j=1:length(t)
 %         ew_mn_sum = ew_mn_sum + (t(j)-(mN'*Phi(j,:)'))^2;
 %     end
 %     ew_mn_sum
     
+    if N > 1000
+       dummy = 0;
+    end
+
     Ew = (sum((t-Phi*mN).^2));
 %     ew_mn
     
