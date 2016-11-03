@@ -6,20 +6,23 @@ maxIterations = 100;
 llh = zeros(1,maxIterations);
 M = size(Phi,2);
 N = length(t);
+
+PhiTPhi =  Phi'*Phi;
+
+% Temp for svaing beta progress
 betas = zeros(1,maxIterations);
 betas(1)=beta;
+
 A_old = 0;
+
 for i=2:maxIterations
-    SigmaInv = A + beta * (Phi'*Phi);
-    
+    SigmaInv = A + beta * PhiTPhi;
     mN = beta * (SigmaInv\(Phi'*t));
-    
-    lambda = eig(beta*(Phi'*Phi));
     
     Sigma=inv(SigmaInv);
     gamma = zeros(1,M);
     for j=1:M
-        gamma(j) = 1-A(j,j)*Sigma(j,j);  %lambda(j)/(alpha(j,j) + lambda(j));
+        gamma(j) = 1-A(j,j)*Sigma(j,j); 
     end
     
     A_old = A;
@@ -32,19 +35,10 @@ for i=2:maxIterations
         % equations
     end
     
-%     ew_mn_sum = 0;
-%     for j=1:length(t)
-%         ew_mn_sum = ew_mn_sum + (t(j)-(mN'*Phi(j,:)'))^2;
-%     end
-%     ew_mn_sum
-    
     Ew = (sum((t-Phi*mN).^2));
-%     ew_mn
-%     beta_inv = (1/(N-gamma)) * Ew;
-    betaInv = Ew/(N-sum(gamma)); %Ew / (N - Sigma()
+    betaInv = Ew/(N-sum(gamma)); 
     beta = 1/betaInv;
     betas(i)=beta;
-    Em = beta/2 * Ew + A/2*(mN'*mN);
     
     AInv = zeros(M);
     for j=1:M
