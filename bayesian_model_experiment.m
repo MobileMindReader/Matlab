@@ -24,7 +24,7 @@ mu_j = 0;   % location of basis function in input space
 % };
 
 
-iterations = 10;
+iterations = 1;
 intraIterations = 1;
 
 logLikelihood = zeros(iterations, intraIterations);
@@ -43,10 +43,10 @@ for iter = 1:iterations
     
     for intraIter = 1:intraIterations
         
-        numSamples = 2*10^(iter/2);
+        numSamples = 10;
         
         functions = {};
-        numFuncs = 5; %iter;
+        numFuncs = 100; %iter;
         limit = numFuncs/2;
         
         for i=1:numFuncs
