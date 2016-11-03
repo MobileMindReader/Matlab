@@ -24,7 +24,7 @@ for i=2:maxIterations
     
     A_old = A;
     for j=1:M
-        % Limit values to 10^6
+        % Limit values to 10^6 and 10^-6
         A(j,j) = max(1e-6, min(1e6,gamma(j)/(mN(j)^2)));
 %         A(j,j) = gamma(j)/(mN(j)^2);
 
@@ -32,7 +32,7 @@ for i=2:maxIterations
         % equations
         
     end
-%     A = gamma/(mN'*mN);
+    
     
 %     ew_mn_sum = 0;
 %     for j=1:length(t)
@@ -49,7 +49,13 @@ for i=2:maxIterations
     betas(i)=beta;
     Em = beta/2 * Ew + A/2*(mN'*mN);
     
-    C = betaInv*eye(N) + Phi*(A\Phi');
+    AInv = zeros(M);
+    for j=1:M
+        AInv(j,j) = 1/A(j,j);
+    end
+%     C_old = betaInv*eye(N) + (Phi/A)*Phi';  % Check performance gains on this stuff
+    C = betaInv*eye(N) + Phi*AInv*Phi';
+    
     L=chol(C);
     logdetC = 2*sum(log(diag(L)));
 %     log(det(C))
@@ -59,8 +65,8 @@ for i=2:maxIterations
     llh(i) = -0.5*(N*log(2*pi)+logdetC + b'*b);
 %     (M*log(A) + N*log(beta) - 2*Em - log(det(Sigma)) - N*log(2*pi)); % 3.86
     if abs(llh(i)-llh(i-1)) < tolerance*abs(llh(i-1)); 
-        SigmaInv = A*eye(M) + beta * (Phi'*Phi);
-        mN = beta * (SigmaInv\Phi')*t;
+        SigmaInv = A + beta * (Phi'*Phi);
+        mN = beta * (SigmaInv\(Phi'*t));
         break; 
     end
 %     llh2 = M/2 * log(alpha) + N/2*log(beta) - Em - log(det(A))/2 - N/2*log(2*pi)
