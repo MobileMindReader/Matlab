@@ -8,7 +8,7 @@ M = size(Phi,2);
 N = length(t);
 betas = zeros(1,maxIterations);
 betas(1)=beta;
-AOld = 0;
+A_old = 0;
 for i=2:maxIterations
     SigmaInv = A + beta * (Phi'*Phi);
     
@@ -22,7 +22,7 @@ for i=2:maxIterations
         gamma(j) = 1-A(j,j)*Sigma(j,j);  %lambda(j)/(alpha(j,j) + lambda(j));
     end
     
-    AOld = A;
+    A_old = A;
     for j=1:M
         % Limit values to 10^6
         A(j,j) = max(1e-6, min(1e6,gamma(j)/(mN(j)^2)));
