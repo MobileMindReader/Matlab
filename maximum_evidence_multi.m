@@ -30,9 +30,7 @@ for i=2:maxIterations
 
         % Mark which indexes reach the limit and remove from later
         % equations
-        
     end
-    
     
 %     ew_mn_sum = 0;
 %     for j=1:length(t)
@@ -42,7 +40,6 @@ for i=2:maxIterations
     
     Ew = (sum((t-Phi*mN).^2));
 %     ew_mn
-    
 %     beta_inv = (1/(N-gamma)) * Ew;
     betaInv = Ew/(N-sum(gamma)); %Ew / (N - Sigma()
     beta = 1/betaInv;
@@ -53,23 +50,20 @@ for i=2:maxIterations
     for j=1:M
         AInv(j,j) = 1/A(j,j);
     end
+    
 %     C_old = betaInv*eye(N) + (Phi/A)*Phi';  % Check performance gains on this stuff
     C = betaInv*eye(N) + Phi*AInv*Phi';
-    
     L=chol(C);
     logdetC = 2*sum(log(diag(L)));
-%     log(det(C))
-    %%% Multiplying Em by 2, because terms are already halfed
-%     llh(i) = -0.5*(N*log(2*pi)+logdetC + (t'/C)*t);
+    
     b=L'\t;
-    llh(i) = -0.5*(N*log(2*pi)+logdetC + b'*b);
-%     (M*log(A) + N*log(beta) - 2*Em - log(det(Sigma)) - N*log(2*pi)); % 3.86
+    llh(i) = -0.5*(N*log(2*pi)+logdetC + b'*b);   %7.85
+    
     if abs(llh(i)-llh(i-1)) < tolerance*abs(llh(i-1)); 
         SigmaInv = A + beta * (Phi'*Phi);
         mN = beta * (SigmaInv\(Phi'*t));
         break; 
     end
-%     llh2 = M/2 * log(alpha) + N/2*log(beta) - Em - log(det(A))/2 - N/2*log(2*pi)
 end
 llh = llh(i);
     
