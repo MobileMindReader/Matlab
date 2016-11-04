@@ -68,21 +68,25 @@ plot(x, phi(functions, model.w, x) - model.sigma, 'r');
 %% Sampling
 N = 50;
 trainX = unifrnd(-2,2, [length(model.w) N]);
+% trainX = normrnd(0, 1, [length(model.w) N]);
 targets= zeros(model.dimension, N);
 targetNoise = zeros(model.dimension, N);
 
-trainY = trainX'*model.w' +sqrt(1/model.beta)*randn(N,1);
+trainY = trainX'*model.w' + sqrt(1/model.beta)*randn(N,1);
+
+% LOOK into this trainY - i dont think it's correct!!
+
 % trainYAlt = phi(functions, model.w, trainX);
 % trainY = phi(functions, model.w, trainX);
 
-for i=1:length(trainY)
+for i=1:N
 %     targetNoise(i) = normrnd(model.noiseMean, model.sigma);
 %     targets(i) = trainY(i) +  targetNoise(i);
 end
 targets=trainY';
 
 figure(2), hold off
-plot(trainX, 'm+');
+plot(trainY, 'm+');
 hold on
 
 %%% Likelihood

@@ -1,7 +1,7 @@
 function [alpha, beta, mN, llh] = maximum_evidence(alpha, beta, Phi, t)
 
 tolerance = 1e-4;
-maxIterations = 50;
+maxIterations = 100;
 
 llh = zeros(1,maxIterations);
 M = size(Phi,2);
@@ -28,7 +28,7 @@ for i=2:maxIterations
         
     
     A = alpha*eye(M) + beta * PhiTPhi;
-    mN = beta * (A\Phi')*t;
+    mN = beta * (A\(Phi'*t));
     
 %     lambda = eig(beta*);
     
@@ -47,15 +47,17 @@ for i=2:maxIterations
 %     ew_mn_sum
     
     Ew = (sum((t-Phi*mN).^2));
-%     ew_mn
     
     beta_inv = (1/(N-gamma)) * Ew;
     beta = 1/beta_inv;
     
     Em = beta/2 * Ew + alpha/2*(mN'*mN);
     
+    L = chol(A);
+    logDetA = 2*sum(log(diag(L)));
+    
     %%% Multiplying Em by 2, because terms are already halfed
-    llh(i) = 0.5*(M*log(alpha) + N*log(beta) - 2*Em - log(det(A)) - N*log(2*pi));   % 3.86
+    llh(i) = 0.5*(M*log(alpha) + N*log(beta) - 2*Em - logDetA - N*log(2*pi));   % 3.86
     llh(i);
     if abs(llh(i)-llh(i-1)) < tolerance*abs(llh(i-1)); 
         % Should this be done again? After alpha and beta are "chosen"?

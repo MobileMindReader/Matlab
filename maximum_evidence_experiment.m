@@ -28,7 +28,7 @@ for i=2:maxIterations
         
     
     A = alpha*eye(M) + beta * PhiTPhi;
-    mN = beta * (A\Phi')*t;
+    mN = beta * (A\(Phi'*t));
     
 %     lambda = eig(beta*);
     
@@ -48,9 +48,9 @@ for i=2:maxIterations
 %     end
 %     ew_mn_sum
     
-    if N > 1000
-       dummy = 0;
-    end
+%     if N > 1000
+%        dummy = 0;
+%     end
 
     Ew = (sum((t-Phi*mN).^2));
 %     ew_mn

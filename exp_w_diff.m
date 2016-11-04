@@ -9,7 +9,7 @@ model.alpha = 2; % 2?
 model.dimension = 1;
 
 
-iterations = 100;
+iterations = 10;
 intraIterations = 10;
 
 logLikelihood = zeros(iterations, intraIterations);
@@ -22,17 +22,18 @@ betas = zeros(iterations, intraIterations);
 alphas_approx = zeros(iterations, intraIterations);
 ratios_approx = zeros(iterations, intraIterations);
 
-weights = zeros(iterations, intraIterations);
+numFuncs = 10; 
 
+weights = zeros(iterations, intraIterations,numFuncs+1);
 
 for iter = 1:iterations
     
     for intraIter = 1:intraIterations
         
-        numSamples = 1000;
+        numSamples = iter*10;
         
         functions = {};
-        numFuncs = 10; %iter;
+        
         limit = numFuncs/2;
         
         for i=1:numFuncs
@@ -63,7 +64,7 @@ for iter = 1:iterations
         Phi = PhiMatrix(functions, trainX);
         alpha_init = rand;
         beta_init = rand;
-        [alpha, alpha_approx, beta, w, llh] = maximum_evidence_experiment(alpha_init, beta_init, Phi, targets');
+        [alpha, beta, w, llh] = maximum_evidence(alpha_init, beta_init, Phi, targets');
         
 %         [alpha, beta, w, llh] = bayes(functions, trainX, targets);
         
@@ -74,16 +75,10 @@ for iter = 1:iterations
         
         betas(iter, intraIter) = beta;
         alphas(iter, intraIter) = alpha;
-        alphas_approx(iter, intraIter) = alpha_approx;
         
         ratios(iter, intraIter) = alpha/beta;
-        ratios_approx(iter,intraIter) = alpha_approx/beta;
 
-%         wDiffer(iter,:) = wDiffer(iter,:) + abs(w'-model.w);
-% 
-%         for i=1:length(w)
-%             weights(iter, iterations) = w(i);
-%         end
+        weights(iter, intraIter, :) = w;
         
         logLikelihood(iter, intraIter) = llh;
         
@@ -100,43 +95,38 @@ end
 %%
 
 
-% for i=1:iterations
-%     for j=1:intraIterations
-%         ratios_approx(i,j) = alphas_approx(i,j)/betas(i,j);
-%     end
+
+% ratio_means = mean(ratios,2);
+% ratio_approx_means = mean(ratios_approx,2);
+% 
+% figure(1)
+% plot([1:iterations], ratio_means), hold on
+% % plot([1:iterations], ratio_approx_means, '-k')
+% 
+% trueRatio = (model.alpha/model.beta);
+% plot([1:iterations], trueRatio*ones(1,iterations), '-r');
+% hold off
+% 
+% trueRatio
+% estimatedRatio = mean(ratios,2);
+% 
+% figure(2)
+% plot((mean(alphas,2))), hold on;
+% plot((mean(alphas_approx, 2))), hold off;
+% legend('alpha', 'alpha approximation');
+% 
+% 
+% figure(3)
+% plot(mean(logLikelihood,2));
+% 
+% errors = zeros(1,iterations);
+% stds = std(alphas,0,2);
+% for i=1:data.iterations
+%     errors(i) = stds(i)/sqrt(1000);
 % end
-
-ratio_means = mean(ratios,2);
-ratio_approx_means = mean(ratios_approx,2);
-
-figure(1)
-plot([1:iterations], ratio_means), hold on
-% plot([1:iterations], ratio_approx_means, '-k')
-
-trueRatio = (model.alpha/model.beta);
-plot([1:iterations], trueRatio*ones(1,iterations), '-r');
-hold off
-
-trueRatio
-estimatedRatio = mean(ratios,2);
-
-figure(2)
-plot((mean(alphas,2))), hold on;
-plot((mean(alphas_approx, 2))), hold off;
-legend('alpha', 'alpha approximation');
-
-
-figure(3)
-plot(mean(logLikelihood,2));
-
-errors = zeros(1,iterations);
-stds = std(alphas,0,2);
-for i=1:data.iterations
-    errors(i) = stds(i)/sqrt(1000);
-end
-
-figure(4)
-errorbar(mean(alphas,2),errors);
+% 
+% figure(4)
+% errorbar(mean(alphas,2),errors);
 
 %% Prepare data for saving
 data.iterations = iterations;
@@ -149,6 +139,7 @@ data.alphas = alphas;
 data.approx_alphas = alphas_approx;
 data.betas = betas;
 data.llh = logLikelihood;
+data.w = weights;
 
 % data.numSamples = '20*iter^10';
 title = datetime('now');
