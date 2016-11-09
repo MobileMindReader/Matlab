@@ -7,10 +7,10 @@ model.sigma = 0.2; % Noise std deviation
 model.beta = (1/model.sigma.^2);
 model.dimension = 1;
 
-s = RandStream('mt19937ar','Seed',5);
+s = RandStream('mt19937ar','Seed',2);
 RandStream.setGlobalStream(s);
 
-N = 1000;
+N = 100;
 numFuncs = 100;
 
 functions = {};
@@ -21,15 +21,15 @@ functions{1} = @(x) ones(size(x));  % Bias function phi_0(x) = 1
 randoms = randn(numFuncs,N);
 
 for i=2:numFuncs
-    s = rand;%i*stepSize; %0.5;    % spatial scale
-    mu_j = -limit+stepSize*i+rand;
-    functions{i} = @(x) exp(-((x-mu_j).^2)/(2*s^2));
-%     functions{i} = @(x) randoms(i,:);%*ones(size(x));
+%     s = rand;%i*stepSize; %0.5;    % spatial scale
+%     mu_j = -limit+stepSize*i+rand;
+%     functions{i} = @(x) exp(-((x-mu_j).^2)/(2*s^2));
+    functions{i} = @(x) randoms(i,:);%*ones(size(x));
 end
 
 model.alpha = zeros(1,numFuncs); %0.2*ones(1,numFuncs); % 2? 
-trueIdx=[10, 400, 401, 402, 403, 600, 900, 910, 980, 981];
-trueIdx=[10, 20, 50, 55, 80];
+% trueIdx=[10, 400, 401, 402, 403, 600, 900, 910, 980, 981];
+trueIdx=[10, 20, 50, 55, 80, 81, 82];
 % trueIdx=[1 2 5];
 model.alpha(trueIdx) = 1;
 model.w = model.alpha;
@@ -121,18 +121,6 @@ beta_init = rand;
 % beta = beta(beta > 0);
 
 
-%% Model fit
-disp('Model comparison');
-
-disp('w true & w estimate');
-disp([model.w' mn]);
-% disp([norm(model.w'-mn)]);
-disp('beta true & sigma true');
-disp([model.beta model.sigma]);
-disp('beta estimate');
-disp(beta);
-disp('True alpha/beta & Estimated alpha/beta');
-disp([(model.alpha(1:10)/model.beta)' diag(A(1:10,1:10))/beta]);
 
 %% Draw new samples from predictive distribution
 
@@ -145,6 +133,23 @@ idx = find(diag(A) < alphaThreshold);
 sparseW = mn(idx);
 sparseFunctions = functions(idx);
 activeFunctions = numel(sparseFunctions)
+
+
+%% Model fit
+disp('Model comparison');
+
+disp('w true & w estimate');
+disp([model.w' mn]);
+% disp([norm(model.w'-mn)]);
+disp('beta true & sigma true');
+disp([model.beta model.sigma]);
+disp('beta estimate');
+disp(beta);
+disp('True alpha/beta & Estimated alpha/beta');
+disp([(model.alpha(idx)/model.beta)' diag(A(idx,idx))/beta idx]);
+
+%%
+
 
 newLines = zeros(numLines,length(xPlot));
 newLines2 = zeros(numLines,length(xPlot));
@@ -174,15 +179,15 @@ figure(1)
 plot(xPlot, newLines2, 'g')
 
 %% Plot errors
-testBound=6;
-testX = -testBound:0.001:testBound;
-trueValues = phi(functions, model.w, testX);
-testValues = phi(sparseFunctions, sparseW', testX);
-
-mse = immse(trueValues, testValues)
-
-figure(3)
-plot(testX, trueValues, '--r'), hold on
-plot(testX, testValues, 'g'), hold off
-legend('true', 'estimated');
+% testBound=6;
+% testX = -testBound:0.001:testBound;
+% trueValues = phi(functions, model.w, testX);
+% testValues = phi(sparseFunctions, sparseW', testX);
+% 
+% mse = immse(trueValues, testValues)
+% 
+% figure(3)
+% plot(testX, trueValues, '--r'), hold on
+% plot(testX, testValues, 'g'), hold off
+% legend('true', 'estimated');
 
