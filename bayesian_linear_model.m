@@ -7,11 +7,13 @@ model.sigma = 0.2; % Noise std deviation
 model.beta = (1/model.sigma.^2);
 model.dimension = 1;
 
-s = RandStream('mt19937ar','Seed',2);
+s = RandStream('mt19937ar','Seed',12);
 RandStream.setGlobalStream(s);
 
-functions = {};
+N = 100;
 numFuncs = 100;
+
+functions = {};
 limit = numFuncs/2;
 for i=1:numFuncs
 %     s = 0.5;    % spatial scale
@@ -54,19 +56,19 @@ model.w = model.alpha ;
 numLines = 6;
 x = -2:0.1:2;
 
-figure(1)
-hold off
-axis([-2,2,-2,2])
-% Draw "true line" and noise limit lines
-plot(x, phi(functions, model.w, x) + model.sigma, 'r');
-hold on
-plot(x, phi(functions, model.w, x), 'k');
-plot(x, phi(functions, model.w, x) - model.sigma, 'r');
+% figure(1)
+% hold off
+% axis([-2,2,-2,2])
+% % Draw "true line" and noise limit lines
+% plot(x, phi(functions, model.w, x) + model.sigma, 'r');
+% hold on
+% plot(x, phi(functions, model.w, x), 'k');
+% plot(x, phi(functions, model.w, x) - model.sigma, 'r');
 
 
 
 %% Sampling
-N = 50;
+
 trainX = unifrnd(-2,2, [length(model.w) N]);
 % trainX = normrnd(0, 1, [length(model.w) N]);
 targets= zeros(model.dimension, N);
@@ -85,9 +87,9 @@ for i=1:N
 end
 targets=trainY';
 
-figure(2), hold off
-plot(trainY, 'm+');
-hold on
+% figure(2), hold off
+% plot(trainY, 'm+');
+% hold on
 
 %%% Likelihood
 Phi = trainX';% PhiMatrix(functions, trainX);

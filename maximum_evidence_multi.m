@@ -13,19 +13,28 @@ PhiTPhi =  Phi'*Phi;
 betas = zeros(1,maxIterations);
 betas(1)=beta;
 
-A_old = 0;
+A_old = 0; %#ok<NASGU>
+
+zeroIndexes = zeros(1,M);
 
 for i=2:maxIterations
-    SigmaInv = A + beta * PhiTPhi;
-    mN = beta * (SigmaInv\(Phi'*t));
+%     PhiTPhi =  Phi'*Phi; 
+    SigmaInv = A + beta * (Phi'*Phi);
     
-    Sigma=inv(SigmaInv);
+    SigmaInvU = chol(SigmaInv);
+    SigmaU = inv(SigmaInvU);
+    Sigma = SigmaU*SigmaU';  %A^-1 = L^-1'*L^-1 = U^-1 * U^-1'
+    
+    mN = beta * (Sigma*(Phi'*t));
+    mN(zeroIndexes == 1) = 0;
+    
     gamma = zeros(1,M);
     for j=1:M
+        % Does gamma get too small?
         gamma(j) = 1-A(j,j)*Sigma(j,j); 
     end
     
-    A_old = A;
+    A_old = A; %#ok<NASGU>
     for j=1:M
         % Limit values to 10^6 and 10^-6
         A(j,j) = max(1e-6, min(1e6,gamma(j)/(mN(j)^2)));
@@ -33,11 +42,17 @@ for i=2:maxIterations
 
         % Mark which indexes reach the limit and remove from later
         % equations
+        if A(j,j) >= 1e6 
+            zeroIndexes(j) = 1;
+            mN(j) = 0;
+            Phi(:,j)= 0;
+        end
     end
-    
+
     Ew = (sum((t-Phi*mN).^2));
     betaInv = Ew/(N-sum(gamma)); 
     beta = 1/betaInv;
+%     beta=25;
     betas(i)=beta;
     
     AInv = zeros(M);
@@ -47,10 +62,12 @@ for i=2:maxIterations
     
 %     C_old = betaInv*eye(N) + (Phi/A)*Phi';  % Check performance gains on this stuff
     C = betaInv*eye(N) + Phi*AInv*Phi';
+    
     L=chol(C);
     logdetC = 2*sum(log(diag(L)));
     
     b=L'\t;
+    
     llh(i) = -0.5*(N*log(2*pi)+logdetC + b'*b);   %7.85
     
     if abs(llh(i)-llh(i-1)) < tolerance*abs(llh(i-1)); 
