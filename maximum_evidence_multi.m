@@ -1,4 +1,4 @@
-function [A, betas, mN, llh] = maximum_evidence_multi(A, beta, Phi, t)
+function [A, beta, mN, llh] = maximum_evidence_multi(A, beta, Phi, t)
 
 tolerance = 1e-4;
 maxIterations = 100;
@@ -7,18 +7,16 @@ llh = zeros(1,maxIterations);
 M = size(Phi,2);
 N = length(t);
 
-PhiTPhi =  Phi'*Phi;
+% PhiTPhi =  Phi'*Phi;
 
 % Temp for svaing beta progress
 betas = zeros(1,maxIterations);
 betas(1)=beta;
 
-A_old = 0; %#ok<NASGU>
-
 zeroIndexes = zeros(1,M);
-
+% C=zeros(N,N);
 for i=2:maxIterations
-%     PhiTPhi =  Phi'*Phi; 
+    % PhiTPhi =  Phi'*Phi;
     SigmaInv = A + beta * (Phi'*Phi);
     
     SigmaInvU = chol(SigmaInv);
@@ -30,29 +28,30 @@ for i=2:maxIterations
     
     gamma = zeros(1,M);
     for j=1:M
-        % Does gamma get too small?
-        gamma(j) = 1-A(j,j)*Sigma(j,j); 
+        gamma(j) = 1-A(j,j)*Sigma(j,j);
     end
-    
-    A_old = A; %#ok<NASGU>
+
     for j=1:M
         % Limit values to 10^6 and 10^-6
-        A(j,j) = max(1e-6, min(1e6,gamma(j)/(mN(j)^2)));
-%         A(j,j) = gamma(j)/(mN(j)^2);
-
+        A(j,j) = max(1e-6, min(1e6,gamma(j)/(mN(j)^2)));  % A(j,j) = gamma(j)/(mN(j)^2);
+        
         % Mark which indexes reach the limit and remove from later
         % equations
-        if A(j,j) >= 1e6 
+        if A(j,j) >= 1e6
             zeroIndexes(j) = 1;
             mN(j) = 0;
-            Phi(:,j)= 0;
+            Phi(:,j) = 0;
         end
     end
-
+    
+%     figure(3)
+%     imshow(Phi);
+%     pause;
+    
     Ew = (sum((t-Phi*mN).^2));
-    betaInv = Ew/(N-sum(gamma)); 
+    betaInv = Ew/(N-sum(gamma));
     beta = 1/betaInv;
-%     beta=25;
+    
     betas(i)=beta;
     
     AInv = zeros(M);
@@ -60,7 +59,8 @@ for i=2:maxIterations
         AInv(j,j) = 1/A(j,j);
     end
     
-%     C_old = betaInv*eye(N) + (Phi/A)*Phi';  % Check performance gains on this stuff
+    %     C_old = betaInv*eye(N) + (Phi/A)*Phi';  % Check performance gains on this stuff
+%     oldC = C;
     C = betaInv*eye(N) + Phi*AInv*Phi';
     
     L=chol(C);
@@ -70,12 +70,12 @@ for i=2:maxIterations
     
     llh(i) = -0.5*(N*log(2*pi)+logdetC + b'*b);   %7.85
     
-    if abs(llh(i)-llh(i-1)) < tolerance*abs(llh(i-1)); 
-        SigmaInv = A + beta * (Phi'*Phi);
-        mN = beta * (SigmaInv\(Phi'*t));
-        break; 
+    if abs(llh(i)-llh(i-1)) < tolerance*abs(llh(i-1));
+%         SigmaInv = A + beta * (Phi'*Phi);
+%         mN = beta * (SigmaInv\(Phi'*t));
+        break;
     end
 end
 llh = llh(i);
-    
+
 end

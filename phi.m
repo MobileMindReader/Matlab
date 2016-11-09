@@ -1,11 +1,13 @@
-function y = phi(basisFunctions, weightParameters, X)
-    if length(basisFunctions) ~= length(weightParameters)-1
+function y = phi(functions, weightParameters, X)
+    if length(functions) ~= length(weightParameters)
         disp('Error');
         return
     end
-    y = weightParameters(1)*ones(1,length(X));
-    for i=1:length(basisFunctions)
-        baseFunc = basisFunctions{i};
-        y = y + weightParameters(i+1)*baseFunc(X);
+    
+    y = zeros(1,length(X));
+    
+    for i=1:length(functions)
+        func = functions{i};
+        y = y + weightParameters(i)*func(X);
     end
 end

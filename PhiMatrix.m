@@ -1,9 +1,15 @@
 
-function Phi = PhiMatrix(basisFunctions, X)
-    Phi = ones(length(X),length(basisFunctions)+1);
+function Phi = PhiMatrix(functions, X)
+    Phi = ones(length(X),length(functions));
     
-    for i=1:numel(basisFunctions)
-        baseFunc = basisFunctions{i};
-        Phi(:,i+1) = baseFunc(X);
+    for i=1:numel(functions)
+        func = functions{i};
+        Phi(:,i) = func(X);
     end
+        
+%     Phi2 = ones(length(X),length(functions));
+%     for i=2:numel(functions)
+%         func = functions{i};
+%         Phi2(:,i) = func(X);
+%     end
 end
