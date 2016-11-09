@@ -18,7 +18,6 @@ zeroIndexes = zeros(1,M);
 for i=2:maxIterations
     % PhiTPhi =  Phi'*Phi;
     SigmaInv = A + beta * (Phi'*Phi);
-    
     SigmaInvU = chol(SigmaInv);
     SigmaU = inv(SigmaInvU);
     Sigma = SigmaU*SigmaU';  %A^-1 = L^-1'*L^-1 = U^-1 * U^-1'

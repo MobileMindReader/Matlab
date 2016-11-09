@@ -28,7 +28,13 @@ for i=2:maxIterations
         
     
     A = alpha*eye(M) + beta * PhiTPhi;
-    mN = beta * (A\(Phi'*t));
+    
+    AU = chol(A);
+    AInvU = inv(AU);
+    AInv = AInvU*AInvU';  %A^-1 = L^-1'*L^-1 = U^-1 * U^-1'
+    
+    mN = beta * (AInv*(Phi'*t));
+%     mNAlt = beta * (A\(Phi'*t));
     
 %     lambda = eig(beta*);
     
@@ -48,7 +54,7 @@ for i=2:maxIterations
     
     Ew = (sum((t-Phi*mN).^2));
     
-    beta_inv = (1/(N-gamma)) * Ew;
+    beta_inv = 1/(N-gamma) * Ew;
     beta = 1/beta_inv;
     
     Em = beta/2 * Ew + alpha/2*(mN'*mN);
@@ -58,7 +64,7 @@ for i=2:maxIterations
     
     %%% Multiplying Em by 2, because terms are already halfed
     llh(i) = 0.5*(M*log(alpha) + N*log(beta) - 2*Em - logDetA - N*log(2*pi));   % 3.86
-    llh(i);
+%     llh(i);
     if abs(llh(i)-llh(i-1)) < tolerance*abs(llh(i-1)); 
         % Should this be done again? After alpha and beta are "chosen"?
 %         A = alpha*eye(M) + beta * (Phi'*Phi);

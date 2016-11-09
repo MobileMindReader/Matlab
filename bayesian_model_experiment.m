@@ -45,7 +45,7 @@ for iter = 1:iterations
         % Sampling
         
         % Random values of w
-        model.w = normrnd(0,sqrt(1/model.alpha), [1 length(functions)+1]);  %*eye(model.dimension)
+        model.w = normrnd(0,sqrt(1/model.alpha), [1 length(functions)]);  %*eye(model.dimension)
         
         trainX = unifrnd(-2,2, [model.dimension numSamples]);
         targets= zeros(model.dimension, length(trainX));
@@ -63,8 +63,8 @@ for iter = 1:iterations
         Phi = PhiMatrix(functions, trainX);
         alpha_init = rand;
         beta_init = rand;
-        [alpha, alpha_approx, beta, w, llh] = maximum_evidence_experiment(alpha_init, beta_init, Phi, targets');
-        
+%         [alpha, alpha_approx, beta, w, llh] = maximum_evidence_experiment(alpha_init, beta_init, Phi, targets');
+        [alpha, beta, w, llh] = maximum_evidence(alpha_init, beta_init, Phi, targets');
 %         [alpha, beta, w, llh] = bayes(functions, trainX, targets);
         
         if alpha > 10*(max(max(alphas)) + min(min(alphas))+1)
@@ -74,10 +74,10 @@ for iter = 1:iterations
         
         betas(iter, intraIter) = beta;
         alphas(iter, intraIter) = alpha;
-        alphas_approx(iter, intraIter) = alpha_approx;
+%         alphas_approx(iter, intraIter) = alpha_approx;
         
         ratios(iter, intraIter) = alpha/beta;
-        ratios_approx(iter,intraIter) = alpha_approx/beta;
+%         ratios_approx(iter,intraIter) = alpha_approx/beta;
 
 %         wDiffer(iter,:) = wDiffer(iter,:) + abs(w'-model.w);
 % 
