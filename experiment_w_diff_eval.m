@@ -2,8 +2,8 @@
 clear;
 % data = load('04-Nov-2016 11:57:35.mat');
 % data = load('09-Nov-2016 21:09:20.mat');
-% data = load('09-Nov-2016 21:39:07.mat');
-data = load('09-Nov-2016 22:26:32.mat');
+data = load('09-Nov-2016 21:39:07.mat');
+% data = load('09-Nov-2016 22:26:32.mat');
 
 data = data.data;
 %% Plot w-diff
@@ -25,12 +25,12 @@ for i=1:data.iterations
     mse(:,i) = mse(:,i)/data.intraIterations;
 %     wDiff(i,:) = data.model.w' - squeeze(mean(data.w(i,:,:),3));
 end
-hold off;
+% hold off;
 % data.w(:,:,:)
 % plot(sum(abs(wDiff),1))
 figure(11)
-plot(mse')
-xlabel('#samples x10, averaged over 200 samples'), ylabel('MSE for each of the 11 weights') 
+plot(mse'), legend('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11');
+xlabel('#samples x10, averaged over 200 samples'), ylabel('MSE for each of the weights') 
 figure(22)
 plot(sum(mse',2))
 xlabel('#samples x10, averaged over 200 samples'), ylabel('Sum of MSE for all weights') 

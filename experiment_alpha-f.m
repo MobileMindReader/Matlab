@@ -2,8 +2,8 @@
 clear;
 % data = load('02-Nov-2016 19:10:49.mat');
 % data = load('03-Nov-2016 03:45:37.mat');
-% data = load('08-Nov-2016 14:51:17.mat');
-data = load('09-Nov-2016 22:43:30.mat');
+% data = load('08-Nov-2016 14:51:17.mat'); %numFuncs=iter, numSamples = 1000
+data = load('09-Nov-2016 22:43:30.mat'); %numFuncs=iter, numSamples = 100
 data = data.data;
 
 %%
@@ -14,8 +14,8 @@ alphas = data.alphas;
 %     numFuncs = i;
 %     median(alphas(i,:));
 % end
-
-plot(median(alphas,2));
+figure(7)
+plot(mean(alphas,2));
 
 
 
