@@ -2,10 +2,51 @@
 clear;
 % data = load('04-Nov-2016 11:57:35.mat');
 % data = load('09-Nov-2016 21:09:20.mat');
-data = load('09-Nov-2016 21:39:07.mat');
+% data = load('09-Nov-2016 21:39:07.mat');
 % data = load('09-Nov-2016 22:26:32.mat');
+% data = data.data;
 
-data = data.data;
+files = dir('exp_w-diff');
+fileIndex = find(~[files.isdir]);
+fileNames={};
+for i = 1:length(fileIndex)
+    fileNames{i} = files(fileIndex(i)).name;
+end
+
+% New experiment
+% fileNames = {
+%     '10-Nov-2016 16:17:00.mat', 
+%     '.mat'};
+dataFiles = {};
+
+for i=1:numel(fileNames)
+    dataFiles{i} = importdata(['exp_w-diff/' fileNames{i}]);
+end
+
+alphas = [];
+ratios = [];
+llh = [];
+betas = [];
+wTrue = [];
+wEstimated = [];
+for data=dataFiles
+    data = data{:};
+    alphas = [alphas data.alphas];
+    ratios = [ratios data.ratios];
+    betas = [betas data.betas];
+    llh = [llh data.llh];
+    wTrue = [wTrue data.wTrue];
+    wEstimated = [wEstimated data.wEstimated];
+end
+
+data=dataFiles{1};
+N = data.numSamples;
+iterations = data.iterations;
+intraIterations = data.intraIterations;
+model = data.model;
+
+
+
 %% Plot w-diff
 
 % figure(8)
@@ -13,13 +54,13 @@ data = data.data;
 % some = mean(data.w(1,:,:),2);
 % some2 = squeeze(some(1,1,:))';
 
-mse = zeros(data.numFuncs+1, data.iterations);
+mse = zeros(data.numFuncs, data.iterations);
 % wDiff = zeros(data.iterations, data.numFuncs+1);
 
 % figure(99), plot(data.model.w,'b'), hold on;
 for i=1:data.iterations
     for j=1:data.intraIterations
-        mse(:,i) = mse(:,i) + (squeeze(data.wEstimated(i,j,:))-squeeze(data.wTrue(i,j,:))).^2;
+        mse(:,i) = mse(:,i) + (squeeze(wEstimated(i,j,:))-squeeze(wTrue(i,j,:))).^2;
     end
 %     plot(squeeze(mean(data.wEstimated(i,:,:))));
     mse(:,i) = mse(:,i)/data.intraIterations;
@@ -29,11 +70,11 @@ end
 % data.w(:,:,:)
 % plot(sum(abs(wDiff),1))
 figure(11)
-plot(mse'), legend('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11');
-xlabel('#samples x10, averaged over 200 samples'), ylabel('MSE for each of the weights') 
+plot(mse'), legend('1', '2', '3', '4', '5', '6', '7', '8', '9', '10');
+xlabel(['#samples x25, averaged over ' int2str(size(wEstimated,2)) ' samples']), ylabel('MSE for each of the weights') 
 figure(22)
 plot(sum(mse',2))
-xlabel('#samples x10, averaged over 200 samples'), ylabel('Sum of MSE for all weights') 
+xlabel(['#samples x25, averaged over ' int2str(size(wEstimated,2)) ' samples']), ylabel('Sum of MSE for all weights') 
 %%
 
 
