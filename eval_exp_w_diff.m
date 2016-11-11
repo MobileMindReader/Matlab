@@ -10,7 +10,10 @@ files = dir('exp_w-diff');
 fileIndex = find(~[files.isdir]);
 fileNames={};
 for i = 1:length(fileIndex)
-    fileNames{i} = files(fileIndex(i)).name;
+    fileName = files(fileIndex(i)).name;
+    if fileName(1:6) == '11-Nov'
+        fileNames{end+1} = files(fileIndex(i)).name;
+    end
 end
 
 % New experiment
