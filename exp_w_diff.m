@@ -20,6 +20,9 @@ betas = zeros(iterations, intraIterations);
 estimatedWeights = zeros(iterations, intraIterations, numFuncs);
 trueWeights = zeros(iterations, intraIterations, numFuncs);
 
+s = RandStream('mt19937ar','Seed', 'shuffle');
+RandStream.setGlobalStream(s);
+
 dataTile = datetime('now');
 data.numSamples = 'iter*25';
 
@@ -69,16 +72,16 @@ for iter = 1:iterations
         
         logLikelihood(iter, intraIter) = llh;
         
-        if mod(intraIter,50) == 0
-            intraIter
+        if mod(intraIter,100) == 0
+            [iter intraIter]
         end
     end
     
-    if mod(iter,10) == 0
-        iter
-    end
+%     if mod(iter,10) == 0
+%         iter
+%     end
     
-    if mod(iter, 50) == 0
+    if mod(iter, 10) == 0
         % Save data in case of being stopped early
         data.currentIteration = iter;
         data.currentIntraIteration = intraIter;

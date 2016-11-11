@@ -19,7 +19,10 @@ betas = zeros(iterations, intraIterations);
 
 dataTile = datetime('now');
 data.numSamples = '100';
+data.numFuncs = '25*iter';
 
+s = RandStream('mt19937ar','Seed', 'shuffle');
+RandStream.setGlobalStream(s);
 
 for iter=1:iterations
     for intraIter=1:intraIterations 
@@ -63,15 +66,15 @@ for iter=1:iterations
         ratios(iter, intraIter) = alpha/beta;
         logLikelihood(iter, intraIter) = llh;
 
-        if mod(intraIter,50) == 0
-            intraIter
+        if mod(intraIter,100) == 0
+            [iter intraIter]
         end
     end
-    if mod(iter, 10) == 0
-        iter
-    end
+%     if mod(iter, 10) == 0
+%         iter
+%     end
     
-    if mod(iter, 50) == 0
+    if mod(iter, 5) == 0
         % Save data in case of being stopped early
         data.currentIteration = iter;
         data.currentIntraIteration = intraIter;
