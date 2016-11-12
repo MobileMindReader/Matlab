@@ -31,7 +31,7 @@ dataTitle = ['exp_alpha_modes_multi/' datestr(datetime('now')) '-' int2str(rand*
 
 data.numSamples = '25*iter';
 data.numFuncs = '100';
-
+data.descriptino = '100 functions, 10 weights drawn from one alpha, rest is zero. Iterating over N (25xiter).';
 for iter=1:iterations
     for intraIter=1:intraIterations 
         numSamples = 25*iter;
@@ -48,7 +48,7 @@ for iter=1:iterations
             functions{i} = @(x) exp(-((x-mu_j).^2)/(2*s^2));
         end
         
-%%%%%        % Draw w from unimodal or multi-modal alpha
+%%%%%        % Draw w from multi-modal alpha
         model.alpha=2;
         
         wTemp = zeros(1,numFuncs);

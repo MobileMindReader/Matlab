@@ -31,6 +31,7 @@ dataTitle = ['exp_alpha_modes_uni/' datestr(datetime('now')) '-' int2str(rand*10
 
 data.numSamples = '100';
 data.numFuncs = '25*iter';
+data.descriptino = '100 functions, all weights drawn from one alpha. Iterating over N (25xiter).';
 
 for iter=1:iterations
     for intraIter=1:intraIterations 
