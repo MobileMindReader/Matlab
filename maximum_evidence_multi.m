@@ -72,8 +72,8 @@ for i=2:maxIterations
     if abs(llh(i)-llh(i-1)) < tolerance*abs(llh(i-1));
 %         SigmaInv = A + beta * (Phi'*Phi);
 %         mN = beta * (SigmaInv\(Phi'*t));
-        disp('Converged at');
-        i
+%         disp('Converged at');
+%         i
         break;
     end
 end

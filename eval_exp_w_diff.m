@@ -47,6 +47,7 @@ N = data.numSamples;
 iterations = data.iterations;
 intraIterations = data.intraIterations;
 model = data.model;
+numFuncs = data.numFuncs;
 
 
 
@@ -57,12 +58,12 @@ model = data.model;
 % some = mean(data.w(1,:,:),2);
 % some2 = squeeze(some(1,1,:))';
 
-mse = zeros(data.numFuncs, data.iterations);
+mse = zeros(numFuncs, iterations);
 % wDiff = zeros(data.iterations, data.numFuncs+1);
 
 % figure(99), plot(data.model.w,'b'), hold on;
-for i=1:data.iterations
-    for j=1:data.intraIterations
+for i=1:iterations
+    for j=1:intraIterations
         mse(:,i) = mse(:,i) + (squeeze(wEstimated(i,j,:))-squeeze(wTrue(i,j,:))).^2;
     end
 %     plot(squeeze(mean(data.wEstimated(i,:,:))));
@@ -76,7 +77,7 @@ figure(11)
 plot(mse'), legend('1', '2', '3', '4', '5', '6', '7', '8', '9', '10');
 xlabel(['#samples x25, averaged over ' int2str(size(wEstimated,2)) ' samples']), ylabel('MSE for each of the weights') 
 figure(22)
-plot(sum(mse',2))
+plot(sum(mse,1))
 xlabel(['#samples x25, averaged over ' int2str(size(wEstimated,2)) ' samples']), ylabel('Sum of MSE for all weights') 
 %%
 
