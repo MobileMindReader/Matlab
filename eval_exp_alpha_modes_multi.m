@@ -54,6 +54,8 @@ iterations = data.iterations;
 intraIterations = data.intraIterations;
 model = data.model;
 
+disp(data.descriptino);
+
 %%
 
 % The first 10 weights have been drawn from distribution with precision

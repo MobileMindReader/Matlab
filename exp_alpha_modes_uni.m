@@ -69,17 +69,17 @@ for iter=1:iterations
         alpha_multi_init(logical(eye(size(alpha_multi_init)))) = rand(1,numFuncs);
         
 %%%% Unimodal alpha      
-        [alpha, beta, mn_uni, llh_uni] = maximum_evidence(alpha_uni_init, beta_init, Phi, targets');
+        [alpha, beta, mn_uni, llh] = maximum_evidence(alpha_uni_init, beta_init, Phi, targets');
         beta_uni(iter, intraIter) = beta;
         alpha_uni(iter, intraIter) = alpha;
-        llh_uni(iter, intraIter) = llh_uni;
+        llh_uni(iter, intraIter) = llh;
         w_uni{iter, intraIter} = mn_uni;
         
 %%%% Multi-modal alpha
-        [A, beta, mn_multi, llh_multi] = maximum_evidence_multi(alpha_multi_init, beta_init, Phi, targets');
+        [A, beta, mn_multi, llh] = maximum_evidence_multi(alpha_multi_init, beta_init, Phi, targets');
         beta_multi(iter, intraIter) = beta;
         alpha_multi{iter, intraIter} = diag(A);
-        llh_multi(iter, intraIter) = llh_multi;
+        llh_multi(iter, intraIter) = llh;
         w_multi{iter, intraIter} = mn_multi;
         
         if mod(intraIter,100) == 0
