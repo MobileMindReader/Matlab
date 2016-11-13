@@ -54,7 +54,6 @@ for iter=1:iterations
         wTemp = zeros(1,numFuncs);
         wTemp(1:10) = normrnd(0,sqrt(1/model.alpha), [1 10]);
         model.w = wTemp;
-        
      	% model.w = normrnd(0,sqrt(1/model.alpha), [1 numFuncs]);  %*eye(model.dimension)
         w_true{iter, intraIter} = model.w';
 %%%%%%        
