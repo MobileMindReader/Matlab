@@ -29,14 +29,14 @@ w_true = cell(iterations, intraIterations);
 
 dataTitle = ['exp_alpha_modes_uni/' datestr(datetime('now')) '-' int2str(rand*100)];
 
-data.numSamples = '100';
-data.numFuncs = '25*iter';
+data.numSamples = '25*iter';
+data.numFuncs = '100';
 data.descriptino = '100 functions, all weights drawn from one alpha. Iterating over N (25xiter).';
 
 for iter=1:iterations
     for intraIter=1:intraIterations 
-        numSamples = 100;
-        numFuncs = 25*iter; %iter;
+        numSamples = 25*iter; %100;
+        numFuncs = 100; %25*iter; %iter;
         
         functions = cell(1,numFuncs);
         
