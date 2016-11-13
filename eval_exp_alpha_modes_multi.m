@@ -60,26 +60,29 @@ model = data.model;
 % model.alpha(2) - rest is 0.
 
 
-mse = zeros(numFuncs, iterations);
+mse_multi = zeros(numFuncs, iterations);
+mse_uni = zeros(numFuncs, iterations);
 for i=1:iterations
     for j=1:intraIterations
-        mse(:,i) = mse(:,i) + (w_multi{i,j}-w_true{i,j}).^2;
+        mse_multi(:,i) = mse_multi(:,i) + (w_multi{i,j}-w_true{i,j}).^2;
+        mse_uni(:,i) = mse_uni(:,i) + (w_uni{i,j}-w_true{i,j}).^2;
     end
-%     plot(squeeze(mean(data.wEstimated(i,:,:))));
-    mse(:,i) = mse(:,i)/data.intraIterations;
-%     wDiff(i,:) = data.model.w' - squeeze(mean(data.w(i,:,:),3));
+    mse_multi(:,i) = mse_multi(:,i)/data.intraIterations;
+    mse_uni(:,i) = mse_uni(:,i)/data.intraIterations;
 end
-% hold off;
-% data.w(:,:,:)
-% plot(sum(abs(wDiff),1))
+
+
+% TODO: Subtract signal amplitude 
+
 figure(11)
-plot(mse'), legend('1', '2', '3', '4', '5', '6', '7', '8', '9', '10');
+plot(mse_multi'), legend('1', '2', '3', '4', '5', '6', '7', '8', '9', '10');
 xlabel(['#samples x25, averaged over ' int2str(size(w_true,2)) ' samples']), ylabel('MSE for each of the weights') 
+
 figure(22)
-plot(sum(mse,1))
+plot(sum(mse_multi,1)), hold on
+plot(sum(mse_uni,1)), hold off
 xlabel(['#samples x25, averaged over ' int2str(size(w_true,2)) ' samples']), ylabel('Sum of MSE for all weights') 
-
-
+legend('Multivariate', 'Unimodal');
 
 
 
