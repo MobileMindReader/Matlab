@@ -1,17 +1,16 @@
 clear;
 
-files = dir('exp_alpha_modes_multi');
+files = dir('exp_alpha_modes_uni');
 fileIndex = find(~[files.isdir]);
 fileNames={}; dataFiles = {};
 for i = 1:length(fileIndex)
     fileName = files(fileIndex(i)).name;
-%     if fileName == '12-Nov-2016 18:33:24-88.mat'
     if fileName(13:14) == '22'
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
 for i=1:numel(fileNames)
-    dataFiles{i} = importdata(['exp_alpha_modes_multi/' fileNames{i}]);
+    dataFiles{i} = importdata(['exp_alpha_modes_uni/' fileNames{i}]);
 end
 
 
@@ -88,7 +87,6 @@ legend('Multivariate', 'Unimodal');
 
 
 
-std(w_true{1,1})^2*numFuncs;
 
 
 

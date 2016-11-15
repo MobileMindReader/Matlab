@@ -10,8 +10,8 @@ model.dimension = 1;
 s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
-iterations = 40;
-intraIterations = 400;
+iterations = 50;
+intraIterations = 200;
 
 % Unimodal
 llh_uni = zeros(iterations, intraIterations);
@@ -27,39 +27,41 @@ w_multi = cell(iterations, intraIterations);
 
 w_true = cell(iterations, intraIterations);
 
-dataTitle = ['exp_alpha_modes_multi/' datestr(datetime('now')) '-' int2str(rand*100)];
+dataTitle = ['exp_alpha_modes_uni_rand/' datestr(datetime('now'))];
 
 data.numSamples = '25*iter';
 data.numFuncs = '100';
-data.descriptino = '100 functions, 10 weights drawn from one alpha, rest is zero. Iterating over N (25xiter).';
+data.descriptino = '100 functions, all weights drawn from one alpha. Iterating over N (25xiter).';
+
 for iter=1:iterations
     for intraIter=1:intraIterations 
+        
         numSamples = 25*iter;
         numFuncs = 100; %iter;
         
         functions = cell(1,numFuncs);
         
-        limit = 50; %%numFuncs/2;
-        stepSize = limit*2/(numFuncs-1);
-
+%         limit = numFuncs/2;
+%         stepSize = limit*2/(numFuncs-1);
+        
+        randoms = randn(numFuncs,numSamples);
+        
         functions{1} = @(x) ones(size(x));  % Bias function phi_0(x) = 1
         for i=2:numFuncs
-            mu_j=-limit+i*stepSize;
-            s = 0.2;      % spatial scale
-            functions{i} = @(x) exp(-((x-mu_j).^2)/(2*s^2));
+%             mu_j=-limit+i*stepSize;
+%             s = 0.2;      % spatial scale
+%             functions{i} = @(x) exp(-((x-mu_j).^2)/(2*s^2));
+            functions{i} = @(x) randoms(i,:);%*ones(size(x));
         end
         
-%%%%%        % Draw w from multi-modal alpha
-        model.alpha=2;
+%%%%%        % Draw w from unimodal or multi-modal alpha
         
-        wTemp = zeros(1,numFuncs);
-        wTemp(1:10) = normrnd(0,sqrt(1/model.alpha), [1 10]);
-        model.w = wTemp;
-     	% model.w = normrnd(0,sqrt(1/model.alpha), [1 numFuncs]);  %*eye(model.dimension)
+        model.alpha=2;
+        model.w = normrnd(0,sqrt(1/model.alpha), [1 numFuncs]);  %*eye(model.dimension)
         w_true{iter, intraIter} = model.w';
 %%%%%%        
 
-        trainX = unifrnd(-limit,limit, [model.dimension numSamples]);
+        trainX = unifrnd(-3,3, [model.dimension numSamples]);
         trainY = phi(functions, model.w, trainX);
         targets = trainY + normrnd(model.noiseMean, model.sigma, [1 numSamples]);
         

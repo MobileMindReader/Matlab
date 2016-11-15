@@ -7,25 +7,35 @@ model.sigma = 0.2; % Noise std deviation
 model.beta = (1/model.sigma.^2);
 model.dimension = 1;
 
-s = RandStream('mt19937ar','Seed',2);
+% s = RandStream('mt19937ar','Seed',2);
+s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
-N = 100;
-numFuncs = 1000;
+N = 25;
+numFuncs = 100;
 
-functions = {};
-limit = 3; %numFuncs/2;
-stepSize = limit*2/(numFuncs-1);
-
-functions{1} = @(x) ones(size(x));  % Bias function phi_0(x) = 1
+% limit = 3; %numFuncs/2;
+% stepSize = limit*2/(numFuncs-1);
 randoms = randn(numFuncs,N);
 
+functions = cell(1,numFuncs);
+functions{1} = @(x) ones(size(x));  % Bias function phi_0(x) = 1
+
+limit = 50; %numFuncs/2;
+stepSize = limit*2/(numFuncs-1);
+
 for i=2:numFuncs
-%     s = rand;%i*stepSize; %0.5;    % spatial scale
-%     mu_j = -limit+stepSize*i+rand;
+%     mu_j=-limit+i*stepSize;
+%     s = rand*0.5;      % spatial scale
 %     functions{i} = @(x) exp(-((x-mu_j).^2)/(2*s^2));
     functions{i} = @(x) randoms(i,:);%*ones(size(x));
 end
+
+% for i=2:numFuncs
+% %     s = rand;%i*stepSize; %0.5;    % spatial scale
+% %     mu_j = -limit+stepSize*i+rand;
+% %     functions{i} = @(x) exp(-((x-mu_j).^2)/(2*s^2)); 
+% end
 
 model.alpha = 2;% zeros(1,numFuncs); %0.2*ones(1,numFuncs); % 2? 
 % trueIdx=[10, 400, 401, 402, 403, 600, 900, 910, 980, 981];
@@ -35,7 +45,9 @@ model.alpha = 2;% zeros(1,numFuncs); %0.2*ones(1,numFuncs); % 2?
 
 % model.alpha(1:10) = 1;
 wTemp = zeros(1,numFuncs);
-wTemp(1:10) = normrnd(0,sqrt(1/model.alpha), [1 10]);
+% idx=int16(unifrnd(1,100, [1 10]));
+idx=1:10;
+wTemp(idx) = normrnd(0,sqrt(1/model.alpha), [1 size(idx)]);
 model.w = wTemp;
 
 % alpha_init(logical(eye(size(alpha_init)))) = rand(1,length(functions)+1);
@@ -83,25 +95,17 @@ model.w = wTemp;
 
 %% Sampling
 
-trainX2 = unifrnd(-3,3, [1 N]);
-% [trainXSorted, sortedIndexes] = sort(trainX);
+trainX = unifrnd(-3,3, [1 N]);
+% [trainX, sortedIndexes] = sort(trainX);
 
-trainX = normrnd(0, 1, [length(model.w) N]);
-% targets= zeros(model.dimension, N);
+trainY = phi(functions, model.w, trainX);
 targetNoise = sqrt(1/model.beta)*randn(N,1); %zeros(model.dimension, N);
+targets=trainY'+targetNoise;
 
-trainY = trainX'*model.w' + sqrt(1/model.beta)*randn(N,1);
+% trainXAlt = normrnd(0, 1, [length(model.w) N]);
+% trainYAlt = trainXAlt'*model.w' + sqrt(1/model.beta)*randn(N,1);
+% targetAlt=trainYAlt';%+targetNoise;
 
-% LOOK into this trainY - i dont think it's correct!!
-
-% trainYAlt = phi(functions, model.w, trainX);
-trainY2 = phi(functions, model.w, trainX2);
-
-for i=1:N
-%     targetNoise(i) = normrnd(model.noiseMean, model.sigma);
-%     targets(i) = trainY(i) +  targetNoise(i);
-end
-targets=trainY';%+targetNoise;
 
 figure(2), hold off
 plot(trainY, 'm+');
@@ -112,8 +116,12 @@ hold on
 % hold on
 
 %%% Likelihood
-% Phi = PhiMatrix(functions, trainX);
-Phi = trainX';% PhiMatrix(functions, trainX);
+
+Phi = PhiMatrix(functions, trainX);
+% figure(8), imshow(Phi);
+
+
+% Phi = trainXAlt';% PhiMatrix(functions, trainX);
 
 % Phi = randn(length(trainX), length(functions)+1);
 % PhiEig = eig(Phi);
@@ -125,7 +133,7 @@ alpha_init(logical(eye(size(alpha_init)))) = rand(1,numFuncs);
 % alpha_init = rand(1,length(functions)+1)*; %normrnd(model.alpha, 0.2);
 beta_init = rand;
 
-[A, beta, mn, llh] = maximum_evidence_multi(alpha_init, beta_init, Phi, targets');
+[A, beta, mn, llh] = maximum_evidence_multi(alpha_init, beta_init, Phi, targets);
 % beta = beta(beta > 0);
 
 
@@ -186,8 +194,11 @@ disp('True alpha/beta & Estimated       index');
 % % 
 % figure(1)
 % plot(xPlot, newLines2, 'b')
-% 
-% %% Plot errors
+%
+
+
+%% Plot errors
+
 % testBound=6;
 % testX = xPlot; %-testBound:0.001:testBound;
 % trueValues = phi(functions, model.w, testX);
@@ -199,4 +210,4 @@ disp('True alpha/beta & Estimated       index');
 % plot(testX, trueValues, '--r'), hold on
 % plot(testX, testValues, 'b'), hold off
 % legend('true', 'estimated');
-% 
+
