@@ -1,7 +1,7 @@
 function [A, beta, mN, llh] = maximum_evidence_multi(A, beta, Phi, t)
 
-tolerance = 1e-6;
-maxIterations = 200;
+tolerance = 1e-8;
+maxIterations = 300;
 
 llh = zeros(1,maxIterations);
 M = size(Phi,2);

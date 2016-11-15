@@ -96,8 +96,8 @@ std(w_true{1,1})^2*numFuncs;
 
 %%
 figure(7)
-plot(mean(alpha,2));
-xlabel('# of functions x25'), ylabel(['mean alpha value of ' int2str(size(alphas,2)) ' iterations']) 
+plot(mean(alpha_uni,2));
+xlabel('# of functions x25'), ylabel(['mean alpha value of ' int2str(size(alpha_uni, 2)) ' iterations']) 
 
 
 

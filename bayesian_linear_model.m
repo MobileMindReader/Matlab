@@ -48,6 +48,7 @@ wTemp = zeros(1,numFuncs);
 % idx=int16(unifrnd(1,100, [1 10]));
 idx=1:10;
 wTemp(idx) = normrnd(0,sqrt(1/model.alpha), [1 size(idx)]);
+% wTemp(11:100) = normrnd(0,sqrt(1/10000), [1 90]);
 model.w = wTemp;
 
 % alpha_init(logical(eye(size(alpha_init)))) = rand(1,length(functions)+1);
@@ -134,6 +135,7 @@ alpha_init(logical(eye(size(alpha_init)))) = rand(1,numFuncs);
 beta_init = rand;
 
 [A, beta, mn, llh] = maximum_evidence_multi(alpha_init, beta_init, Phi, targets);
+[alpha_shared, beta_shared, mn_shared, llh_shared] = maximum_evidence(rand(1,1), beta_init, Phi, targets);
 % beta = beta(beta > 0);
 
 
@@ -148,7 +150,7 @@ idx = find(diag(A) < alphaThreshold);
 
 sparseW = mn(idx);
 sparseFunctions = functions(idx);
-activeFunctions = numel(sparseFunctions)
+% activeFunctions = numel(sparseFunctions)
 
 
 %% Model fit
