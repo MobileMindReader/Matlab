@@ -221,7 +221,8 @@ xlabel('# of samples');
 % legend('Estimated ratio', 'True ratio');
 
 
-%%
+%% Log likelihood 
+
 figure(5)
 subplot(2,1,1), plot(mean(llh_model_shared_estimate_separate,2),'b'), hold on;
 subplot(2,1,1), plot(mean(llh_model_shared_estimate_shared,2),'r'), hold off;
@@ -238,55 +239,105 @@ legend('Separate', 'Shared');
 xlabel('# of samples'), ylabel(['Log likelihood averaged over ' int2str(numExperiments) ' experiments']);
 
 
-%% 
+%% Alpha estimation mean with error bars
 
 active_functions=100;
 
-error_shared = zeros(1,iterations);
-error_separate = zeros(active_functions, iterations);
-alpha_std_shared = std(a_model_separate_estimate_shared,0,2);
-active_alphas = zeros(iterations,numExperiments,active_functions);
+err_model_separate_estimate_shared = zeros(1,iterations);
+err_model_separate_estimate_separate = zeros(active_functions, iterations);
+a_std_model_separate_estimate_shared = std(a_model_separate_estimate_shared,0,2);
+a_active_model_separate = zeros(iterations,numExperiments,active_functions);
+
+err_model_shared_estimate_shared = zeros(1,iterations);
+err_model_shared_estimate_separate = zeros(active_functions, iterations);
+a_std_model_shared_estimate_shared = std(a_model_shared_estimate_shared,0,2);
+a_active_model_shared = zeros(iterations,numExperiments,active_functions);
 
 for i=1:iterations
-    error_shared(i) = alpha_std_shared(i)/sqrt(25*i);
+    err_model_separate_estimate_shared(i) = a_std_model_separate_estimate_shared(i)/sqrt(25*i);
+    err_model_shared_estimate_shared(i) = a_std_model_shared_estimate_shared(i)/sqrt(25*i);
+    
 %     separate_error(i) = std(vertcat(alpha_separate{i,:}))/sqrt(25*i);
     for j=1:numExperiments
-        active_alphas(i,j,:) = a_model_separate_estimate_separate{i,j}(1:active_functions);
+        a_active_model_separate(i,j,:) = a_model_separate_estimate_separate{i,j}(1:active_functions);
+        a_active_model_shared(i,j,:) = a_model_shared_estimate_separate{i,j}(1:active_functions);
     end
+    
+    err_model_separate_estimate_separate(:,i) = squeeze(std(a_active_model_separate(i,:,:),0,2))/sqrt(25*i);
+    err_model_shared_estimate_separate(:,i) = squeeze(std(a_active_model_shared(i,:,:),0,2))/sqrt(25*i);
 end
 
-alpha_std_separate = squeeze(std(active_alphas,0,2));
+a_std_model_separate_estimate_separate = squeeze(std(a_active_model_separate,0,2));
+a_std_model_shared_estimate_separate = squeeze(std(a_active_model_shared,0,2));
 
-for i=1:iterations
-    error_separate(:,i) = alpha_std_separate(i,:)/sqrt(25*i);
-end
+% for i=1:iterations
+%     err_model_separate_estimate_separate(:,i) = a_std_model_separate_estimate_separate(i,:)/sqrt(25*i);
+%     err_model_shared_estimate_separate(:,i) = a_std_model_shared_estimate_separate(i,:)/sqrt(25*i);
+% end
 
 
 figure(6)
-subplot(2,1,1), errorbar(mean(a_model_separate_estimate_shared,2), error_shared);
+subplot(2,1,1), errorbar(mean(a_model_separate_estimate_shared,2), err_model_separate_estimate_shared); hold on;
+subplot(2,1,1), errorbar(mean(a_model_shared_estimate_shared,2), err_model_shared_estimate_shared); hold off;
 set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
 set(gca,'YScale', 'log');
+legend('Model with separate priors', 'Model with shared priors');
 title('Shared alpha estimation with error bars (std/sqrt(N))'), ylabel(['alpha averaged over ' int2str(numExperiments) ' experiments']);
 xlabel('# of samples');
 % errorbar(squeeze(mean(active_alphas,2)), error_separate');
 % errorbar(squeeze(mean(active_alphas(:,:,idx),2))', error_separate(idx,:));
 
-subplot(2,1,2), errorbar(mean(alpha_std_separate,2), mean(error_separate,1));
-meanSTD = std(alpha_std_separate,0,2);
+subplot(2,1,2), errorbar(mean(a_std_model_separate_estimate_separate,2), mean(err_model_separate_estimate_separate,1)); hold on;
+subplot(2,1,2), errorbar(mean(a_std_model_shared_estimate_separate,2), mean(err_model_shared_estimate_separate,1)); hold off;
+meanSTD = std(a_std_model_separate_estimate_separate,0,2);
 set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
-title('Separate alpha estimation average with error bars (std/sqrt(N))'), ylabel(['alpha averaged over ' int2str(numExperiments) ' experiments']);
+legend('Model with separate priors', 'Model with shared priors');
+title('Separate alphas estimation average (10 active functions) with error bars (std/sqrt(N))'), ylabel(['alpha averaged over ' int2str(numExperiments) ' experiments']);
 xlabel('# of samples');
-%%
+
+% OBS: This plot is different than the others, in the way they are compared
+
+%% Beta estimation comparison
 
 figure(7)
-semilogy(1:iterations, mean(b_model_separate_estimate_separate,2)), hold on;
-semilogy(1:iterations, mean(b_model_separate_estimate_shared,2));
-semilogy(1:iterations, model.beta*ones(1,iterations)); 
+subplot(2,1,1), semilogy(1:iterations, mean(b_model_shared_estimate_separate,2)), hold on;
+subplot(2,1,1), semilogy(1:iterations, mean(b_model_shared_estimate_shared,2));
+subplot(2,1,1), semilogy(1:iterations, model.beta*ones(1,iterations));  hold off
+set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
+legend('Separate priors estimation', 'Shared prior estimation', 'True beta');
+title('beta estimation in shared prior model');
+ylabel(['beta averaged over ' int2str(numExperiments) ' experiments']);
+xlabel('# of samples');
+
+subplot(2,1,2), semilogy(1:iterations, mean(b_model_separate_estimate_separate,2)), hold on;
+subplot(2,1,2), semilogy(1:iterations, mean(b_model_separate_estimate_shared,2));
+subplot(2,1,2), semilogy(1:iterations, model.beta*ones(1,iterations));  hold off
 % trueRatio = (model.beta);
 % semilogy(1:iterations, trueRatio*ones(1,iterations), '-r');
-hold off
+
 set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
-legend('separate', 'Single', 'True');
-ylabel(['beta averaged over ' int2str(size(b_model_separate_estimate_separate,2)) ' experiments']);
+title('beta estimation in separate prior model');
+legend('Separate priors estimation', 'Shared prior estimation', 'True beta');
+ylabel(['beta averaged over ' int2str(numExperiments) ' experiments']);
 xlabel('# of samples');
+
+
+%%
+
+figure(8)
+for i=1:1
+    for j=1:intraIterations
+        y=w_model_separate_estimate_separate{i,j};
+        x=w_model_separate_true{i,j};
+        plot(x,y, '+b'), hold on;
+    end
+end
+for i=10:10
+    for j=1:intraIterations
+        y=w_model_separate_estimate_separate{i,j};
+        x=w_model_separate_true{i,j};
+        plot(x,y, '+r'), hold on;
+    end
+end
+hold off;
 
