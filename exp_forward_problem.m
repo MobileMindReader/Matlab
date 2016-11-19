@@ -12,7 +12,7 @@ forwardModel = importdata('model/mBrainLeadfield.mat');
 reducedSize=10;
 A = forwardModel(:,1:reducedSize);
 
-model.alpha = 0.2;
+model.alpha = 2;
 
 timeSteps=1;%20;    
 
@@ -39,7 +39,8 @@ for t=1:timeSteps
     for i=1:numFuncs
         %     func = functions{i};
         y(:,t) = y(:,t) + model.w(i)*A*x;  % (A(:,i).*sourceSignal(:,t));
-        Phi(:,i) = A*x; % (A(:,i).*x(:,t));
+        
+        Phi(:,i) = x(i,:)*A(:,i); %*x; % (A(:,i).*x(:,t));
         %     y = y + weightParameters(i)*func(X);
     end
 end
@@ -80,22 +81,14 @@ beta_init = rand;
 
 % Phi = A * x....   % Phi->size(22,numFuncs);
 
-disp('Change y to targets');
+% disp('Change y to targets');
 [Q, beta, mn, llh] = maximum_evidence_multi(alpha_init, beta_init, Phi, targets);
-
-estimatedIndexes=find(diag(Q) ~= 1000);
-
-
+diag(Q);
+estimatedIndexes=find(diag(Q) ~= 100);
 
 
 
-
-
-
-
-
-
-%% Reconstrucion
+% Reconstrucion
 % alpha = 10.0;
 % beta = 2;
 
@@ -107,7 +100,7 @@ estimatedIndexes=find(diag(Q) ~= 1000);
 
 xEstimate=((Q * A') /(1/beta*eye(size(A,1)) + A*Q*A'))*y;
 
-%%
+%%%
 figure(100)
 subplot(2,1,1), plot(model.w.*x);
 subplot(2,1,2), plot(xEstimate);
