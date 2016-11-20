@@ -14,7 +14,7 @@ A = forwardModel(:,1:reducedSize);
 
 model.alpha = 2;
 
-timeSteps=1;  %20;    
+timeSteps=15;  %20;    
 
 numSamples = size(A,1);     % The number og sensors corresponds to sample size..
 % numSensors = size(A,1);   % The number og sensors corresponds to sample size..
@@ -24,7 +24,7 @@ numActiveFuncs=10;
 
 activeIndexes = unique(int16(unifrnd(1,reducedSize, [1 numActiveFuncs])));
 % activeIndexes = 2;1:numFuncs;
-% activeIndexes = [6 8];[1:8];
+% activeIndexes = [4 8];
 
 model.w = zeros(numFuncs,1);
 model.w(activeIndexes) = normrnd(0,sqrt(1/model.alpha), [1 size(activeIndexes)]);
@@ -46,12 +46,15 @@ x=model.w*sin((1:timeSteps)*0.5);
 % for i=1:numSamples % = numSensors = 22
 %     y(i) = A(i,:)*(model.w.*x);
 % end
-y = A*(model.w.*x);
+% y = A*(model.w.*x);
+%%
 y = A*x;
 
-Phi = zeros(numSamples, numFuncs);
-for i=1:numSamples
-    Phi(i,:) = A(i,:).*x';
+Phi = zeros(numSamples, numFuncs, timeSteps);
+for t=1:timeSteps
+    for i=1:numSamples
+        Phi(i,:,t) = A(i,:).*x(:,t)';
+    end
 end
 
 % surf(y)
@@ -75,6 +78,9 @@ noise = normrnd(0, sqrt(1/trueBeta), [size(A,1) timeSteps]);
 % y = A * x + noise;
 y = y + noise;
 
+figure(1)
+plot(y)
+
 % plot(1:timeSteps, y)
 % surf(y)
 
@@ -88,27 +94,41 @@ beta_init = rand;
 % Phi = A * x....   % Phi->size(22,numFuncs);
 
 disp('Start working on larger time windows');
-[Q, beta, mn, llh] = maximum_evidence_multi(alpha_init, beta_init, Phi, y);
 
+Q = zeros(numFuncs, numFuncs, timeSteps);
+beta = zeros(1, timeSteps);
+llh = zeros(1, timeSteps);
+mn = zeros(numFuncs, timeSteps);
+for i = 1:timeSteps
+    [Q(:,:,i), beta(i), mn(:,i), llh(i)] = maximum_evidence_multi(alpha_init, beta_init, Phi(:,:,i), y(:,i));
+end
+
+Q = mean(Q,3);
+
+%
 estimatedIndexes=find(diag(Q) ~= 1e6);
 
-% disp('True & estimated');
-% disp([model.w mn]);
+disp('True & estimated');
+disp([model.w mean(mn,2)]);
 
-disp('Is this estimate reconstruction correct?');
-xEstimate=((Q * A') /(1/beta*eye(size(A,1)) + A*Q*A'))*y;
+% disp('Is this estimate reconstruction correct?');
+% xEstimate=((Q * A') /(1/mean(beta)*eye(size(A,1)) + A*Q*A'))*y;
 
 
 disp('Does this estimate need to be normalized by amplitude of Q??');
-xEstimateAlt = y'/(Q*A');
 
+xEstimate = zeros(numFuncs, timeSteps);
+for i=1:timeSteps
+    xEstimate(:,i) = y(:,i)'/(Q*A');
+end
 
 %%%
 figure(100)
 subplot(4,1,1), plot(x); title('True x');
 subplot(4,1,2), plot(y); title('Forward model output');
-subplot(4,1,3), plot(xEstimateAlt); title('Reconstructed x');
-subplot(4,1,4), plot(A*xEstimateAlt'); title('Reconstructed model output (noiseless)');
+subplot(4,1,3), plot(xEstimate); title('Reconstructed x');
+subplot(4,1,4), plot(A*xEstimate); title('Reconstructed model output (noise missing)');
+
 %%
 
 figure(1)
