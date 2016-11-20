@@ -9,7 +9,7 @@ forwardModel = importdata('model/mBrainLeadfield.mat');
 % s = RandStream('mt19937ar','Seed','shuffle');
 % RandStream.setGlobalStream(s);
 
-reducedSize=40;
+reducedSize=1000;
 A = forwardModel(:,1:reducedSize);
 
 model.alpha = 2;
@@ -90,34 +90,25 @@ beta_init = rand;
 disp('Start working on larger time windows');
 [Q, beta, mn, llh] = maximum_evidence_multi(alpha_init, beta_init, Phi, y);
 
-estimatedIndexes=find(diag(Q) ~= 1e4);
+estimatedIndexes=find(diag(Q) ~= 1e6);
 
-disp('True & estimated');
-disp([model.w mn]);
-
-
-% Reconstrucion
-% alpha = 10.0;
-% beta = 2;
-
-% Q = 1/1e6 * eye(size(A,2));
-% 
-% for i=activeIndexes
-%     Q(i,i) = 1/(alpha);
-% end
+% disp('True & estimated');
+% disp([model.w mn]);
 
 disp('Is this estimate reconstruction correct?');
 xEstimate=((Q * A') /(1/beta*eye(size(A,1)) + A*Q*A'))*y;
 
+
+disp('Does this estimate need to be normalized by amplitude of Q??');
 xEstimateAlt = y'/(Q*A');
+
 
 %%%
 figure(100)
 subplot(4,1,1), plot(x); title('True x');
 subplot(4,1,2), plot(y); title('Forward model output');
 subplot(4,1,3), plot(xEstimateAlt); title('Reconstructed x');
-% y = A*x;
-subplot(4,1,4), plot(A*xEstimateAlt'); title('Reconstructed model output');
+subplot(4,1,4), plot(A*xEstimateAlt'); title('Reconstructed model output (noiseless)');
 %%
 
 figure(1)
