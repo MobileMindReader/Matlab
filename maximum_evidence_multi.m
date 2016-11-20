@@ -1,6 +1,6 @@
 function [A, beta, mN, llh] = maximum_evidence_multi(A, beta, Phi, t)
 
-tolerance = 1e-8;
+tolerance = 1e-3;
 maxIterations = 300;
 
 llh = zeros(1,maxIterations);
@@ -32,11 +32,11 @@ for i=2:maxIterations
 
     for j=1:M
         % Limit values to 10^6 and 10^-6
-        A(j,j) = max(1e-6, min(1e6,gamma(j)/(mN(j)^2)));  % A(j,j) = gamma(j)/(mN(j)^2);
+        A(j,j) = max(1e-6, min(1e4,gamma(j)/(mN(j)^2)));  % A(j,j) = gamma(j)/(mN(j)^2);
         
         % Mark which indexes reach the limit and remove from later
         % equations
-        if A(j,j) >= 1e6
+        if A(j,j) >= 1e4
             zeroIndexes(j) = 1;
             mN(j) = 0;
             Phi(:,j) = 0;
@@ -75,6 +75,10 @@ for i=2:maxIterations
     
     % One time step input
     llh(i) = -0.5*(N*log(2*pi)+logdetC + b'*b);   %7.85
+    
+    
+%     llh(i)
+%     beta
     
     if abs(llh(i)-llh(i-1)) < tolerance*abs(llh(i-1));
 %         SigmaInv = A + beta * (Phi'*Phi);

@@ -9,7 +9,7 @@ forwardModel = importdata('model/mBrainLeadfield.mat');
 % s = RandStream('mt19937ar','Seed','shuffle');
 % RandStream.setGlobalStream(s);
 
-reducedSize=1000;
+reducedSize=768;
 A = forwardModel(:,1:reducedSize);
 
 model.alpha = 2;
@@ -20,7 +20,7 @@ numSamples = size(A,1);     % The number og sensors corresponds to sample size..
 % numSensors = size(A,1);   % The number og sensors corresponds to sample size..
 
 numFuncs = size(A,2);
-numActiveFuncs=10;
+numActiveFuncs=32;
 
 activeIndexes = unique(int16(unifrnd(1,reducedSize, [1 numActiveFuncs])));
 % activeIndexes = 2;1:numFuncs;
@@ -93,23 +93,29 @@ beta_init = rand;
 
 % Phi = A * x....   % Phi->size(22,numFuncs);
 
-disp('Start working on larger time windows');
+% disp('Start working on larger time windows');
 
 Q = zeros(numFuncs, numFuncs, timeSteps);
 beta = zeros(1, timeSteps);
 llh = zeros(1, timeSteps);
 mn = zeros(numFuncs, timeSteps);
 for i = 1:timeSteps
+    
     [Q(:,:,i), beta(i), mn(:,i), llh(i)] = maximum_evidence_multi(alpha_init, beta_init, Phi(:,:,i), y(:,i));
+    alpha_init = Q(:,:,i);
+    beta_init = beta(i);
+    i
 end
 
 Q = mean(Q,3);
 
 %
-estimatedIndexes=find(diag(Q) ~= 1e6);
+estimatedIndexes=find(diag(Q) ~= 1e4);
 
-disp('True & estimated');
-disp([model.w mean(mn,2)]);
+%%
+
+% disp('True & estimated');
+% disp([model.w mean(mn,2)]);
 
 % disp('Is this estimate reconstruction correct?');
 % xEstimate=((Q * A') /(1/mean(beta)*eye(size(A,1)) + A*Q*A'))*y;
@@ -165,26 +171,3 @@ figure(2)
 surf(xEstimate'), view(90,0);
 % figure(3)
 % surf(x_est_alt')
-
-%%
-
-% 
-% % randoms = randn(numFuncs,N);
-% 
-% functions = cell(1,numFuncs);
-% functions{1} = @(x) ones(size(x));  % Bias function phi_0(x) = 1
-% 
-% limit = 50; %numFuncs/2;
-% stepSize = limit*2/(numFuncs-1);
-% 
-% model.alpha = 2;% zeros(1,numFuncs); %0.2*ones(1,numFuncs); % 2? 
-% % trueIdx=[10, 400, 401, 402, 403, 600, 900, 910, 980, 981];
-% 
-% % model.alpha(1:10) = 1;
-% wTemp = zeros(1,numFuncs);
-% % idx=int16(unifrnd(1,100, [1 10]));
-% idx=1:10;
-% wTemp(idx) = normrnd(0,sqrt(1/model.alpha), [1 size(idx)]);
-% % wTemp(11:100) = normrnd(0,sqrt(1/10000), [1 90]);
-% model.w = wTemp;
-% 
