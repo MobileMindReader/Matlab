@@ -32,11 +32,11 @@ for i=2:maxIterations
 
     for j=1:M
         % Limit values to 10^6 and 10^-6
-        A(j,j) = max(1e-6, min(1e3,gamma(j)/(mN(j)^2)));  % A(j,j) = gamma(j)/(mN(j)^2);
+        A(j,j) = max(1e-6, min(1e4,gamma(j)/(mN(j)^2)));  % A(j,j) = gamma(j)/(mN(j)^2);
         
         % Mark which indexes reach the limit and remove from later
         % equations
-        if A(j,j) >= 1e3
+        if A(j,j) >= 1e4
             zeroIndexes(j) = 1;
             mN(j) = 0;
             Phi(:,j) = 0;
@@ -68,19 +68,20 @@ for i=2:maxIterations
     
     b=L'\t;
     
-    % Multi time input
-    templlh=-0.5*(N*log(2*pi)+logdetC + b'*b);
-    llh(i)=mean(diag(templlh));
+    % Multiple time steps input
+%     templlh=-0.5*(N*log(2*pi)+logdetC + b'*b);
+%     llh(i)=mean(diag(templlh));
     
     
-    % One time input
-%     llh(i) = -0.5*(N*log(2*pi)+logdetC + b'*b);   %7.85
+    % One time step input
+    llh(i) = -0.5*(N*log(2*pi)+logdetC + b'*b);   %7.85
     
     if abs(llh(i)-llh(i-1)) < tolerance*abs(llh(i-1));
 %         SigmaInv = A + beta * (Phi'*Phi);
 %         mN = beta * (SigmaInv\(Phi'*t));
 %         disp('Converged at');
 %         i
+        
         break;
     end
 end

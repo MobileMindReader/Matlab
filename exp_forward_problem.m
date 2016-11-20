@@ -12,7 +12,7 @@ forwardModel = importdata('model/mBrainLeadfield.mat');
 reducedSize=10;
 A = forwardModel(:,1:reducedSize);
 
-model.alpha = 2;
+model.alpha = 10;
 
 timeSteps=1;%20;    
 
@@ -23,11 +23,14 @@ numFuncs = size(A,2);
 numActiveFuncs=10;
 
 % activeIndexes = unique(int16(unifrnd(1,reducedSize, [1 numActiveFuncs])));
-activeIndexes = 1:numFuncs;
+% activeIndexes = 2;1:numFuncs;
+activeIndexes = 2;[1:8];
 model.w = zeros(numFuncs,1);
-model.w(activeIndexes) = normrnd(0,sqrt(1/model.alpha), [1 size(activeIndexes)]);
+model.w(activeIndexes) = 1; normrnd(0,sqrt(1/model.alpha), [1 size(activeIndexes)]);
 
 x=ones(numFuncs, 1)*sin((1:timeSteps)*0.5);
+% x(1)=0;
+% x=[1:10]';
 % x=sin((1:timeSteps)*0.5);
 
 %%%Phi
@@ -35,13 +38,26 @@ y = zeros(numSamples,timeSteps);
 Phi = zeros(numSamples,timeSteps);
 % y=0;
 % y=[];
+
+% for i=1:numSamples % = numSensors = 22
+%     y(i) = A(i,:)*(model.w.*x);
+% end
+y = A*(model.w.*x);
+
+Phi = zeros(numSamples, numFuncs);
+for i=1:numSamples
+    Phi(i,:) = A(i,:).*x';
+end
+
+%%
+
 for t=1:timeSteps
     for i=1:numFuncs
-        %     func = functions{i};
-        y(:,t) = y(:,t) + model.w(i)*A*x;  % (A(:,i).*sourceSignal(:,t));
+        yalt(:,t) = yalt(:,t) + model.w(i)*A*x;  % (A(:,i).*sourceSignal(:,t));
+        y(:,t) = y(:,t) + model.w(i)*x(i,:)*A(:,i);  % (A(:,i).*sourceSignal(:,t));
+        
         
         Phi(:,i) = x(i,:)*A(:,i); %*x; % (A(:,i).*x(:,t));
-        %     y = y + weightParameters(i)*func(X);
     end
 end
 %%%Phi
@@ -63,14 +79,13 @@ end
 %% Construct sensor measurement
 
 
-trueBeta=25;
+trueBeta=2;
 noise = normrnd(0, sqrt(1/trueBeta), [size(A,1) timeSteps]);
 % y = A * x + noise;
-targets = y + noise;
+y = y + noise;
 
 % plot(1:timeSteps, y)
 % surf(y)
-
 
 %% Determine sparsity 
 
@@ -81,11 +96,13 @@ beta_init = rand;
 
 % Phi = A * x....   % Phi->size(22,numFuncs);
 
-% disp('Change y to targets');
-[Q, beta, mn, llh] = maximum_evidence_multi(alpha_init, beta_init, Phi, targets);
-diag(Q);
-estimatedIndexes=find(diag(Q) ~= 100);
+disp('Start working on larger time windows');
+[Q, beta, mn, llh] = maximum_evidence_multi(alpha_init, beta_init, Phi, y);
 
+estimatedIndexes=find(diag(Q) ~= 1e4);
+
+disp('True & estimated');
+disp([model.w mn]);
 
 
 % Reconstrucion
@@ -98,12 +115,17 @@ estimatedIndexes=find(diag(Q) ~= 100);
 %     Q(i,i) = 1/(alpha);
 % end
 
+disp('Is this estimate reconstruction correct?');
 xEstimate=((Q * A') /(1/beta*eye(size(A,1)) + A*Q*A'))*y;
+disp('minus?');
+xEstimateAlt = y'/(Q*A');
 
 %%%
 figure(100)
-subplot(2,1,1), plot(model.w.*x);
-subplot(2,1,2), plot(xEstimate);
+subplot(4,1,1), plot(model.w.*x);
+subplot(4,1,2), plot(xEstimate);
+subplot(4,1,3), plot(xEstimateAlt);
+subplot(4,1,4), plot(y);
 %%
 
 figure(1)
