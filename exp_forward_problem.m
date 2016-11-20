@@ -9,12 +9,12 @@ forwardModel = importdata('model/mBrainLeadfield.mat');
 % s = RandStream('mt19937ar','Seed','shuffle');
 % RandStream.setGlobalStream(s);
 
-reducedSize=10;
+reducedSize=40;
 A = forwardModel(:,1:reducedSize);
 
-model.alpha = 10;
+model.alpha = 2;
 
-timeSteps=1;%20;    
+timeSteps=1;  %20;    
 
 numSamples = size(A,1);     % The number og sensors corresponds to sample size..
 % numSensors = size(A,1);   % The number og sensors corresponds to sample size..
@@ -22,20 +22,24 @@ numSamples = size(A,1);     % The number og sensors corresponds to sample size..
 numFuncs = size(A,2);
 numActiveFuncs=10;
 
-% activeIndexes = unique(int16(unifrnd(1,reducedSize, [1 numActiveFuncs])));
+activeIndexes = unique(int16(unifrnd(1,reducedSize, [1 numActiveFuncs])));
 % activeIndexes = 2;1:numFuncs;
-activeIndexes = 2;[1:8];
-model.w = zeros(numFuncs,1);
-model.w(activeIndexes) = 1; normrnd(0,sqrt(1/model.alpha), [1 size(activeIndexes)]);
+% activeIndexes = [6 8];[1:8];
 
-x=ones(numFuncs, 1)*sin((1:timeSteps)*0.5);
+model.w = zeros(numFuncs,1);
+model.w(activeIndexes) = normrnd(0,sqrt(1/model.alpha), [1 size(activeIndexes)]);
+
+x=model.w*sin((1:timeSteps)*0.5);
+% x(activeIndexes) = sin((1:timeSteps)*0.5);
+
 % x(1)=0;
 % x=[1:10]';
 % x=sin((1:timeSteps)*0.5);
 
-%%%Phi
-y = zeros(numSamples,timeSteps);
-Phi = zeros(numSamples,timeSteps);
+% y = zeros(numSamples,timeSteps);
+% Phi = zeros(numSamples,timeSteps);
+
+
 % y=0;
 % y=[];
 
@@ -43,24 +47,12 @@ Phi = zeros(numSamples,timeSteps);
 %     y(i) = A(i,:)*(model.w.*x);
 % end
 y = A*(model.w.*x);
+y = A*x;
 
 Phi = zeros(numSamples, numFuncs);
 for i=1:numSamples
     Phi(i,:) = A(i,:).*x';
 end
-
-%%
-
-for t=1:timeSteps
-    for i=1:numFuncs
-        yalt(:,t) = yalt(:,t) + model.w(i)*A*x;  % (A(:,i).*sourceSignal(:,t));
-        y(:,t) = y(:,t) + model.w(i)*x(i,:)*A(:,i);  % (A(:,i).*sourceSignal(:,t));
-        
-        
-        Phi(:,i) = x(i,:)*A(:,i); %*x; % (A(:,i).*x(:,t));
-    end
-end
-%%%Phi
 
 % surf(y)
 % %%
@@ -78,8 +70,7 @@ end
 
 %% Construct sensor measurement
 
-
-trueBeta=2;
+trueBeta=20;
 noise = normrnd(0, sqrt(1/trueBeta), [size(A,1) timeSteps]);
 % y = A * x + noise;
 y = y + noise;
@@ -117,15 +108,16 @@ disp([model.w mn]);
 
 disp('Is this estimate reconstruction correct?');
 xEstimate=((Q * A') /(1/beta*eye(size(A,1)) + A*Q*A'))*y;
-disp('minus?');
+
 xEstimateAlt = y'/(Q*A');
 
 %%%
 figure(100)
-subplot(4,1,1), plot(model.w.*x);
-subplot(4,1,2), plot(xEstimate);
-subplot(4,1,3), plot(xEstimateAlt);
-subplot(4,1,4), plot(y);
+subplot(4,1,1), plot(x); title('True x');
+subplot(4,1,2), plot(y); title('Forward model output');
+subplot(4,1,3), plot(xEstimateAlt); title('Reconstructed x');
+% y = A*x;
+subplot(4,1,4), plot(A*xEstimateAlt'); title('Reconstructed model output');
 %%
 
 figure(1)
