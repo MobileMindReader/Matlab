@@ -1,28 +1,26 @@
 clear;
 
 % Load data files
-path=('exp_alpha_modes_multi_rand/');
+path=('exp_alpha_modes_multi/');
 files = dir(path);
 fileIndex = find(~[files.isdir]);
 fileNames={}; dataFilesSeparateAlphas = {};
 for i = 1:length(fileIndex)
     fileName = files(fileIndex(i)).name;
-%     if fileName == '12-Nov-2016 18:33:24-88.mat'
-    if fileName(end-3:end) == '.mat'
+    if fileName(13:14) == '22'
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
 for i=1:numel(fileNames)
     dataFilesSeparateAlphas{i} = importdata([path fileNames{i}]);
 end
-path=('exp_alpha_modes_uni_rand/');
+path=('exp_alpha_modes_uni/');
 files = dir(path);
 fileIndex = find(~[files.isdir]);
 fileNames={}; dataFilesSharedAlpha = {};
 for i = 1:length(fileIndex)
     fileName = files(fileIndex(i)).name;
-%     if fileName == '12-Nov-2016 18:33:24-88.mat'
-    if fileName(end-3:end) == '.mat'
+    if fileName(13:14) == '22'
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
@@ -128,16 +126,16 @@ figure(1)
 
 subplot(2,1,1), plot(sum(w_mse_model_shared_estimate_separate,1)), hold on;
 subplot(2,1,1), plot(sum(w_mse_model_shared_estimate_shared,1)), hold off
-set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
-title('Sum of MSE for all weights with shared alpha prior');
+set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
+title('Sum of MSE for all weights with shared alpha');
 xlabel(['#samples, averaged over ' int2str(numExperiments) ' experiments']), ylabel('Sum of MSE for all weights') 
 legend('Separate alpha estimation', 'Shared alpha estimation');
 
 subplot(2,1,2), plot(sum(w_mse_model_separate_estimate_separate,1)), hold on;
 subplot(2,1,2), plot(sum(w_mse_model_separate_estimate_shared,1)), hold off
-set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
+set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
 xlabel(['#samples, averaged over ' int2str(numExperiments) ' experiments']), ylabel('Sum of MSE for all weights') 
-title('Sum of MSE for all weights with separate alpha priors (10 active functions)');
+title('Sum of MSE for all weights with separate alphas');
 legend('Separate alpha estimation', 'Shared alpha estimation');
 
 
@@ -293,7 +291,6 @@ end
 
 
 figure(6)
-
 subplot(2,1,1), errorbar(mean(a_model_shared_estimate_shared,2), err_model_shared_estimate_shared); hold on;
 subplot(2,1,1), errorbar(mean(sum(a_active_model_shared_estimate_separate,3)/100,2), mean(err_model_shared_estimate_separate,1)); hold off;
 set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
@@ -316,7 +313,6 @@ legend('Estimated with shared prior', 'Estimated with separate priors (sum of 10
 title('Alpha estimation in separate prior model (First 10 functions assumed active)'), ylabel(['alpha averaged over ' int2str(numExperiments) ' experiments']);
 xlabel('# of samples');
 
-% OBS: This plot is different than the others, in the way they are compared
 
 %% Beta estimation comparison
 
@@ -398,8 +394,7 @@ end
 % x2 = vertcat(w_model_separate_true{20,idx});
 % y2 = vertcat(w_model_separate_estimate_separate{20,idx});
 
-
 h = scatterhist(x(:), y(:), 'Group', [idx(1)*ones(1, numel(x)/2) idx(2)*ones(1, numel(x)/2)],'Style','bar');
 % set(gca,'YScale','log');
 set(h(2:3),'YScale','log');
-axis(h(1), 'square');
+axis('square');

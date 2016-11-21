@@ -86,10 +86,10 @@ plot(y)
 
 %% Determine sparsity 
 
-alpha_init = eye(size(A,2));
+alphaInit = eye(size(A,2));
 % alpha_init(find(alpha_init)) = rand(1,size(A,2));
-alpha_init(logical(eye(size(alpha_init)))) = rand(1,size(A,2));
-beta_init = rand;
+alphaInit(logical(eye(size(alphaInit)))) = rand(1,size(A,2));
+betaInit = rand;
 
 % Phi = A * x....   % Phi->size(22,numFuncs);
 
@@ -101,10 +101,10 @@ llh = zeros(1, timeSteps);
 mn = zeros(numFuncs, timeSteps);
 for i = 1:timeSteps
     
-    [Q(:,:,i), beta(i), mn(:,i), llh(i)] = maximum_evidence_multi(alpha_init, beta_init, Phi(:,:,i), y(:,i));
-    alpha_init = Q(:,:,i);
-    beta_init = beta(i);
-    i
+    [Q(:,:,i), beta(i), mn(:,i), llh(i)] = maximum_evidence_multi(alphaInit, betaInit, Phi(:,:,i), y(:,i));
+%     alpha_init = Q(:,:,i);
+%     beta_init = beta(i);
+    disp(['Time step: ' int2str(i)]);
 end
 
 Q = mean(Q,3);
@@ -122,6 +122,9 @@ estimatedIndexes=find(diag(Q) ~= 1e4);
 
 
 disp('Does this estimate need to be normalized by amplitude of Q??');
+
+% Qmod=Q;
+% Qmod(find(Qmod == 1e4)) = 1/1e6;
 
 xEstimate = zeros(numFuncs, timeSteps);
 for i=1:timeSteps
