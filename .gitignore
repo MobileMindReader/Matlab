@@ -1,0 +1,3 @@
+
+#Ignore Matlab data files
+*.mat
