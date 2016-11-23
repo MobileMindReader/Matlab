@@ -14,7 +14,7 @@ A = forwardModel(:,1:reducedSize);
 
 model.alpha = 2;
 
-timeSteps=15;  %20;    
+timeSteps=20;  %20;    
 
 numSamples = size(A,1);     % The number og sensors corresponds to sample size..
 % numSensors = size(A,1);   % The number og sensors corresponds to sample size..
@@ -23,6 +23,7 @@ numFuncs = size(A,2);
 numActiveFuncs=32;
 
 activeIndexes = unique(int16(unifrnd(1,reducedSize, [1 numActiveFuncs])));
+% activeIndexes = 1:32:768;
 % activeIndexes = 2;1:numFuncs;
 % activeIndexes = [4 8];
 
@@ -114,7 +115,16 @@ estimatedIndexes=find(diag(Q) ~= 1e4);
 
 %%
 
-% disp('True & estimated');
+disp('True & estimated');
+
+comparison = model.w(activeIndexes);
+comparison(1:numel(activeIndexes),2) = activeIndexes';
+meanmN = mean(mn,2);
+comparison(1:numel(meanmN(estimatedIndexes)),3) = meanmN(estimatedIndexes);
+comparison(1:numel(meanmN(estimatedIndexes)),4) = estimatedIndexes;
+disp(comparison)
+
+
 % disp([model.w mean(mn,2)]);
 
 % disp('Is this estimate reconstruction correct?');
