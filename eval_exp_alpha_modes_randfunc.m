@@ -144,18 +144,69 @@ legend('Separate alpha estimation', 'Shared alpha estimation');
 % std(w_true{1,1})^2*numFuncs;
 
 
-%% Alpha averages? What should this show?
+%% F1 Score
+
+f1_msep_sep = zeros(iterations, numExperiments);
+f1_msep_sha = zeros(iterations, numExperiments);
+
+
+% Calculate MSE 
+for i=1:iterations
+    for j=1:numExperiments
+        % Separate alpha model
+        nonZeroIdxSep = find(w_model_separate_estimate_separate{i,j} ~= 0);
+        nonZeroIdxSha = find(w_model_separate_estimate_shared{i,j} ~= 0);
+        nonzIdxTrue = find(w_model_separate_true{i,j} ~= 0);
+        
+        falsePosSep = numel(find(ismember(nonZeroIdxSep,nonzIdxTrue) ==0));
+        truePosSep = numel(find(ismember(nonZeroIdxSep,nonzIdxTrue)  ~=0));
+        falseNegSep = numel(find(ismember(nonzIdxTrue, nonZeroIdxSep)==0));
+        precisionSep=truePosSep/(truePosSep+falsePosSep);
+        recallSep=truePosSep/(truePosSep+falseNegSep);
+        
+        f1_msep_sep(i,j) = 2*(precisionSep*recallSep)/(precisionSep+recallSep);
+        
+        falsePosSha = numel(find(ismember(nonZeroIdxSha,nonzIdxTrue) ==0));
+        truePosSha = numel(find(ismember(nonZeroIdxSha,nonzIdxTrue)  ~=0));
+        falseNegSha = numel(find(ismember(nonzIdxTrue, nonZeroIdxSha)==0));
+        precisionSha=truePosSep/(truePosSha+falsePosSha);
+        recallSha=truePosSha/(truePosSha+falseNegSha);
+        
+        f1_msep_sha(i,j) = 2*(precisionSha*recallSha)/(precisionSha+recallSha);
+    end
+%     f1_model_separate_estimate_separate(:,i) = f1_model_separate_estimate_separate(:,i)/intraIterations;
+%     f1_model_separate_estimate_shared(:,i) = f1_model_separate_estimate_shared(:,i)/intraIterations;
+end
+
+ticks = 0:5:size(a_model_separate_estimate_shared,1);
+tickLabels = strsplit(int2str(ticks*N));
 
 figure(2)
-subplot(2,1,1), plot(mean(a_model_shared_estimate_shared,2));
-set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
-title('Shared alpha prior'); legend('Shared alpha estimate');
-xlabel('# of samples'), ylabel(['mean alpha value of ' int2str(numExperiments) ' experiments']) 
 
-subplot(2,1,2), plot(mean(a_model_separate_estimate_shared,2));
-set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
-title('Separate alpha prior'); legend('Shared alpha estimate');
-xlabel('# of samples'), ylabel(['mean alpha value of ' int2str(numExperiments) ' experiments']) 
+plot(mean(f1_msep_sha,2)), hold on;
+plot(mean(f1_msep_sep,2)), hold off;
+title('F1-score of non-zero weights');
+legend('Shared estimate','Separate estimate');
+
+% figure(2)
+% 
+% subplot(2,1,1), plot(sum(w_mse_model_shared_estimate_separate,1)), hold on;
+% subplot(2,1,1), plot(sum(w_mse_model_shared_estimate_shared,1)), hold off
+% set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
+% title('Sum of MSE for all weights with shared alpha prior');
+% xlabel(['#samples, averaged over ' int2str(numExperiments) ' experiments']), ylabel('Sum of MSE for all weights') 
+% legend('Separate alpha estimation', 'Shared alpha estimation');
+% 
+% subplot(2,1,2), plot(sum(w_mse_model_separate_estimate_separate,1)), hold on;
+% subplot(2,1,2), plot(sum(w_mse_model_separate_estimate_shared,1)), hold off
+% set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
+% xlabel(['#samples, averaged over ' int2str(numExperiments) ' experiments']), ylabel('Sum of MSE for all weights') 
+% title('Sum of MSE for all weights with separate alpha priors (10 active functions)');
+% legend('Separate alpha estimation', 'Shared alpha estimation');
+
+
+% std(w_true{1,1})^2*numFuncs;
+
 
 
 %% MSE of Alphas
