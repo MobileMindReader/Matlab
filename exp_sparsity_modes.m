@@ -32,7 +32,7 @@ dataTitle = ['exp_sparsity/' datestr(datetime('now'))];
 data.numSamples = '20';
 data.numFuncs = '500';
 data.numActiveFuncs = '500-((iter-1)*10';
-data.experiment = 'Sparsity sweep';
+data.experiment = 'Sparsity sweep v2';
 data.description = '500 functions, 20 samples. Iterating over number of active weights (500-((iter-1)*10)';
 numSamples = 20;
 numFuncs = 500; %iter;
@@ -55,7 +55,10 @@ for iter=1:iterations
         model.alpha=2;
         
         wTemp = zeros(1,numFuncs);
-        wTemp(1:numActiveFuncs) = normrnd(0,sqrt(1/model.alpha), [1 numActiveFuncs]);
+          
+        activeIndexes= 1:int16(numFuncs/numActiveFuncs):numFuncs;
+        
+        wTemp(activeIndexes) = normrnd(0,sqrt(1/model.alpha), [1 numActiveFuncs]);
         
         model.w = wTemp;
 
