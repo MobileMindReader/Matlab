@@ -14,13 +14,13 @@ A = forwardModel(:,1:reducedSize);
 
 model.alpha = 2;
 
-timeSteps=20;  %20;    
+timeSteps=10;  %20;    
 
 numSamples = size(A,1);     % The number og sensors corresponds to sample size..
 % numSensors = size(A,1);   % The number og sensors corresponds to sample size..
 
 numFuncs = size(A,2);
-numActiveFuncs=32;
+numActiveFuncs=10;
 
 activeIndexes = unique(int16(unifrnd(1,reducedSize, [1 numActiveFuncs])));
 % activeIndexes = 1:32:768;
@@ -83,7 +83,7 @@ figure(1)
 plot(y)
 
 % plot(1:timeSteps, y)
-% surf(y)
+surf(y)
 
 %% Determine sparsity 
 
@@ -108,10 +108,10 @@ for i = 1:timeSteps
     disp(['Time step: ' int2str(i)]);
 end
 
-Q = mean(Q,3);
+Qmean = mean(Q,3);
 
 %
-estimatedIndexes=find(diag(Q) ~= 1e4);
+estimatedIndexes=find(diag(Qmean) ~= 1e4);
 
 %%
 
@@ -131,14 +131,14 @@ disp(comparison)
 % xEstimate=((Q * A') /(1/mean(beta)*eye(size(A,1)) + A*Q*A'))*y;
 
 
-disp('Does this estimate need to be normalized by amplitude of Q??');
+% disp('Does this estimate need to be normalized by amplitude of Q??');
 
 % Qmod=Q;
 % Qmod(find(Qmod == 1e4)) = 1/1e6;
 
 xEstimate = zeros(numFuncs, timeSteps);
 for i=1:timeSteps
-    xEstimate(:,i) = y(:,i)'/(Q*A');
+    xEstimate(:,i) = y(:,i)'/(Qmean*A');
 end
 
 %%%
@@ -153,7 +153,7 @@ subplot(4,1,4), plot(A*xEstimate); title('Reconstructed model output (noise miss
 figure(1)
 surf(x), view(90,0);
 figure(2)
-surf(xEstimate), view(90,0);
+surf(mn), view(90,0);
 
 
 %%
