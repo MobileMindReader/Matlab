@@ -10,7 +10,7 @@ model.dimension = 1;
 s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
-iterations = 50;
+iterations = 40;
 intraIterations = 200;
 
 % Unimodal
@@ -27,41 +27,40 @@ w_multi = cell(iterations, intraIterations);
 
 w_true = cell(iterations, intraIterations);
 
-dataTitle = ['exp_alpha_modes_multi_rand/' datestr(datetime('now'))];
+dataTitle = ['exp_modes_multi_rand/' datestr(datetime('now'))];
 
-data.numSamples = '25*iter';
-data.numFuncs = '100';
-data.descriptino = '100 functions, 10 weights drawn from one alpha, rest is zero. Iterating over N (25xiter).';
+data.numSamples = '50*iter';
+data.numFuncs = '500';
+data.numActiveFuncs = '20';
+data.experiment = 'Separate prior model';
+data.description = '500 functions, 20 weights drawn from one alpha, rest is zero. Iterating over N (50xiter).';
 for iter=1:iterations
     for intraIter=1:intraIterations 
         
-        numSamples = 25*iter;
-        numFuncs = 100; %iter;
+        numSamples = 50*iter;
+        numFuncs = 500; %iter;
+        
+        numActiveFuncs = 20;
         
         functions = cell(1,numFuncs);
-        
-%         limit = numFuncs/2;
-%         stepSize = limit*2/(numFuncs-1);
         
         randoms = randn(numFuncs,numSamples);
         
         functions{1} = @(x) ones(size(x));  % Bias function phi_0(x) = 1
         for i=2:numFuncs
-%             mu_j=-limit+i*stepSize;
-%             s = 0.2;      % spatial scale
-%             functions{i} = @(x) exp(-((x-mu_j).^2)/(2*s^2));
             functions{i} = @(x) randoms(i,:);%*ones(size(x));
         end
         
-%%%%%        % Draw w from separate alphas
+%%%%%        % Draw w from "separate" alphas
         model.alpha=2;
         
         wTemp = zeros(1,numFuncs);
-        wTemp(1:10) = normrnd(0,sqrt(1/model.alpha), [1 10]);
+        wTemp(1:numActiveFuncs) = normrnd(0,sqrt(1/model.alpha), [1 numActiveFuncs]);
         
         model.w = wTemp;
 
         w_true{iter, intraIter} = model.w';
+        
 %%%%%%        
 
         trainX = unifrnd(-3,3, [model.dimension numSamples]);
