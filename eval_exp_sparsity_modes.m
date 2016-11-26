@@ -9,7 +9,7 @@ for i = 1:length(fileIndex)
     fileName = files(fileIndex(i)).name;
 %     if fileName == '12-Nov-2016 18:33:24-88.mat'
 %     if fileName(end-3:end) == '.mat'
-    if fileName(1:14) == '25-Nov-2016 22'
+    if fileName(1:2) == '26'
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
@@ -137,7 +137,9 @@ legend('Separate alpha estimation', 'Shared alpha estimation');
 
 f1_msep_sep = zeros(iterations, numExperiments);
 f1_msep_sha = zeros(iterations, numExperiments);
-
+dist_true_est_sep = zeros(iterations, numExperiments);
+dist_est_true_sep = zeros(iterations, numExperiments);
+dist_sha = zeros(iterations, numExperiments);
 
 % Calculate MSE 
 for i=1:iterations
@@ -159,6 +161,18 @@ for i=1:iterations
             f1_msep_sep(i,j) = 2*(precisionSep*recallSep)/(precisionSep+recallSep);
         end
         
+        for idx = nonzIdxTrue'
+            [c ~] = min(abs(nonZeroIdxSep-idx));
+%             closestValues = nonZeroIdxSep(index) % Finds first one only!
+            dist_true_est_sep(i,j) = dist_true_est_sep(i,j) + c;
+        end
+        
+        for idx = nonZeroIdxSep'
+            [c ~] = min(abs(nonzIdxTrue-idx));
+            dist_est_true_sep(i,j) = dist_est_true_sep(i,j) + c;
+        end
+        dist_est_true_sep(i,j) = dist_est_true_sep(i,j)/numel(nonZeroIdxSep);
+        
         
         falsePosSha = numel(find(ismember(nonZeroIdxSha,nonzIdxTrue) ==0));
         truePosSha = numel(find(ismember(nonZeroIdxSha,nonzIdxTrue)  ~=0));
@@ -168,19 +182,38 @@ for i=1:iterations
         
         f1_msep_sha(i,j) = 2*(precisionSha*recallSha)/(precisionSha+recallSha);
     end
+    
+    dist_true_est_sep(i,:) = dist_true_est_sep(i,:)/ (500-((i-1)*10));
+    
 %     f1_model_separate_estimate_separate(:,i) = f1_model_separate_estimate_separate(:,i)/intraIterations;
 %     f1_model_separate_estimate_shared(:,i) = f1_model_separate_estimate_shared(:,i)/intraIterations;
 end
 
-ticks = 0:5:size(a_model_separate_estimate_shared,1);
-tickLabels = strsplit(int2str(ticks*N));
 
 figure(2)
 
 plot(mean(f1_msep_sha,2)), hold on;
 plot(mean(f1_msep_sep,2)), hold off;
+set(gca,'XTick',ticks,'XTickLabel',tickLabels);
+ylabel(['Averaged over ' int2str(numExperiments) ' experiments']);
+xlabel('#non-zero parameters')
 title('F1-score of non-zero weights');
 legend('Shared estimate','Separate estimate');
+
+figure(22)
+plot(mean(dist_true_est_sep,2));
+set(gca,'XTick',ticks,'XTickLabel',tickLabels);
+ylabel('Mean distance to nearest non-zero estimate');
+xlabel('#non-zero parameters')
+title('Mean distance to nearest non-zero estimate');
+
+figure(222)
+plot(mean(dist_est_true_sep,2));
+set(gca,'XTick',ticks,'XTickLabel',tickLabels);
+ylabel('Mean distance to nearest non-zero estimate');
+xlabel('#non-zero parameters')
+title('Mean distance to nearest non-zero estimate');
+
 
 % figure(2)
 % 
@@ -228,7 +261,6 @@ plot(sum(a_mse_model_separate_estimate_separate,1))%, hold on
 % plot(sum(a_mse_model_separate_estimate_shared,1)), hold off
 set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
 title('MSE of estimated alphas with separate priors');
-
 ylabel(['MSE of alpha averaged over ' int2str(numExperiments) ' experiments']);
 xlabel('#non-zero parameters')
 legend('Separate', 'Shared');
