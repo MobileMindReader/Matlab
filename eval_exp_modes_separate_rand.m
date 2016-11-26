@@ -8,7 +8,7 @@ fileNames={}; dataFiles = {};
 for i = 1:length(fileIndex)
     fileName = files(fileIndex(i)).name;
 %     if fileName == '12-Nov-2016 18:33:24-88.mat'
-    if fileName(end-3:end) == '.mat'
+    if (fileName(end-3:end) == '.mat')
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end

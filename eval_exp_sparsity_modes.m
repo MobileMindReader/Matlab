@@ -8,7 +8,8 @@ fileNames={}; dataFiles = {};
 for i = 1:length(fileIndex)
     fileName = files(fileIndex(i)).name;
 %     if fileName == '12-Nov-2016 18:33:24-88.mat'
-    if fileName(end-3:end) == '.mat'
+%     if fileName(end-3:end) == '.mat'
+    if fileName(1:14) == '25-Nov-2016 22'
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
@@ -43,7 +44,9 @@ w_model_separate_true = [];
 for data=dataFiles
     data = data{:};
 %     if (data)
-        
+        if (data.currentIteration ~= data.iterations)
+            continue
+        end
         w_model_separate_true = [w_model_separate_true data.w_true];
         a_model_separate_estimate_shared = [a_model_separate_estimate_shared data.alpha_uni];
         b_model_separate_estimate_shared = [b_model_separate_estimate_shared data.beta_uni];

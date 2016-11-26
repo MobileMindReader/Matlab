@@ -51,12 +51,23 @@ for iter=1:iterations
             functions{i} = @(x) randoms(i,:);%*ones(size(x));
         end
         
+%         limit = 50; %%numFuncs/2;
+%         stepSize = limit*2/(numActiveFuncs-1);
+%         
+%         functions{1} = @(x) ones(size(x));  % Bias function phi_0(x) = 1
+%         for i=2:numFuncs
+%             mu_j=-limit+i*stepSize;
+%             s = 0.1;      % spatial scale
+%             functions{i} = @(x) exp(-((x-mu_j).^2)/(2*s^2));
+%         end
+        
+        
 %%%%%        % Draw w from "separate" alphas
         model.alpha=2;
         
         wTemp = zeros(1,numFuncs);
           
-        activeIndexes= 1:int16(numFuncs/numActiveFuncs):numFuncs;
+        activeIndexes = round(1:numFuncs/numActiveFuncs:numFuncs);
         
         wTemp(activeIndexes) = normrnd(0,sqrt(1/model.alpha), [1 numActiveFuncs]);
         
