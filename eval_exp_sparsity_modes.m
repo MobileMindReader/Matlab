@@ -166,6 +166,7 @@ for i=1:iterations
 %             closestValues = nonZeroIdxSep(index) % Finds first one only!
             dist_true_est_sep(i,j) = dist_true_est_sep(i,j) + c;
         end
+        dist_true_est_sep(i,j) = dist_true_est_sep(i,j)/numel(nonZeroIdxSep);
         
         for idx = nonZeroIdxSep'
             [c ~] = min(abs(nonzIdxTrue-idx));
@@ -177,13 +178,13 @@ for i=1:iterations
         falsePosSha = numel(find(ismember(nonZeroIdxSha,nonzIdxTrue) ==0));
         truePosSha = numel(find(ismember(nonZeroIdxSha,nonzIdxTrue)  ~=0));
         falseNegSha = numel(find(ismember(nonzIdxTrue, nonZeroIdxSha)==0));
-        precisionSha=truePosSep/(truePosSha+falsePosSha);
+        precisionSha=truePosSha/(truePosSha+falsePosSha);
         recallSha=truePosSha/(truePosSha+falseNegSha);
         
         f1_msep_sha(i,j) = 2*(precisionSha*recallSha)/(precisionSha+recallSha);
     end
     
-    dist_true_est_sep(i,:) = dist_true_est_sep(i,:)/ (500-((i-1)*10));
+%     dist_true_est_sep(i,:) = dist_true_est_sep(i,:)/ (500-((i-1)*10));
     
 %     f1_model_separate_estimate_separate(:,i) = f1_model_separate_estimate_separate(:,i)/intraIterations;
 %     f1_model_separate_estimate_shared(:,i) = f1_model_separate_estimate_shared(:,i)/intraIterations;

@@ -126,19 +126,19 @@ tickLabels = strsplit(int2str(ticks*N));
 
 figure(1)
 
-subplot(2,1,1), plot(sum(w_mse_model_shared_estimate_separate,1)), hold on;
-subplot(2,1,1), plot(sum(w_mse_model_shared_estimate_shared,1)), hold off
+subplot(2,1,1), plot(sum(w_mse_model_shared_estimate_shared,1)), hold on;
+subplot(2,1,1), plot(sum(w_mse_model_shared_estimate_separate,1)), hold off;
 set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
-title('Sum of MSE for all weights with shared alpha prior');
-xlabel(['#samples, averaged over ' int2str(numExperiments) ' experiments']), ylabel('Sum of MSE for all weights') 
-legend('Separate alpha estimation', 'Shared alpha estimation');
+title('Sum of MSE for all parameters in dense model');
+xlabel('Number of samples'), ylabel('Sum of MSE for all parameters'); %, averaged over ' int2str(numExperiments) ' runs'
+legend('Shared prior estimation', 'Separate priors estimation');
 
-subplot(2,1,2), plot(sum(w_mse_model_separate_estimate_separate,1)), hold on;
-subplot(2,1,2), plot(sum(w_mse_model_separate_estimate_shared,1)), hold off
+subplot(2,1,2), plot(sum(w_mse_model_separate_estimate_shared,1)), hold on;
+subplot(2,1,2), plot(sum(w_mse_model_separate_estimate_separate,1)), hold off;
 set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
-xlabel(['#samples, averaged over ' int2str(numExperiments) ' experiments']), ylabel('Sum of MSE for all weights') 
-title('Sum of MSE for all weights with separate alpha priors (10 active functions)');
-legend('Separate alpha estimation', 'Shared alpha estimation');
+xlabel('Number of samples'), ylabel('Sum of MSE for all parameters') 
+title('Sum of MSE for all parameters in sparse model');
+legend('Shared prior estimation', 'Separate priors estimation');
 
 
 % std(w_true{1,1})^2*numFuncs;
@@ -146,14 +146,15 @@ legend('Separate alpha estimation', 'Shared alpha estimation');
 
 %% F1 Score
 
-f1_msep_sep = zeros(iterations, numExperiments);
 f1_msep_sha = zeros(iterations, numExperiments);
+f1_msep_sep = zeros(iterations, numExperiments);
 
+f1_msha_sha = zeros(iterations, numExperiments);
+f1_msha_sep = zeros(iterations, numExperiments);
 
-% Calculate MSE 
 for i=1:iterations
     for j=1:numExperiments
-        % Separate alpha model
+        % Separate priors model
         nonZeroIdxSep = find(w_model_separate_estimate_separate{i,j} ~= 0);
         nonZeroIdxSha = find(w_model_separate_estimate_shared{i,j} ~= 0);
         nonzIdxTrue = find(w_model_separate_true{i,j} ~= 0);
@@ -169,24 +170,53 @@ for i=1:iterations
         falsePosSha = numel(find(ismember(nonZeroIdxSha,nonzIdxTrue) ==0));
         truePosSha = numel(find(ismember(nonZeroIdxSha,nonzIdxTrue)  ~=0));
         falseNegSha = numel(find(ismember(nonzIdxTrue, nonZeroIdxSha)==0));
-        precisionSha=truePosSep/(truePosSha+falsePosSha);
+        precisionSha=truePosSha/(truePosSha+falsePosSha);
         recallSha=truePosSha/(truePosSha+falseNegSha);
         
         f1_msep_sha(i,j) = 2*(precisionSha*recallSha)/(precisionSha+recallSha);
+        
+        
+        % Shared prior model - reuse variables
+        nonZeroIdxSep = find(w_model_shared_estimate_separate{i,j} ~= 0);
+        nonZeroIdxSha = find(w_model_shared_estimate_shared{i,j} ~= 0);
+        nonzIdxTrue = find(w_model_shared_true{i,j} ~= 0);
+        
+        falsePosSep = numel(find(ismember(nonZeroIdxSep,nonzIdxTrue) ==0));
+        truePosSep = numel(find(ismember(nonZeroIdxSep,nonzIdxTrue)  ~=0));
+        falseNegSep = numel(find(ismember(nonzIdxTrue, nonZeroIdxSep)==0));
+        precisionSep=truePosSep/(truePosSep+falsePosSep);
+        recallSep=truePosSep/(truePosSep+falseNegSep);
+        
+        f1_msha_sep(i,j) = 2*(precisionSep*recallSep)/(precisionSep+recallSep);
+        
+        falsePosSha = numel(find(ismember(nonZeroIdxSha,nonzIdxTrue) ==0));
+        truePosSha = numel(find(ismember(nonZeroIdxSha,nonzIdxTrue)  ~=0));
+        falseNegSha = numel(find(ismember(nonzIdxTrue, nonZeroIdxSha)==0));
+        precisionSha=truePosSha/(truePosSha+falsePosSha);
+        recallSha=truePosSha/(truePosSha+falseNegSha);
+        
+        f1_msha_sha(i,j) = 2*(precisionSha*recallSha)/(precisionSha+recallSha);
     end
-%     f1_model_separate_estimate_separate(:,i) = f1_model_separate_estimate_separate(:,i)/intraIterations;
-%     f1_model_separate_estimate_shared(:,i) = f1_model_separate_estimate_shared(:,i)/intraIterations;
 end
 
-ticks = 0:5:size(a_model_separate_estimate_shared,1);
-tickLabels = strsplit(int2str(ticks*N));
+% ticks = 0:5:size(a_model_separate_estimate_shared,1);
+% tickLabels = strsplit(int2str(ticks*N));
 
 figure(2)
 
-plot(mean(f1_msep_sha,2)), hold on;
-plot(mean(f1_msep_sep,2)), hold off;
-title('F1-score of non-zero weights');
-legend('Shared estimate','Separate estimate');
+subplot(2,1,1), plot(mean(f1_msha_sha,2)), hold on;
+subplot(2,1,1), plot(mean(f1_msha_sep,2)), hold off;
+set(gca,'XTick',ticks,'XTickLabel',tickLabels);% 'YScale', 'log');
+title('F1-score of non-zero parameters in dense model');
+xlabel('Number of samples')%, ylabel('F1-score') 
+legend('Shared prior estimate','Separate priors estimate');
+
+subplot(2,1,2), plot(mean(f1_msep_sha,2)), hold on;
+subplot(2,1,2), plot(mean(f1_msep_sep,2)), hold off;
+set(gca,'XTick',ticks,'XTickLabel',tickLabels);% 'YScale', 'log');
+title('F1-score of non-zero parameters in sparse model');
+xlabel('Number of samples')%, ylabel('F1-score') 
+legend('Shared prior estimate','Separate priors estimate');
 
 % figure(2)
 % 
@@ -207,7 +237,43 @@ legend('Shared estimate','Separate estimate');
 
 % std(w_true{1,1})^2*numFuncs;
 
+%% Sparsity detection
 
+
+ro_msha_sha = zeros(iterations, numExperiments);
+ro_msha_sep = zeros(iterations, numExperiments);
+
+ro_msep_sha = zeros(iterations, numExperiments);
+ro_msep_sep = zeros(iterations, numExperiments);
+
+for i=1:iterations
+    for j=1:numExperiments
+        % Separate priors model
+        nonZeroIdxSep = find(w_model_separate_estimate_separate{i,j} ~= 0);
+        nonZeroIdxSha = find(w_model_separate_estimate_shared{i,j} ~= 0);
+        nonzIdxTrue = find(w_model_separate_true{i,j} ~= 0);
+        
+        ro_msep_sep(i,j) = numel(nonZeroIdxSep)/numel(nonzIdxTrue);
+        ro_msep_sha(i,j) = numel(nonZeroIdxSha)/numel(nonzIdxTrue);
+        
+        nonZeroIdxSep = find(w_model_shared_estimate_separate{i,j} ~= 0);
+        nonZeroIdxSha = find(w_model_shared_estimate_shared{i,j} ~= 0);
+        nonzIdxTrue = find(w_model_shared_true{i,j} ~= 0);
+        
+        ro_msha_sep(i,j) = numel(nonZeroIdxSep)/numel(nonzIdxTrue);
+        ro_msha_sha(i,j) = numel(nonZeroIdxSha)/numel(nonzIdxTrue);
+    end
+end
+
+
+figure(3)
+subplot(2,1,1), plot(mean(ro_msha_sha, 2)), hold on;
+subplot(2,1,1), plot(mean(ro_msha_sep, 2)), hold off;
+legend('Shared','Separete');
+
+subplot(2,1,2), plot(mean(ro_msep_sha, 2)), hold on;
+subplot(2,1,2), plot(mean(ro_msep_sep, 2)), hold off;
+legend('Shared','Separete');
 
 %% MSE of Alphas
 
@@ -256,20 +322,20 @@ xlabel('# of samples');
 legend('Separate', 'Shared');
 
 %% WHAT should this show ?????????
-
-figure(4)
-
-plot(1:iterations, mean(a_model_separate_estimate_shared,2)), hold on;
-
-% plot([1:data.iterations], ratio_approx_means, '-k')
-trueRatio = (model.alpha);
-plot(1:iterations, trueRatio*ones(1,iterations), '-r');
-hold off
-set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
-
-ylabel(['alpha/beta ratio averaged over ' int2str(numExperiments) ' experiments']);
-xlabel('# of samples');
-% legend('Estimated ratio', 'True ratio');
+% 
+% figure(4)
+% 
+% plot(1:iterations, mean(a_model_separate_estimate_shared,2)), hold on;
+% 
+% % plot([1:data.iterations], ratio_approx_means, '-k')
+% trueRatio = (model.alpha);
+% plot(1:iterations, trueRatio*ones(1,iterations), '-r');
+% hold off
+% set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
+% 
+% ylabel(['alpha/beta ratio averaged over ' int2str(numExperiments) ' experiments']);
+% xlabel('# of samples');
+% % legend('Estimated ratio', 'True ratio');
 
 
 %% Log likelihood 
@@ -306,10 +372,10 @@ xlabel('# of samples'), ylabel(['Log likelihood averaged over ' int2str(numExper
 
 %% Alpha estimation mean with error bars - std/sqrt(N)
 
-active_functions=10;
+numActiveFuncs=10;
 
 err_model_separate_estimate_shared = zeros(1,iterations);
-err_model_separate_estimate_separate = zeros(active_functions, iterations);
+err_model_separate_estimate_separate = zeros(numActiveFuncs, iterations);
 
 err_model_shared_estimate_shared = zeros(1,iterations);
 err_model_shared_estimate_separate = zeros(100, iterations);
@@ -317,7 +383,7 @@ err_model_shared_estimate_separate = zeros(100, iterations);
 std_model_separate_estimate_shared = std(a_model_separate_estimate_shared,0,2);
 std_model_shared_estimate_shared = std(a_model_shared_estimate_shared,0,2);
 
-a_active_model_separate_estimate_separate = zeros(iterations,numExperiments,active_functions);
+a_active_model_separate_estimate_separate = zeros(iterations,numExperiments,numActiveFuncs);
 a_active_model_shared_estimate_separate = zeros(iterations,numExperiments,100);
 
 for i=1:iterations
@@ -326,7 +392,7 @@ for i=1:iterations
     
 %     separate_error(i) = std(vertcat(alpha_separate{i,:}))/sqrt(25*i);
     for j=1:numExperiments
-        a_active_model_separate_estimate_separate(i,j,:) = a_model_separate_estimate_separate{i,j}(1:active_functions);
+        a_active_model_separate_estimate_separate(i,j,:) = a_model_separate_estimate_separate{i,j}(1:numActiveFuncs);
         a_active_model_shared_estimate_separate(i,j,:) = a_model_shared_estimate_separate{i,j}(1:end);
     end
     
@@ -346,52 +412,51 @@ end
 figure(6)
 
 subplot(2,1,1), errorbar(mean(a_model_shared_estimate_shared,2), err_model_shared_estimate_shared); hold on;
-subplot(2,1,1), errorbar(mean(sum(a_active_model_shared_estimate_separate,3)/100,2), mean(err_model_shared_estimate_separate,1)); hold off;
+subplot(2,1,1), errorbar(mean(mean(a_active_model_shared_estimate_separate,3)/100,2), mean(err_model_shared_estimate_separate,1)); hold off;
 set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
-set(gca,'YScale', 'log');
+% set(gca,'YScale', 'log');
 legend('Estimated with shared prior', 'Estimated with separate priors (sum of all)');
-title('Alpha estimation in shared prior model'), ylabel(['alpha averaged over ' int2str(numExperiments) ' experiments']);
-xlabel('# of samples');
+title('Alpha estimation in dense model'), ylabel(['Alpha averaged over ' int2str(numExperiments) ' runs']);
+xlabel('Number of samples');
 % (std/sqrt(N))
 
 % errorbar(squeeze(mean(active_alphas,2)), error_separate');
 % errorbar(squeeze(mean(active_alphas(:,:,idx),2))', error_separate(idx,:));
 
 subplot(2,1,2), errorbar(mean(a_model_separate_estimate_shared,2), err_model_separate_estimate_shared); hold on;
-subplot(2,1,2), errorbar(mean(sum(a_active_model_separate_estimate_separate,3)/active_functions,2), mean(err_model_separate_estimate_separate,1)); hold off;
-
+subplot(2,1,2), errorbar(mean(mean(a_active_model_separate_estimate_separate,3),2), mean(err_model_separate_estimate_separate,1)); hold off;
 % meanSTD = std(std_model_separate_estimate_separate,0,2);
 set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
-set(gca,'YScale', 'log');
+% set(gca,'YScale', 'log');
 legend('Estimated with shared prior', 'Estimated with separate priors (sum of 10 first)');
-title('Alpha estimation in separate prior model (First 10 functions assumed active)'), ylabel(['alpha averaged over ' int2str(numExperiments) ' experiments']);
-xlabel('# of samples');
+title('Alpha estimation in sparse model (first 10 parameters non-zero)'), ylabel(['Alpha averaged over ' int2str(numExperiments) ' runs']);
+xlabel('Number of samples');
 
 % OBS: This plot is different than the others, in the way they are compared
 
 %% Beta estimation comparison
 
 figure(7)
-subplot(2,1,1), semilogy(1:iterations, mean(b_model_shared_estimate_separate,2)), hold on;
-subplot(2,1,1), semilogy(1:iterations, mean(b_model_shared_estimate_shared,2));
+subplot(2,1,1), semilogy(1:iterations, mean(b_model_shared_estimate_shared,2)), hold on;
+subplot(2,1,1), semilogy(1:iterations, mean(b_model_shared_estimate_separate,2));
 subplot(2,1,1), semilogy(1:iterations, model.beta*ones(1,iterations));  hold off
 set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
-legend('Separate priors estimation', 'Shared prior estimation', 'True beta');
-title('beta estimation in shared prior model');
-ylabel(['beta averaged over ' int2str(numExperiments) ' experiments']);
-xlabel('# of samples');
+legend('Shared prior estimation', 'Separate priors estimation', 'True beta');
+title('Beta estimation in dense model');
+ylabel(['Beta averaged over ' int2str(numExperiments) ' runs']);
+xlabel('Number of samples');
 
-subplot(2,1,2), semilogy(1:iterations, mean(b_model_separate_estimate_separate,2)), hold on;
-subplot(2,1,2), semilogy(1:iterations, mean(b_model_separate_estimate_shared,2));
+subplot(2,1,2), semilogy(1:iterations, mean(b_model_separate_estimate_shared,2)), hold on;
+subplot(2,1,2), semilogy(1:iterations, mean(b_model_separate_estimate_separate,2));
 subplot(2,1,2), semilogy(1:iterations, model.beta*ones(1,iterations));  hold off
 % trueRatio = (model.beta);
 % semilogy(1:iterations, trueRatio*ones(1,iterations), '-r');
 
 set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
-title('beta estimation in separate prior model');
-legend('Separate priors estimation', 'Shared prior estimation', 'True beta');
-ylabel(['beta averaged over ' int2str(numExperiments) ' experiments']);
-xlabel('# of samples');
+title('Beta estimation in sparse model');
+legend('Shared prior estimation', 'Separate priors estimation', 'True beta');
+ylabel(['Beta averaged over ' int2str(numExperiments) ' runs']);
+xlabel('Number of samples');
 
 
 %%
