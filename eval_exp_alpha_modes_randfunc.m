@@ -54,7 +54,7 @@ for data=dataFilesSeparateAlphas
     w_model_separate_estimate_separate = [w_model_separate_estimate_separate data.w_multi];
 end
 
-%% Load data into variables - shared alpha model
+% Load data into variables - shared alpha model
 
 a_model_shared_estimate_shared = [];
 b_model_shared_estimate_shared = [];
@@ -78,8 +78,6 @@ for data=dataFilesSharedAlpha
     llh_model_shared_estimate_separate = [llh_model_shared_estimate_separate data.llh_multi];
     w_model_shared_estimate_separate = [w_model_shared_estimate_separate data.w_multi];
 end
-
-%%
 
 dataSeparateAlphas=dataFilesSeparateAlphas{1};
 N = 25; %data.numSamples;
@@ -516,6 +514,9 @@ end
 
 
 h = scatterhist(x(:), y(:), 'Group', [idx(1)*ones(1, numel(x)/2) idx(2)*ones(1, numel(x)/2)],'Style','bar');
+legend('N=25','N=500', 'Location', 'NorthWest');
+title('Estimated weights as a function of the true weights for 100 estimated weights (10 non-zero)');
+ylabel('Estimated weight'), xlabel('True weight');
 % set(gca,'YScale','log');
 set(h(2:3),'YScale','log');
 axis(h(1), 'square');

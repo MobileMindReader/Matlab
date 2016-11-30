@@ -52,7 +52,7 @@ for data=dataFilesSeparateAlphas
     w_model_separate_estimate_separate = [w_model_separate_estimate_separate data.w_multi];
 end
 
-%% Load data into variables - shared alpha model
+% Load data into variables - shared alpha model
 
 a_model_shared_estimate_shared = [];
 b_model_shared_estimate_shared = [];
@@ -77,7 +77,7 @@ for data=dataFilesSharedAlpha
     w_model_shared_estimate_separate = [w_model_shared_estimate_separate data.w_multi];
 end
 
-%%
+%
 
 dataSeparateAlphas=dataFilesSeparateAlphas{1};
 N = 25; %data.numSamples;

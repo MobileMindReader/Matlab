@@ -174,8 +174,8 @@ for i=1:iterations
             dist_true_est_sep(i,j) = dist_true_est_sep(i,j) + c;
             dist_true_est_sha(i,j) = dist_true_est_sha(i,j) + c2;
         end
-        dist_true_est_sep(i,j) = dist_true_est_sep(i,j)/numel(nonZeroIdxSep);
-        dist_true_est_sha(i,j) = dist_true_est_sha(i,j)/numel(nonZeroIdxSha);
+        dist_true_est_sep(i,j) = dist_true_est_sep(i,j)/numel(nonZeroIdxTrue);
+        dist_true_est_sha(i,j) = dist_true_est_sha(i,j)/numel(nonZeroIdxTrue);
         
         for idx = nonZeroIdxSep'
             [c ~] = min(abs(nonZeroIdxTrue-idx));
@@ -218,21 +218,21 @@ title('F1-score for non-zero parameters');
 legend('Shared prior estimate','Separate priors estimate');
 
 figure(22)
-semilogy(mean(dist_true_est_sha,2)), hold on;
-semilogy(mean(dist_true_est_sep,2)), hold off;
-set(gca,'XTick',ticks,'XTickLabel',tickLabels);
-ylabel('Mean parameter index distance');
-xlabel('Number of non-zero parameters')
-title('Mean distance from non-zero estimate to nearest true non-zero');
-legend('Shared prior estimate','Separate priors estimate');
-
-figure(222)
-semilogy(mean(dist_est_true_sha,2)), hold on;
-semilogy(mean(dist_est_true_sep,2)), hold off;
+plot(mean(dist_true_est_sha,2)), hold on;
+plot(mean(dist_true_est_sep,2)), hold off;
 set(gca,'XTick',ticks,'XTickLabel',tickLabels);
 ylabel('Mean parameter index distance');
 xlabel('Number of non-zero parameters')
 title('Mean distance from true non-zero to nearest non-zero estimate');
+legend('Shared prior estimate','Separate priors estimate');
+
+figure(222)
+plot(mean(dist_est_true_sha,2)), hold on;
+plot(mean(dist_est_true_sep,2)), hold off;
+set(gca,'XTick',ticks,'XTickLabel',tickLabels);
+ylabel('Mean parameter index distance');
+xlabel('Number of non-zero parameters')
+title('Mean distance from non-zero estimate to nearest true non-zero');
 legend('Shared prior estimate','Separate priors estimate');
 
 % figure(2)
@@ -411,16 +411,22 @@ axis('square');
 %% Scatter plot and histogram of weight estimation
 
 figure(9)
-idxExp=unique(int16(unifrnd(1,numExperiments, [1 50])));
+idxExp=unique(int16(unifrnd(1,numExperiments, [1 30])));
+idxExp2=unique(int16(unifrnd(1,numExperiments, [1 80])));
 idx=[1,50];
 x=[];
 y=[];
-for i=idx
+% for i=idx
     for j=idxExp
-        x = [x (w_model_separate_true{i,j})];
-        y = [y (w_model_separate_estimate_separate{i,j})];
+        x = [x (w_model_separate_true{1,j})];
+        y = [y (w_model_separate_estimate_separate{1,j})];
     end
+% end
+for j=idxExp2
+    x = [x (w_model_separate_true{50,j})];
+    y = [y (w_model_separate_estimate_separate{50,j})];
 end
+
 % x1 = (w_model_separate_true{idx, idxExp});
 % y1 = horzcat(w_model_separate_estimate_separate{idx,idxExp});
 
@@ -428,7 +434,11 @@ end
 % y2 = vertcat(w_model_separate_estimate_separate{20,idx});
 
 
-h = scatterhist(x(:), y(:), 'Group', [idx(1)*ones(1, numel(x)/2) idx(2)*ones(1, numel(x)/2)],'Style','bar');
+h = scatterhist(x(:), y(:), 'Group', [idx(1)*ones(1, 500*numel(idxExp)) idx(2)*ones(1, 500*numel(idxExp2))],'Style','bar');
+legend('500 non-zero','10 non-zero', 'Location', 'NorthWest');
+title('Estimated weights as a function of the true weights for 500 estimated weights');
+ylabel('Estimated weight'), xlabel('True weight');
 % set(gca,'YScale','log');
 set(h(2:3),'YScale','log');
 axis(h(1), 'square');
+
