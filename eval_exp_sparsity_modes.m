@@ -85,6 +85,10 @@ disp(data.description);
 
 clearvars dataFiles data fileIndex fileName fileNames files
 
+ticks = 0:5:size(a_model_separate_estimate_shared,1);
+tickLabels = strsplit(int2str(500-((ticks-1)*10)));
+
+
 %% MSE of weights
 
 w_mse_model_separate_estimate_separate = zeros(M, iterations);
@@ -109,9 +113,6 @@ for i=1:iterations
 end
 
 % TODO: Subtract signal amplitude 
-
-ticks = 0:5:size(a_model_separate_estimate_shared,1);
-tickLabels = strsplit(int2str(500-((ticks-1)*10)));
 
 figure(1)
 

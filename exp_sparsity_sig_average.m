@@ -10,14 +10,14 @@ model.dimension = 1;
 s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
-iterations = 50;
-intraIterations = 100;
+iterations = 5;
+intraIterations = 1;
 
 % Unimodal
-% llh_uni = zeros(iterations, intraIterations);
-% alpha_uni = zeros(iterations, intraIterations);
-% beta_uni = zeros(iterations, intraIterations);
-% w_uni = cell(iterations, intraIterations);
+llh_uni = zeros(iterations, intraIterations);
+alpha_uni = zeros(iterations, intraIterations);
+beta_uni = zeros(iterations, intraIterations);
+w_uni = cell(iterations, intraIterations);
 
 % Multimodal
 llh_multi = zeros(iterations, intraIterations);
@@ -27,12 +27,12 @@ w_multi = cell(iterations, intraIterations);
 
 w_true = cell(iterations, intraIterations);
 
-dataTitle = ['exp_sparsity/' datestr(datetime('now'))];
+dataTitle = ['exp_sparsity_sig_average/' datestr(datetime('now'))];
 
 data.numSamples = '20';
 data.numFuncs = '500';
 data.numActiveFuncs = '500-((iter-1)*10';
-data.experiment = 'Sparsity sweep v2';
+data.experiment = 'Sparsity sweep with average of signal';
 % data.description = '500 functions, 20 samples. Iterating over number of active weights (500-((iter-1)*10)';
 data.description = '500 functions (gauss base), 20 samples. Iterating over number of active weights (500-((iter-1)*10)';
 numSamples = 20;
@@ -86,16 +86,16 @@ for iter=1:iterations
         
 %%%% Initialize alpha and beta
         beta_init = rand;
-%         alpha_uni_init = rand;
+        alpha_uni_init = rand;
         alpha_multi_init = eye(numFuncs);
         alpha_multi_init(logical(eye(size(alpha_multi_init)))) = rand(1,numFuncs);
         
-% %%%% Unimodal alpha      
-%         [alpha, beta, mn_uni, llh] = maximum_evidence(alpha_uni_init, beta_init, Phi, targets');
-%         beta_uni(iter, intraIter) = beta;
-%         alpha_uni(iter, intraIter) = alpha;
-%         llh_uni(iter, intraIter) = llh;
-%         w_uni{iter, intraIter} = mn_uni;
+%%%% Unimodal alpha      
+        [alpha, beta, mn_uni, llh] = maximum_evidence(alpha_uni_init, beta_init, Phi, targets');
+        beta_uni(iter, intraIter) = beta;
+        alpha_uni(iter, intraIter) = alpha;
+        llh_uni(iter, intraIter) = llh;
+        w_uni{iter, intraIter} = mn_uni;
         
 %%%% Multi-modal alpha
         [A, beta, mn_multi, llh] = maximum_evidence_multi(alpha_multi_init, beta_init, Phi, targets');
@@ -119,10 +119,10 @@ for iter=1:iterations
         
         data.w_true = w_true;
         
-%         data.alpha_uni = alpha_uni;
-%         data.beta_uni = beta_uni;
-%         data.llh_uni = llh_uni;
-%         data.w_uni = w_uni;
+        data.alpha_uni = alpha_uni;
+        data.beta_uni = beta_uni;
+        data.llh_uni = llh_uni;
+        data.w_uni = w_uni;
         
         data.alpha_multi = alpha_multi;
         data.beta_multi = beta_multi;
@@ -143,10 +143,10 @@ data.model = model;
 
 data.w_true = w_true;
 
-% data.alpha_uni = alpha_uni;
-% data.beta_uni = beta_uni;
-% data.llh_uni = llh_uni;
-% data.w_uni = w_uni;
+data.alpha_uni = alpha_uni;
+data.beta_uni = beta_uni;
+data.llh_uni = llh_uni;
+data.w_uni = w_uni;
 
 data.alpha_multi = alpha_multi;
 data.beta_multi = beta_multi;
