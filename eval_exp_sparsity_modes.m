@@ -138,8 +138,13 @@ legend('Separate alpha estimation', 'Shared alpha estimation');
 
 f1_msep_sep = zeros(iterations, numExperiments);
 f1_msep_sha = zeros(iterations, numExperiments);
+
 dist_true_est_sep = zeros(iterations, numExperiments);
+dist_true_est_sha = zeros(iterations, numExperiments);
+
 dist_est_true_sep = zeros(iterations, numExperiments);
+dist_est_true_sha = zeros(iterations, numExperiments);
+
 dist_sha = zeros(iterations, numExperiments);
 
 % Calculate MSE 
@@ -148,11 +153,11 @@ for i=1:iterations
         % Separate alpha model
         nonZeroIdxSep = find(w_model_separate_estimate_separate{i,j} ~= 0);
         nonZeroIdxSha = find(w_model_separate_estimate_shared{i,j} ~= 0);
-        nonzIdxTrue = find(w_model_separate_true{i,j} ~= 0);
+        nonZeroIdxTrue = find(w_model_separate_true{i,j} ~= 0);
         
-        falsePosSep = numel(find(ismember(nonZeroIdxSep,nonzIdxTrue) ==0));
-        truePosSep = numel(find(ismember(nonZeroIdxSep,nonzIdxTrue)  ~=0));
-        falseNegSep = numel(find(ismember(nonzIdxTrue, nonZeroIdxSep)==0));
+        falsePosSep = numel(find(ismember(nonZeroIdxSep,nonZeroIdxTrue) ==0));
+        truePosSep = numel(find(ismember(nonZeroIdxSep,nonZeroIdxTrue)  ~=0));
+        falseNegSep = numel(find(ismember(nonZeroIdxTrue, nonZeroIdxSep)==0));
         precisionSep=truePosSep/(truePosSep+falsePosSep);
         recallSep=truePosSep/(truePosSep+falseNegSep);
         
@@ -162,23 +167,33 @@ for i=1:iterations
             f1_msep_sep(i,j) = 2*(precisionSep*recallSep)/(precisionSep+recallSep);
         end
         
-        for idx = nonzIdxTrue'
+        for idx = nonZeroIdxTrue'
             [c ~] = min(abs(nonZeroIdxSep-idx));
-%             closestValues = nonZeroIdxSep(index) % Finds first one only!
+            [c2 ~] = min(abs(nonZeroIdxSha-idx));
+            
             dist_true_est_sep(i,j) = dist_true_est_sep(i,j) + c;
+            dist_true_est_sha(i,j) = dist_true_est_sha(i,j) + c2;
         end
         dist_true_est_sep(i,j) = dist_true_est_sep(i,j)/numel(nonZeroIdxSep);
+        dist_true_est_sha(i,j) = dist_true_est_sha(i,j)/numel(nonZeroIdxSha);
         
         for idx = nonZeroIdxSep'
-            [c ~] = min(abs(nonzIdxTrue-idx));
+            [c ~] = min(abs(nonZeroIdxTrue-idx));
             dist_est_true_sep(i,j) = dist_est_true_sep(i,j) + c;
         end
         dist_est_true_sep(i,j) = dist_est_true_sep(i,j)/numel(nonZeroIdxSep);
         
+        for idx = nonZeroIdxSha'
+            [c ~] = min(abs(nonZeroIdxTrue-idx));
+            dist_est_true_sha(i,j) = dist_est_true_sha(i,j) + c;
+        end
+        dist_est_true_sha(i,j) = dist_est_true_sha(i,j)/numel(nonZeroIdxSha);
         
-        falsePosSha = numel(find(ismember(nonZeroIdxSha,nonzIdxTrue) ==0));
-        truePosSha = numel(find(ismember(nonZeroIdxSha,nonzIdxTrue)  ~=0));
-        falseNegSha = numel(find(ismember(nonzIdxTrue, nonZeroIdxSha)==0));
+        
+        
+        falsePosSha = numel(find(ismember(nonZeroIdxSha,nonZeroIdxTrue) ==0));
+        truePosSha = numel(find(ismember(nonZeroIdxSha,nonZeroIdxTrue)  ~=0));
+        falseNegSha = numel(find(ismember(nonZeroIdxTrue, nonZeroIdxSha)==0));
         precisionSha=truePosSha/(truePosSha+falsePosSha);
         recallSha=truePosSha/(truePosSha+falseNegSha);
         
@@ -198,24 +213,27 @@ plot(mean(f1_msep_sha,2)), hold on;
 plot(mean(f1_msep_sep,2)), hold off;
 set(gca,'XTick',ticks,'XTickLabel',tickLabels);
 ylabel(['Averaged over ' int2str(numExperiments) ' experiments']);
-xlabel('#non-zero parameters')
-title('F1-score of non-zero weights');
-legend('Shared estimate','Separate estimate');
+xlabel('Number of non-zero parameters')
+title('F1-score for non-zero parameters');
+legend('Shared prior estimate','Separate priors estimate');
 
 figure(22)
-plot(mean(dist_true_est_sep,2));
+semilogy(mean(dist_true_est_sha,2)), hold on;
+semilogy(mean(dist_true_est_sep,2)), hold off;
 set(gca,'XTick',ticks,'XTickLabel',tickLabels);
-ylabel('Mean distance to nearest non-zero estimate');
-xlabel('#non-zero parameters')
-title('Mean distance to nearest non-zero estimate');
+ylabel('Mean parameter index distance');
+xlabel('Number of non-zero parameters')
+title('Mean distance from non-zero estimate to nearest true non-zero');
+legend('Shared prior estimate','Separate priors estimate');
 
 figure(222)
-plot(mean(dist_est_true_sep,2));
+semilogy(mean(dist_est_true_sha,2)), hold on;
+semilogy(mean(dist_est_true_sep,2)), hold off;
 set(gca,'XTick',ticks,'XTickLabel',tickLabels);
-ylabel('Mean distance to nearest non-zero estimate');
-xlabel('#non-zero parameters')
-title('Mean distance to nearest non-zero estimate');
-
+ylabel('Mean parameter index distance');
+xlabel('Number of non-zero parameters')
+title('Mean distance from true non-zero to nearest non-zero estimate');
+legend('Shared prior estimate','Separate priors estimate');
 
 % figure(2)
 % 
