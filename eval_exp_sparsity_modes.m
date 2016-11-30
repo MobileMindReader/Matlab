@@ -70,7 +70,7 @@ for data=dataFiles
 end
 
 
-%%
+% 
 
 data=dataFiles{1};
 N = str2num(data.numSamples); %data.numSamples;
@@ -185,7 +185,7 @@ for i=1:iterations
     end
     
 %     dist_true_est_sep(i,:) = dist_true_est_sep(i,:)/ (500-((i-1)*10));
-    
+   
 %     f1_model_separate_estimate_separate(:,i) = f1_model_separate_estimate_separate(:,i)/intraIterations;
 %     f1_model_separate_estimate_shared(:,i) = f1_model_separate_estimate_shared(:,i)/intraIterations;
 end
