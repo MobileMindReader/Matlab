@@ -89,6 +89,10 @@ numExperiments = size(w_model_separate_true,2);
 
 disp(dataSeparateAlphas.descriptino);
 
+
+ticks = 0:5:size(a_model_separate_estimate_shared,1);
+tickLabels = strsplit(int2str(ticks*N));
+
 clearvars dataFilesSeparateAlphas dataFilesSharedAlpha fileIndex fileName fileNames files dataSeparateAlphas
 
 %% MSE of weights
@@ -117,9 +121,6 @@ end
 
 
 % TODO: Subtract signal amplitude 
-
-ticks = 0:5:size(a_model_separate_estimate_shared,1);
-tickLabels = strsplit(int2str(ticks*N));
 
 
 figure(1)
@@ -205,14 +206,14 @@ figure(2)
 subplot(2,1,1), plot(mean(f1_msha_sha,2)), hold on;
 subplot(2,1,1), plot(mean(f1_msha_sep,2)), hold off;
 set(gca,'XTick',ticks,'XTickLabel',tickLabels);% 'YScale', 'log');
-title('F1-score of non-zero parameters in dense model');
+title('F1-score for non-zero parameters in dense model');
 xlabel('Number of samples')%, ylabel('F1-score') 
 legend('Shared prior estimate','Separate priors estimate');
 
 subplot(2,1,2), plot(mean(f1_msep_sha,2)), hold on;
 subplot(2,1,2), plot(mean(f1_msep_sep,2)), hold off;
 set(gca,'XTick',ticks,'XTickLabel',tickLabels);% 'YScale', 'log');
-title('F1-score of non-zero parameters in sparse model');
+title('F1-score for non-zero parameters in sparse model');
 xlabel('Number of samples')%, ylabel('F1-score') 
 legend('Shared prior estimate','Separate priors estimate');
 
@@ -238,8 +239,8 @@ legend('Shared prior estimate','Separate priors estimate');
 %% Sparsity detection
 
 
-ro_msha_sha = zeros(iterations, numExperiments);
-ro_msha_sep = zeros(iterations, numExperiments);
+rho_msha_sha = zeros(iterations, numExperiments);
+rho_msha_sep = zeros(iterations, numExperiments);
 
 ro_msep_sha = zeros(iterations, numExperiments);
 ro_msep_sep = zeros(iterations, numExperiments);
@@ -258,15 +259,15 @@ for i=1:iterations
         nonZeroIdxSha = find(w_model_shared_estimate_shared{i,j} ~= 0);
         nonzIdxTrue = find(w_model_shared_true{i,j} ~= 0);
         
-        ro_msha_sep(i,j) = numel(nonZeroIdxSep)/numel(nonzIdxTrue);
-        ro_msha_sha(i,j) = numel(nonZeroIdxSha)/numel(nonzIdxTrue);
+        rho_msha_sep(i,j) = numel(nonZeroIdxSep)/numel(nonzIdxTrue);
+        rho_msha_sha(i,j) = numel(nonZeroIdxSha)/numel(nonzIdxTrue);
     end
 end
 
 
 figure(3)
-subplot(2,1,1), plot(mean(ro_msha_sha, 2)), hold on;
-subplot(2,1,1), plot(mean(ro_msha_sep, 2)), hold off;
+subplot(2,1,1), plot(mean(rho_msha_sha, 2)), hold on;
+subplot(2,1,1), plot(mean(rho_msha_sep, 2)), hold off;
 legend('Shared','Separete');
 
 subplot(2,1,2), plot(mean(ro_msep_sha, 2)), hold on;
