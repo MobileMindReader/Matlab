@@ -62,7 +62,7 @@ for iter=1:iterations
         functions{1} = @(x) ones(size(x));  % Bias function phi_0(x) = 1
         for i=2:numFuncs
             mu_j=-limit+i*stepSize;
-            s = 0.01;      % spatial scale
+            s = 1;      % spatial scale
             functions{i} = @(x) exp(-((x-mu_j).^2)/(2*s^2));
         end
         
