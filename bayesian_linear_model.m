@@ -11,7 +11,7 @@ model.dimension = 1;
 s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
-N = 25;
+N = 20;
 numFuncs = 100;
 
 % limit = 3; %numFuncs/2;
@@ -48,6 +48,7 @@ wTemp = zeros(1,numFuncs);
 % idx=int16(unifrnd(1,100, [1 10]));
 idx=1:10;
 wTemp(idx) = normrnd(0,sqrt(1/model.alpha), [1 size(idx)]);
+wTemp(idx) = 10;
 % wTemp(11:100) = normrnd(0,sqrt(1/10000), [1 90]);
 model.w = wTemp;
 
@@ -94,11 +95,15 @@ model.w = wTemp;
 
 
 
+
+model.w = model.w*sqrt(100);
+
 %% Sampling
 
-trainX = unifrnd(-3,3, [1 N]);
+xRange = 3;
+trainX = unifrnd(-xRange,xRange, [1 N]);
 % [trainX, sortedIndexes] = sort(trainX);
-
+% sqrt(50)
 trainY = phi(functions, model.w, trainX);
 targetNoise = sqrt(1/model.beta)*randn(N,1); %zeros(model.dimension, N);
 targets=trainY'+targetNoise;
@@ -107,10 +112,29 @@ targets=trainY'+targetNoise;
 % trainYAlt = trainXAlt'*model.w' + sqrt(1/model.beta)*randn(N,1);
 % targetAlt=trainYAlt';%+targetNoise;
 
+w=model.w';
+
+% (xRange^2*2*10*model.beta/0.7)
+% SNRAlt = trace((w'*w)*(trainX'*trainX))/var(targetNoise);
+% SNRAltdB = 10*log10(SNRAlt)
+% ((max(w)^2*max(trainX)^2)+(min(w)^2*min(trainX)^2))*10*model.beta/0.7;
+
+%
+
+rmsNoise = sqrt(mean(targetNoise.^2));
+rmsX = sqrt(mean(trainY.^2));
+SNR = (rmsX / rmsNoise)^2;
+SNRdB = 10*log10(SNR)
+
+SNRAlt2 = var(trainY)/var(targetNoise);
+10*log10(SNRAlt2)
+
+%%
 
 figure(2), hold off
 plot(trainY, 'm+');
 hold on
+%%
 
 % figure(3), hold off
 % plot(trainX2, trainY2, 'm+');
@@ -138,6 +162,7 @@ beta_init = rand;
 [alpha_shared, beta_shared, mn_shared, llh_shared] = maximum_evidence(rand(1,1), beta_init, Phi, targets);
 % beta = beta(beta > 0);
 
+size(find(diag(A) ~= 1e3))
 
 
 %% Draw new samples from predictive distribution
@@ -163,7 +188,7 @@ disp('beta true & sigma true');
 disp([model.beta model.sigma]);
 disp('beta estimate');
 disp(beta);
-disp('True alpha/beta & Estimated       index');
+disp('True alpha/beta & Estimated index');
 % disp([(model.alpha(idx)/model.beta)' diag(A(idx,idx))/beta idx]);
 % disp([(model.alpha/model.beta)' diag(A)/beta]);
 

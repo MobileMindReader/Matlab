@@ -32,11 +32,11 @@ for i=2:maxIterations
 
     for j=1:M
         % Limit values to 10^6 and 10^-6
-        A(j,j) = max(1e-6, min(1e4,gamma(j)/(mN(j)^2)));  % A(j,j) = gamma(j)/(mN(j)^2);
+        A(j,j) = max(1e-6, min(1e3,gamma(j)/(mN(j)^2)));  % A(j,j) = gamma(j)/(mN(j)^2);
         
         % Mark which indexes reach the limit and remove from later
         % equations
-        if A(j,j) >= 1e4
+        if A(j,j) >= 1e3
             zeroIndexes(j) = 1;
             mN(j) = 0;
             Phi(:,j) = 0;

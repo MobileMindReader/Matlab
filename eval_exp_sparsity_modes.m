@@ -9,7 +9,7 @@ for i = 1:length(fileIndex)
     fileName = files(fileIndex(i)).name;
 %     if fileName == '12-Nov-2016 18:33:24-88.mat'
 %     if fileName(end-3:end) == '.mat'
-    if fileName(1:2) == '26'
+    if fileName == '03-Dec-2016 19:03:15.mat'
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
@@ -189,8 +189,6 @@ for i=1:iterations
         end
         dist_est_true_sha(i,j) = dist_est_true_sha(i,j)/numel(nonZeroIdxSha);
         
-        
-        
         falsePosSha = numel(find(ismember(nonZeroIdxSha,nonZeroIdxTrue) ==0));
         truePosSha = numel(find(ismember(nonZeroIdxSha,nonZeroIdxTrue)  ~=0));
         falseNegSha = numel(find(ismember(nonZeroIdxTrue, nonZeroIdxSha)==0));
@@ -217,23 +215,23 @@ xlabel('Number of non-zero parameters')
 title('F1-score for non-zero parameters');
 legend('Shared prior estimate','Separate priors estimate');
 
-figure(22)
-plot(mean(dist_true_est_sha,2)), hold on;
-plot(mean(dist_true_est_sep,2)), hold off;
-set(gca,'XTick',ticks,'XTickLabel',tickLabels);
-ylabel('Mean parameter index distance');
-xlabel('Number of non-zero parameters')
-title('Mean distance from true non-zero to nearest non-zero estimate');
-legend('Shared prior estimate','Separate priors estimate');
-
-figure(222)
-plot(mean(dist_est_true_sha,2)), hold on;
-plot(mean(dist_est_true_sep,2)), hold off;
-set(gca,'XTick',ticks,'XTickLabel',tickLabels);
-ylabel('Mean parameter index distance');
-xlabel('Number of non-zero parameters')
-title('Mean distance from non-zero estimate to nearest true non-zero');
-legend('Shared prior estimate','Separate priors estimate');
+% figure(22)
+% plot(mean(dist_true_est_sha,2)), hold on;
+% plot(mean(dist_true_est_sep,2)), hold off;
+% set(gca,'XTick',ticks,'XTickLabel',tickLabels);
+% ylabel('Mean parameter index distance');
+% xlabel('Number of non-zero parameters')
+% title('Mean distance from true non-zero to nearest non-zero estimate');
+% legend('Shared prior estimate','Separate priors estimate');
+% 
+% figure(222)
+% plot(mean(dist_est_true_sha,2)), hold on;
+% plot(mean(dist_est_true_sep,2)), hold off;
+% set(gca,'XTick',ticks,'XTickLabel',tickLabels);
+% ylabel('Mean parameter index distance');
+% xlabel('Number of non-zero parameters')
+% title('Mean distance from non-zero estimate to nearest true non-zero');
+% legend('Shared prior estimate','Separate priors estimate');
 
 % figure(2)
 % 

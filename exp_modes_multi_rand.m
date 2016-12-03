@@ -10,8 +10,8 @@ model.dimension = 1;
 s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
-iterations = 40;
-intraIterations = 200;
+iterations = 20;
+intraIterations = 20;
 
 % Unimodal
 llh_uni = zeros(iterations, intraIterations);
@@ -25,10 +25,12 @@ beta_multi = zeros(iterations, intraIterations);
 alpha_multi = cell(iterations, intraIterations);
 w_multi = cell(iterations, intraIterations);
 
+input = cell(iterations, intraIterations);
 w_true = cell(iterations, intraIterations);
 
 dataTitle = ['exp_modes_multi_rand/' datestr(datetime('now'))];
 
+data.SNRdB = zeros(iterations, intraIterations);
 data.numSamples = '50*iter';
 data.numFuncs = '500';
 data.numActiveFuncs = '20';
@@ -65,9 +67,19 @@ for iter=1:iterations
 
         trainX = unifrnd(-3,3, [model.dimension numSamples]);
         trainY = phi(functions, model.w, trainX);
-        targets = trainY + normrnd(model.noiseMean, model.sigma, [1 numSamples]);
+        noise = normrnd(model.noiseMean, model.sigma, [1 numSamples]);
+        targets = trainY + noise;
         
         Phi = PhiMatrix(functions, trainX);
+        
+%         input{iter, intraIter} = trainX;
+%         data.targets{iter, intraIter} = targets;
+        
+        rmsX = sqrt(mean(trainY.^2));
+        rmsNoise = sqrt(mean(noise.^2));
+        SNR = (rmsX / rmsNoise)^ 2;
+        SNRdB = 10*log10(SNR);
+        data.SNRdB(iter, intraIter) = SNRdB;
         
 %%%% Initialize alpha and beta
         beta_init = rand;
@@ -95,6 +107,8 @@ for iter=1:iterations
     end
 
     if mod(iter, 5) == 0
+        [iter intraIter]        
+        
         % Save data in case of being stopped early
         data.currentIteration = iter;
         data.currentIntraIteration = intraIter;
@@ -114,7 +128,7 @@ for iter=1:iterations
         data.llh_multi = llh_multi;
         data.w_multi = w_multi;
         
-        save(dataTitle, 'data');
+%         save(dataTitle, 'data');
     end
 end
 
@@ -138,4 +152,4 @@ data.beta_multi = beta_multi;
 data.llh_multi = llh_multi;
 data.w_multi = w_multi;
 
-save(dataTitle, 'data');
+% save(dataTitle, 'data');
