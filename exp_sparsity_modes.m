@@ -74,7 +74,7 @@ for iter=1:iterations
         activeIndexes = 1:numActiveFuncs;
         wTemp(activeIndexes) = normrnd(0, sqrt(1/model.alpha), [1 numActiveFuncs]);
         
-        factor = sqrt(numFuncs/numActiveFuncs);
+        factor = sqrt(10*numFuncs/numActiveFuncs);
         model.w = factor*wTemp;
         w_true{iter, intraIter} = model.w';
         

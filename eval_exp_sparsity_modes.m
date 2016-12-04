@@ -9,7 +9,7 @@ for i = 1:length(fileIndex)
     fileName = files(fileIndex(i)).name;
 %     if fileName == '12-Nov-2016 18:33:24-88.mat'
 %     if fileName(end-3:end) == '.mat'
-    if fileName == '03-Dec-2016 19:03:15.mat'
+    if fileName == '04-Dec-2016 12:46:37.mat'
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
@@ -83,7 +83,7 @@ numExperiments = size(w_model_separate_true,2);
 
 disp(data.description);
 
-clearvars dataFiles data fileIndex fileName fileNames files
+clearvars dataFiles fileIndex fileName fileNames files
 
 ticks = 0:5:size(a_model_separate_estimate_shared,1);
 tickLabels = strsplit(int2str(500-((ticks-1)*10)));

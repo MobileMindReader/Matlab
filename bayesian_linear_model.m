@@ -12,7 +12,7 @@ s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
 N = 20;
-numFuncs = 100;
+numFuncs = 500;
 
 % limit = 3; %numFuncs/2;
 % stepSize = limit*2/(numFuncs-1);
@@ -21,12 +21,12 @@ randoms = randn(numFuncs,N);
 functions = cell(1,numFuncs);
 functions{1} = @(x) ones(size(x));  % Bias function phi_0(x) = 1
 
-limit = 50; %numFuncs/2;
+limit = 5; %numFuncs/2;
 stepSize = limit*2/(numFuncs-1);
 
 for i=2:numFuncs
 %     mu_j=-limit+i*stepSize;
-%     s = rand*0.5;      % spatial scale
+%     s = 1;      % spatial scale
 %     functions{i} = @(x) exp(-((x-mu_j).^2)/(2*s^2));
     functions{i} = @(x) randoms(i,:);%*ones(size(x));
 end
@@ -46,9 +46,10 @@ model.alpha = 2;% zeros(1,numFuncs); %0.2*ones(1,numFuncs); % 2?
 % model.alpha(1:10) = 1;
 wTemp = zeros(1,numFuncs);
 % idx=int16(unifrnd(1,100, [1 10]));
+idx=round(1:numFuncs/10:numFuncs);
 idx=1:10;
-wTemp(idx) = normrnd(0,sqrt(1/model.alpha), [1 size(idx)]);
-wTemp(idx) = 10;
+% wTemp(idx) = normrnd(0,sqrt(1/model.alpha), [1 size(idx)]);
+wTemp(idx) = 1;
 % wTemp(11:100) = normrnd(0,sqrt(1/10000), [1 90]);
 model.w = wTemp;
 
@@ -95,24 +96,35 @@ model.w = wTemp;
 
 
 
-
-model.w = model.w*sqrt(100);
+% model.w = model.w*sqrt(100);
 
 %% Sampling
+xRange = 2;
+timeSteps = 5;
 
-xRange = 3;
-trainX = unifrnd(-xRange,xRange, [1 N]);
-% [trainX, sortedIndexes] = sort(trainX);
-% sqrt(50)
-trainY = phi(functions, model.w, trainX);
-targetNoise = sqrt(1/model.beta)*randn(N,1); %zeros(model.dimension, N);
-targets=trainY'+targetNoise;
+targetsTemp = zeros(N, timeSteps);
+trainX = zeros(timeSteps, N);
+% trainX = unifrnd(-xRange,xRange, [1 N]);
+
+for t=1:timeSteps
+    trainX(t,:) = (unifrnd(-xRange,xRange, [1 N]));
+    trainY = phi(functions, model.w, trainX(t,:));
+    
+    targetNoise = 0;  sqrt(1/model.beta)*randn(N,1); %zeros(model.dimension, N);
+    
+    targetsTemp(:,t)=trainY'+targetNoise;
+end
+
+targets = mean(targetsTemp,2);
 
 % trainXAlt = normrnd(0, 1, [length(model.w) N]);
-% trainYAlt = trainXAlt'*model.w' + sqrt(1/model.beta)*randn(N,1);
-% targetAlt=trainYAlt';%+targetNoise;
+% trainYAlt = trainXAlt'*model.w';
+% targetAlt=trainYAlt + targetNoise;
+% trainY = trainYAlt';
+% targets = targetAlt;
 
-w=model.w';
+Phi = PhiMatrix(functions, mean(trainX,1));
+% figure(8), imshow(Phi);
 
 % (xRange^2*2*10*model.beta/0.7)
 % SNRAlt = trace((w'*w)*(trainX'*trainX))/var(targetNoise);
@@ -129,11 +141,12 @@ SNRdB = 10*log10(SNR)
 SNRAlt2 = var(trainY)/var(targetNoise);
 10*log10(SNRAlt2)
 
-%%
+
+%% 
 
 figure(2), hold off
-plot(trainY, 'm+');
-hold on
+plot(mean(trainX,1), trainY, 'm+');
+% hold on
 %%
 
 % figure(3), hold off
@@ -141,9 +154,8 @@ hold on
 % hold on
 
 %%% Likelihood
-
-Phi = PhiMatrix(functions, trainX);
-% figure(8), imshow(Phi);
+% Phi = PhiMatrix(functions, trainX);
+% % figure(8), imshow(Phi);
 
 
 % Phi = trainXAlt';% PhiMatrix(functions, trainX);
@@ -154,35 +166,57 @@ Phi = PhiMatrix(functions, trainX);
 
 %% Alpha and Beta estimations
 alpha_init = eye(numFuncs);
-alpha_init(logical(eye(size(alpha_init)))) = rand(1,numFuncs);
+
+alphaValues=rand(1,numFuncs);
+
+idxGuess=[]; %round(1:numFuncs/10:numFuncs)
+for i=idx
+    temp = i-5:1:i+5;
+    temp = temp(temp>0);
+    idxGuess = [idxGuess temp];
+end
+idxGuess=unique(idxGuess);
+
+% alphaValues(idxGuess) = 0.01;
+alpha_init(logical(eye(size(alpha_init)))) = alphaValues;
+
 % alpha_init = rand(1,length(functions)+1)*; %normrnd(model.alpha, 0.2);
+% alpha_init=A;
 beta_init = rand;
 
 [A, beta, mn, llh] = maximum_evidence_multi(alpha_init, beta_init, Phi, targets);
-[alpha_shared, beta_shared, mn_shared, llh_shared] = maximum_evidence(rand(1,1), beta_init, Phi, targets);
+% [alpha_shared, beta_shared, mn_shared, llh_shared] = maximum_evidence(rand(1,1), beta_init, Phi, targets);
+llh
 % beta = beta(beta > 0);
 
-size(find(diag(A) ~= 1e3))
+% size(find(diag(A) ~= 1e3))
 
 
 %% Draw new samples from predictive distribution
 
 %%%%%% N( t | m_N'*phi(x) , sigma_N(x)^2)
 
-alphaThreshold = 100;
+alphaThreshold = 1e3;
 
-idx = find(diag(A) < alphaThreshold);
+idxEst = find(diag(A) < alphaThreshold);
 
-sparseW = mn(idx);
-sparseFunctions = functions(idx);
+sparseW = mn(idxEst);
+sparseFunctions = functions(idxEst);
 % activeFunctions = numel(sparseFunctions)
 
 
 %% Model fit
 disp('Model comparison');
 
-disp('w true & w estimate');
-disp([model.w' mn]);
+% disp('w true & w estimate');
+% disp([model.w' mn]);
+disp('w true');
+disp(find(model.w ~= 0)');
+disp('w estimate');
+disp(find(mn ~= 0));
+
+llh
+
 % disp([norm(model.w'-mn)]);
 disp('beta true & sigma true');
 disp([model.beta model.sigma]);
@@ -192,6 +226,17 @@ disp('True alpha/beta & Estimated index');
 % disp([(model.alpha(idx)/model.beta)' diag(A(idx,idx))/beta idx]);
 % disp([(model.alpha/model.beta)' diag(A)/beta]);
 
+
+% nonZeroIdx = find(mn ~= 0);
+
+falsePos = numel(find(ismember(idxEst,idx) ==0));
+truePos = numel(find(ismember(idxEst,idx)  ~=0));
+falseNeg = numel(find(ismember(idx, idxEst)==0));
+precision=truePos/(truePos+falsePos);
+recall=truePos/(truePos+falseNeg);
+
+f1 = 2*(precision*recall)/(precision+recall)
+        
 %%
 
 % 

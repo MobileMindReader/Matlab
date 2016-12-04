@@ -14,7 +14,7 @@ A = forwardModel(:,1:reducedSize);
 
 model.alpha = 2;
 
-timeSteps=10;  %20;    
+timeSteps=5;  %20;
 
 numSamples = size(A,1);     % The number og sensors corresponds to sample size..
 % numSensors = size(A,1);   % The number og sensors corresponds to sample size..
@@ -29,6 +29,8 @@ activeIndexes = unique(int16(unifrnd(1,reducedSize, [1 numActiveFuncs])));
 
 model.w = zeros(numFuncs,1);
 model.w(activeIndexes) = normrnd(0,sqrt(1/model.alpha), [1 size(activeIndexes)]);
+
+% model.w=model.w*sqrt(100);
 
 x=model.w*sin((1:timeSteps)*0.5);
 % x(activeIndexes) = sin((1:timeSteps)*0.5);
@@ -74,16 +76,18 @@ end
 
 %% Construct sensor measurement
 
-trueBeta=20;
+trueBeta=200;
 noise = normrnd(0, sqrt(1/trueBeta), [size(A,1) timeSteps]);
 % y = A * x + noise;
 y = y + noise;
 
-figure(1)
-plot(y)
+y=mean(y,2);
 
-% plot(1:timeSteps, y)
-surf(y)
+% figure(1)
+% plot(y)
+% 
+% % plot(1:timeSteps, y)
+% surf(y)
 
 %% Determine sparsity 
 
@@ -100,7 +104,9 @@ Q = zeros(numFuncs, numFuncs, timeSteps);
 beta = zeros(1, timeSteps);
 llh = zeros(1, timeSteps);
 mn = zeros(numFuncs, timeSteps);
-for i = 1:timeSteps
+
+
+for i = 1:1
     
     [Q(:,:,i), beta(i), mn(:,i), llh(i)] = maximum_evidence_multi(alphaInit, betaInit, Phi(:,:,i), y(:,i));
 %     alpha_init = Q(:,:,i);
@@ -112,6 +118,7 @@ Qmean = mean(Q,3);
 
 %
 estimatedIndexes=find(diag(Qmean) ~= 1e4);
+meanmN = mean(mn,2);
 
 %%
 
@@ -119,10 +126,10 @@ disp('True & estimated');
 
 comparison = model.w(activeIndexes);
 comparison(1:numel(activeIndexes),2) = activeIndexes';
-meanmN = mean(mn,2);
+
 comparison(1:numel(meanmN(estimatedIndexes)),3) = meanmN(estimatedIndexes);
 comparison(1:numel(meanmN(estimatedIndexes)),4) = estimatedIndexes;
-disp(comparison)
+% disp(comparison);
 
 
 % disp([model.w mean(mn,2)]);
@@ -136,17 +143,17 @@ disp(comparison)
 % Qmod=Q;
 % Qmod(find(Qmod == 1e4)) = 1/1e6;
 
-xEstimate = zeros(numFuncs, timeSteps);
+xEstimate = zeros(numFuncs, 1);
 for i=1:timeSteps
     xEstimate(:,i) = y(:,i)'/(Qmean*A');
 end
 
-%%%
+%%
 figure(100)
 subplot(4,1,1), plot(x); title('True x');
-subplot(4,1,2), plot(y); title('Forward model output');
-subplot(4,1,3), plot(xEstimate); title('Reconstructed x');
-subplot(4,1,4), plot(A*xEstimate); title('Reconstructed model output (noise missing)');
+subplot(4,1,3), plot(y); title('Forward model output');
+subplot(4,1,2), plot(meanmN); title('Reconstructed x');
+subplot(4,1,4), plot(A*meanmN); title('Reconstructed model output (noise missing)');
 
 %%
 
