@@ -12,6 +12,7 @@ s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
 forwardModel = importdata('model/mBrainLeadfield.mat');
+
 reducedSize=500;
 
 forwardMatrix = forwardModel(:,1:reducedSize);
@@ -34,7 +35,7 @@ wTemp = zeros(1,numFuncs);
 % idx=int16(unifrnd(1,100, [1 10]));
 idx=round(1:numFuncs/numActiveFuncs:numFuncs);
 
-idx=1:numActiveFuncs;
+% idx=1:numActiveFuncs;
 
 wTemp(idx) = normrnd(0,sqrt(1/model.alpha), [1 size(idx)]);
 % wTemp(idx) = 1;
@@ -68,8 +69,7 @@ targets = y + noise;
 targetMean=mean(targets,2);
 
 
-%%  
-
+%% 
 % for t=1:timeSteps
 %     trainX(t,:) = (unifrnd(-xRange,xRange, [1 N]));
 %     trainY = phi(functions, model.w, trainX(t,:));

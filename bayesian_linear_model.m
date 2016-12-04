@@ -12,7 +12,7 @@ s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
 N = 20;
-numFuncs = 500;
+numFuncs = 50;
 
 % limit = 3; %numFuncs/2;
 % stepSize = limit*2/(numFuncs-1);
@@ -100,7 +100,7 @@ model.w = wTemp;
 
 %% Sampling
 xRange = 2;
-timeSteps = 5;
+timeSteps = 1;
 
 targetsTemp = zeros(N, timeSteps);
 trainX = zeros(timeSteps, N);
@@ -110,7 +110,7 @@ for t=1:timeSteps
     trainX(t,:) = (unifrnd(-xRange,xRange, [1 N]));
     trainY = phi(functions, model.w, trainX(t,:));
     
-    targetNoise = 0;  sqrt(1/model.beta)*randn(N,1); %zeros(model.dimension, N);
+    targetNoise = sqrt(1/model.beta)*randn(N,1); %zeros(model.dimension, N);
     
     targetsTemp(:,t)=trainY'+targetNoise;
 end
