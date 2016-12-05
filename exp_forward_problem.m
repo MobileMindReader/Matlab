@@ -9,12 +9,15 @@ forwardModel = importdata('model/mBrainLeadfield.mat');
 % s = RandStream('mt19937ar','Seed','shuffle');
 % RandStream.setGlobalStream(s);
 
-reducedSize=768;
+reducedSize=500;
+
 A = forwardModel(:,1:reducedSize);
+
+A = randn(22, reducedSize);
 
 model.alpha = 2;
 
-timeSteps=5;  %20;
+timeSteps=1;  %20;
 
 numSamples = size(A,1);     % The number og sensors corresponds to sample size..
 % numSensors = size(A,1);   % The number og sensors corresponds to sample size..
@@ -30,7 +33,7 @@ activeIndexes = unique(int16(unifrnd(1,reducedSize, [1 numActiveFuncs])));
 model.w = zeros(numFuncs,1);
 model.w(activeIndexes) = normrnd(0,sqrt(1/model.alpha), [1 size(activeIndexes)]);
 
-% model.w=model.w*sqrt(100);
+model.w=model.w*sqrt(100);
 
 x=model.w*sin((1:timeSteps)*0.5);
 % x(activeIndexes) = sin((1:timeSteps)*0.5);
@@ -53,11 +56,20 @@ x=model.w*sin((1:timeSteps)*0.5);
 %%
 y = A*x;
 
+trueBeta=200;
+noise = normrnd(0, sqrt(1/trueBeta), [size(A,1) timeSteps]);
+% y = A * x + noise;
+targets = y + noise;
+targetMean=mean(targets,2);
+
 Phi = zeros(numSamples, numFuncs, timeSteps);
 for t=1:timeSteps
-    for i=1:numSamples
-        Phi(i,:,t) = A(i,:).*x(:,t)';
-    end
+%     for i=1:numSamples
+%         Phi(i,:,t) = A(i,:).*x(:,t)';
+%     end
+    for i=1:numFuncs
+        Phi(:,i,t) = A(:,i).*targets(:,t); %x(:,t)';
+    end    
 end
 
 % surf(y)
@@ -76,12 +88,6 @@ end
 
 %% Construct sensor measurement
 
-trueBeta=200;
-noise = normrnd(0, sqrt(1/trueBeta), [size(A,1) timeSteps]);
-% y = A * x + noise;
-y = y + noise;
-
-y=mean(y,2);
 
 % figure(1)
 % plot(y)
@@ -108,7 +114,7 @@ mn = zeros(numFuncs, timeSteps);
 
 for i = 1:1
     
-    [Q(:,:,i), beta(i), mn(:,i), llh(i)] = maximum_evidence_multi(alphaInit, betaInit, Phi(:,:,i), y(:,i));
+    [Q(:,:,i), beta(i), mn(:,i), llh(i)] = maximum_evidence_multi(alphaInit, betaInit, Phi(:,:,i), targetMean(:,i));
 %     alpha_init = Q(:,:,i);
 %     beta_init = beta(i);
     disp(['Time step: ' int2str(i)]);
@@ -150,7 +156,7 @@ end
 
 %%
 figure(100)
-subplot(4,1,1), plot(x); title('True x');
+subplot(4,1,1), plot(model.w); title('True x');
 subplot(4,1,3), plot(y); title('Forward model output');
 subplot(4,1,2), plot(meanmN); title('Reconstructed x');
 subplot(4,1,4), plot(A*meanmN); title('Reconstructed model output (noise missing)');

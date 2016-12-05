@@ -9,7 +9,7 @@ for i = 1:length(fileIndex)
     fileName = files(fileIndex(i)).name;
 %     if fileName == '12-Nov-2016 18:33:24-88.mat'
 %     if fileName(end-3:end) == '.mat'
-    if fileName == '04-Dec-2016 23:50:13.mat'
+    if fileName == '05-Dec-2016 09:34:35.mat'
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
@@ -123,12 +123,12 @@ figure(1)
 % xlabel(['#samples, averaged over ' int2str(numExperiments) ' experiments']), ylabel('Sum of MSE for all weights') 
 % legend('Separate alpha estimation', 'Shared alpha estimation');
 
-plot(sum(w_mse_model_separate_estimate_separate,1)), hold on;
-plot(sum(w_mse_model_separate_estimate_shared,1)), hold off
+plot(sum(w_mse_model_separate_estimate_shared,1)), hold on;
+plot(sum(w_mse_model_separate_estimate_separate,1)), hold off
 set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
 xlabel(['#non-zero parameters, averaged over ' int2str(numExperiments) ' runs']), ylabel('Sum of MSE for all weights') 
 title('Sum of MSE for all weights with separate alpha priors');
-legend('Separate alpha estimation', 'Shared alpha estimation');
+legend('Shared alpha estimation', 'Separate alpha estimation');
 
 
 % std(w_true{1,1})^2*numFuncs;

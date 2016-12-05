@@ -11,16 +11,15 @@ model.dimension = 1;
 s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
-forwardModel = importdata('model/mBrainLeadfield.mat');
+% reducedSize=2000;
+% forwardModel = importdata('model/mBrainLeadfield.mat');
+% forwardMatrix = forwardModel(:,1:reducedSize);
 
-reducedSize=500;
-
-forwardMatrix = forwardModel(:,1:reducedSize);
-
-N = size(forwardMatrix,1);
-numFuncs = size(forwardMatrix,2);
+N = 22; %size(forwardMatrix,1);
+numFuncs = 500; % size(forwardMatrix,2);
 
 forwardMatrix = randn(N, numFuncs);
+
 
 model.alpha = 2;% zeros(1,numFuncs); %0.2*ones(1,numFuncs); % 2? 
 % trueIdx=[10, 400, 401, 402, 403, 600, 900, 910, 980, 981];
@@ -37,48 +36,42 @@ idx=round(1:numFuncs/numActiveFuncs:numFuncs);
 
 % idx=1:numActiveFuncs;
 
+% wTemp = normrnd(0,sqrt(1/400), [1 numFuncs]);   %Noise on all 
+
 wTemp(idx) = normrnd(0,sqrt(1/model.alpha), [1 size(idx)]);
-% wTemp(idx) = 1;
+% wTemp(idx) = 10;
 % wTemp(11:100) = normrnd(0,sqrt(1/10000), [1 90]);
 model.w = wTemp;
 
 
-% model.w = model.w*sqrt(1000);
+model.w = model.w*sqrt(1000);
 
-timeSteps = 1;
+timeSteps = 15;
 
-x=model.w'*sin((1:timeSteps)*0.5);
+x=model.w'*2*sin((1:timeSteps)*0.3);
 
 %% Construct sensor measurement
 
+% y = A * x + noise;
 y = forwardMatrix*x;
+
+trueBeta=2000;
+noise = normrnd(0, sqrt(1/trueBeta), [N timeSteps]);
+
+targets = y + noise;
 
 Phi = zeros(N, numFuncs, timeSteps);
 for t=1:timeSteps
-    for i=1:N
-        Phi(i,:,t) = forwardMatrix(i,:).*x(:,t)';
+    for i=1:numFuncs
+        Phi(:,i,t) = forwardMatrix(:,i).*targets(:,t); %x(:,t)';
     end
 end
 
+targetMean=mean(targets,2);
 Phi = mean(Phi,3);
 
-trueBeta=25;
-noise = normrnd(0, sqrt(1/trueBeta), [N timeSteps]);
-% y = A * x + noise;
-targets = y + noise;
-targetMean=mean(targets,2);
+Phi = forwardMatrix;
 
-
-%% 
-% for t=1:timeSteps
-%     trainX(t,:) = (unifrnd(-xRange,xRange, [1 N]));
-%     trainY = phi(functions, model.w, trainX(t,:));
-%     
-%     targetNoise = 0;  sqrt(1/model.beta)*randn(N,1); %zeros(model.dimension, N);
-%     
-%     targetsTemp(:,t)=trainY'+targetNoise;
-% end
-% targets = mean(targetsTemp,2);
 
 %% Determine sparsity 
 
@@ -98,9 +91,10 @@ mn = zeros(numFuncs, timeSteps);
 
 for i = 1:1
     [A, beta, mn, llh] = maximum_evidence_multi(alphaInit, betaInit, Phi, targetMean);
+    [alphaSha, betaSha, mnSha, llhSha] = maximum_evidence(alphaInit(1,1),  betaInit, Phi, targetMean);
 %     alpha_init = Q(:,:,i);
 %     beta_init = beta(i);
-    disp(['Time step: ' int2str(i)]);
+%     disp(['Time step: ' int2str(i)]);
 end
 
 % Amean = mean(A,3);
@@ -108,8 +102,24 @@ end
 %
 idx'
 estimatedIndexes=find(diag(A) ~= 1e3)
+estimatedIndexesSha=find(mnSha ~= 0);
 
 % meanmN = mean(mn,2);
+%%
+
+
+figure(33)
+subplot(3,1,1), plot(model.w);
+subplot(3,1,2), plot(mnSha);
+subplot(3,1,3), plot(mn);
+
+%%
+figure(44)
+subplot(3,1,1), plot(y);
+subplot(3,1,2), plot(forwardMatrix*mnSha);
+subplot(3,1,3), plot(forwardMatrix*mn);
+
+
 
 %%
 % 

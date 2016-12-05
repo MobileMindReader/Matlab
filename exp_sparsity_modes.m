@@ -3,7 +3,7 @@ clear;
 
 % True parameters
 model.noiseMean = 0;
-model.sigma = 0.2; % Noise std deviation
+model.sigma = 0.02; % Noise std deviation
 model.beta = (1/model.sigma.^2);
 model.dimension = 1;
 
@@ -11,7 +11,7 @@ s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
 iterations = 50;
-intraIterations = 4;
+intraIterations = 20;
 
 % Unimodal
 % llh_uni = zeros(iterations, intraIterations);
@@ -31,13 +31,13 @@ dataTitle = ['exp_sparsity/' datestr(datetime('now'))];
 
 
 data.numSamples = '20';
-data.numFuncs = '500';
-data.numActiveFuncs = '500-((iter-1)*10';
+data.numFuncs = '1000';
+data.numActiveFuncs = '1000-((iter-1)*10';
 data.experiment = 'Sparsity sweep v2';
 % data.description = '500 functions, 20 samples. Iterating over number of active weights (500-((iter-1)*10)';
 data.description = '500 functions (randoms), 20 samples. Iterating over number of active weights (500-((iter-1)*10)';
 numSamples = 20;
-numFuncs = 500; %iter;
+numFuncs = 1000; %iter;
 
 model.alpha=2;
 
@@ -50,8 +50,7 @@ timeSteps = 1;
 for iter=1:iterations
     for intraIter=1:intraIterations 
                 
-        numActiveFuncs = 500-((iter-1)*10);        
-
+        numActiveFuncs = 1000-((iter-1)*20);
         
         forwardMatrix = randn(numSamples, numFuncs);
         idx=round(1:numFuncs/numActiveFuncs:numFuncs);
@@ -60,27 +59,19 @@ for iter=1:iterations
         wTemp(idx) = normrnd(0,sqrt(1/model.alpha), [1 size(idx)]);
         model.w = wTemp;
 
-        
         x=model.w'*sin((1:timeSteps)*0.5);
                 
-%         factor = sqrt(10*numFuncs/numActiveFuncs);
-%         model.w = factor*wTemp;
+        factor = sqrt(10*numFuncs/numActiveFuncs);
+        model.w = factor*wTemp;
         w_true{iter, intraIter} = model.w';
         
-%         trainX = unifrnd(-3,3, [model.dimension numSamples]);
+        %         trainX = unifrnd(-3,3, [model.dimension numSamples]);
         
         y = forwardMatrix*x;
-
-        Phi = zeros(numSamples, numFuncs, timeSteps);
-        for t=1:timeSteps
-            for i=1:numSamples
-                Phi(i,:,t) = forwardMatrix(i,:).*x(:,t)';
-            end
-        end
-        
-        Phi = mean(Phi,3);
+        Phi = forwardMatrix;
         
         noise = normrnd(0, sqrt(1/model.beta), [numSamples timeSteps]);
+        
         targets = y + noise;
         
         targetMean=mean(targets,2);
@@ -161,4 +152,4 @@ data.beta_multi = beta_multi;
 data.llh_multi = llh_multi;
 data.w_multi = w_multi;
 
-save(dataTitle, 'data');
+% save(dataTitle, 'data');
