@@ -1,4 +1,4 @@
-function [alpha, beta, mN, llh] = maximum_evidence(alpha, beta, Phi, t)
+function [alpha, beta, mN, llh, gamma] = maximum_evidence(alpha, beta, Phi, t)
 
 tolerance = 1e-5;
 maxIterations = 200;

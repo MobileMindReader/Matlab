@@ -1,5 +1,5 @@
 % bayesian_experiment
-clear;
+clear; close all;
 % data = load('02-Nov-2016 19:10:49.mat');
 % data = load('03-Nov-2016 03:45:37.mat');
 % data = load('08-Nov-2016 14:51:17.mat'); %numFuncs=iter, numSamples = 1000
@@ -45,9 +45,16 @@ iterations = data.iterations;
 intraIterations = data.intraIterations;
 model = data.model;
 
+ticks = 0:5:size(alphas,1);
+tickLabels = strsplit(int2str(ticks*25));
+
+
 %% Remove weird outlier
 alphas(1,437) = 0;
 alphas(1,437) = mean(alphas(1,:));
+
+alphas(1,322) = 0;
+alphas(1,322) = mean(alphas(1,:));
 
 %%
 
@@ -60,8 +67,8 @@ alphas(1,437) = mean(alphas(1,:));
 figure(7)
 plot(mean(alphas,2));
 % legend('');
-xlabel('# of functions x25'), ylabel(['mean alpha value of ' int2str(size(alphas,2)) ' iterations']) 
-
+xlabel('Number of functions'), ylabel(['mean alpha value of ' int2str(size(alphas,2)) ' iterations']) 
+set(gca,'XTick',ticks,'XTickLabel',tickLabels);
 
 
 %%
@@ -75,7 +82,8 @@ trueRatio = (model.alpha/model.beta);
 semilogy(1:iterations, trueRatio*ones(1,iterations), '-r');
 hold off
 ylabel(['alpha/beta ratio averaged over ' int2str(size(alphas,2)) ' iterations']);
-xlabel('# of functions x25');
+set(gca,'XTick',ticks,'XTickLabel',tickLabels);
+xlabel('Number of functions');
 legend('Estimated ratio', 'True ratio');
 
 
@@ -87,7 +95,8 @@ legend('Estimated ratio', 'True ratio');
 
 figure(3)
 plot(mean(llh,2));
-xlabel('# of functions x25'), ylabel(['Log likelihood averaged over ' int2str(size(alphas,2)) ' iterations']);
+set(gca,'XTick',ticks,'XTickLabel',tickLabels);
+xlabel('Number of functions'), ylabel(['Log likelihood averaged over ' int2str(size(alphas,2)) ' iterations']);
 
 
 errors = zeros(1,iterations);
@@ -98,8 +107,9 @@ end
 
 figure(4)
 errorbar(mean(alphas,2), errors);
+set(gca,'XTick',ticks,'XTickLabel',tickLabels);
 title('alpha estimation with error bars (std/sqrt(N))'), ylabel(['alpha averaged over ' int2str(size(alphas,2)) ' iterations']);
-xlabel('# of functions x25');
+xlabel('Number of functions');
 
 
 figure(5)
@@ -107,8 +117,9 @@ semilogy(1:iterations, mean(betas,2)), hold on
 trueRatio = (model.beta);
 semilogy(1:iterations, trueRatio*ones(1,iterations), '-r');
 hold off
+set(gca,'XTick',ticks,'XTickLabel',tickLabels);
 ylabel(['beta averaged over ' int2str(size(alphas,2)) ' iterations']);
-xlabel('# of functions x25');
+xlabel('Number of functions');
 legend('Estimated beta', 'True beta');
 
 

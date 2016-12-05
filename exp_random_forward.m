@@ -120,7 +120,7 @@ mn = zeros(numFuncs, timeSteps);
 
 for i = 1:1
     [A, beta, mn, llh] = maximum_evidence_multi(alphaInit, betaInit, Phi, targetMean);
-%     [alphaSha, betaSha, mnSha, llhSha] = maximum_evidence(alphaInit(1,1),  betaInit, Phi, targetMean);
+%     [alphaSha, betaSha, mnSha, llhSha, gamma] = maximum_evidence(alphaInit(1,1),  betaInit, Phi, targetMean);
 %     alpha_init = Q(:,:,i);
 %     beta_init = beta(i);
 %     disp(['Time step: ' int2str(i)]);
@@ -153,10 +153,11 @@ subplot(2,1,2), plot(mn);
 % subplot(3,1,3), plot(mnSha);
 
 %%
-% figure(44)
-% subplot(3,1,1), plot(y);
+figure(44)
+subplot(2,1,1), plot(y);
+subplot(2,1,2), plot(forwardMatrix*mn);
 % subplot(3,1,2), plot(forwardMatrix*mnSha);
-% subplot(3,1,3), plot(forwardMatrix*mn);
+
 
 
 

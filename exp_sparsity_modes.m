@@ -31,13 +31,13 @@ dataTitle = ['exp_sparsity/' datestr(datetime('now'))];
 
 
 data.numSamples = '20';
-data.numFuncs = '1000';
-data.numActiveFuncs = '1000-((iter-1)*20';
-data.experiment = 'Sparsity sweep v2';
+data.numFuncs = '500';
+data.numActiveFuncs = '500-((iter-1)*10';
+data.experiment = 'Sparsity sweep in random forward model';
 % data.description = '500 functions, 20 samples. Iterating over number of active weights (500-((iter-1)*10)';
-data.description = '1000 functions (randoms), 20 samples. Iterating over number of active weights (500-((iter-1)*10)';
+data.description = '500 functions (randoms), 20 samples. Iterating over number of active weights (500-((iter-1)*10)';
 numSamples = 20;
-numFuncs = 1000; %iter;
+numFuncs = 500; %iter;
 
 model.alpha=2;
 
@@ -50,7 +50,7 @@ timeSteps = 1;
 for iter=1:iterations
     for intraIter=1:intraIterations 
                 
-        numActiveFuncs = 1000-((iter-1)*20);
+        numActiveFuncs = 500-((iter-1)*10);
         
         forwardMatrix = randn(numSamples, numFuncs);
         idx=round(1:numFuncs/numActiveFuncs:numFuncs);

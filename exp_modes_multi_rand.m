@@ -35,51 +35,40 @@ data.numSamples = '50*iter';
 data.numFuncs = '500';
 data.numActiveFuncs = '20';
 data.experiment = 'Separate prior model';
-data.description = '500 functions, 20 weights drawn from one alpha, rest is zero. Iterating over N (50xiter).';
+data.description = '500 functions, 20 weights drawn from one alpha, rest is zero. Iterating over N (50xiter). About the same SNR for all cases.';
+
+model.alpha=2;
+
 for iter=1:iterations
     for intraIter=1:intraIterations 
         
         numSamples = 50*iter;
-        numFuncs = 500; %iter;
-        
+        numFuncs = 500; 
         numActiveFuncs = 20;
         
-        functions = cell(1,numFuncs);
-        
-        randoms = randn(numFuncs,numSamples);
-        
-        functions{1} = @(x) ones(size(x));  % Bias function phi_0(x) = 1
-        for i=2:numFuncs
-            functions{i} = @(x) randoms(i,:);%*ones(size(x));
-        end
-        
-%%%%%        % Draw w from "separate" alphas
-        model.alpha=2;
+        forwardMatrix = randn(numSamples, numFuncs);
+        idx=1:numActiveFuncs; %round(1:numFuncs/numActiveFuncs:numFuncs);
         
         wTemp = zeros(1,numFuncs);
-        wTemp(1:numActiveFuncs) = normrnd(0,sqrt(1/model.alpha), [1 numActiveFuncs]);
-        
+        wTemp(idx) = normrnd(0,sqrt(1/model.alpha), [1 size(idx)]);
         model.w = wTemp;
 
+        x=model.w'*2*sin(rand*0.5);
+                
+        factor = sqrt(10*numFuncs/numActiveFuncs);
+        model.w = factor*wTemp;
         w_true{iter, intraIter} = model.w';
         
-%%%%%%        
+        y = forwardMatrix*x;
+        noise = normrnd(0, sqrt(1/model.beta), [numSamples 1]);
 
-        trainX = unifrnd(-3,3, [model.dimension numSamples]);
-        trainY = phi(functions, model.w, trainX);
-        noise = normrnd(model.noiseMean, model.sigma, [1 numSamples]);
-        targets = trainY + noise;
+        targets = y + noise;
         
-        Phi = PhiMatrix(functions, trainX);
-        
-%         input{iter, intraIter} = trainX;
-%         data.targets{iter, intraIter} = targets;
-        
-        rmsX = sqrt(mean(trainY.^2));
+        rmsX = sqrt(mean(y.^2));
         rmsNoise = sqrt(mean(noise.^2));
         SNR = (rmsX / rmsNoise)^ 2;
-        SNRdB = 10*log10(SNR);
-        data.SNRdB(iter, intraIter) = SNRdB;
+        data.SNRdB(iter, intraIter) = 10*log10(SNR);
+        
         
 %%%% Initialize alpha and beta
         beta_init = rand;
@@ -88,14 +77,14 @@ for iter=1:iterations
         alpha_multi_init(logical(eye(size(alpha_multi_init)))) = rand(1,numFuncs);
         
 %%%% Unimodal alpha      
-        [alpha, beta, mn_uni, llh] = maximum_evidence(alpha_uni_init, beta_init, Phi, targets');
+        [alpha, beta, mn_uni, llh] = maximum_evidence(alpha_uni_init, beta_init, forwardMatrix, targets);
         beta_uni(iter, intraIter) = beta;
         alpha_uni(iter, intraIter) = alpha;
         llh_uni(iter, intraIter) = llh;
         w_uni{iter, intraIter} = mn_uni;
         
 %%%% Multi-modal alpha
-        [A, beta, mn_multi, llh] = maximum_evidence_multi(alpha_multi_init, beta_init, Phi, targets');
+        [A, beta, mn_multi, llh] = maximum_evidence_multi(alpha_multi_init, beta_init, forwardMatrix, targets);
         beta_multi(iter, intraIter) = beta;
         alpha_multi{iter, intraIter} = diag(A);
         llh_multi(iter, intraIter) = llh;
@@ -109,7 +98,7 @@ for iter=1:iterations
     if mod(iter, 5) == 0
         [iter intraIter]        
         
-        % Save data in case of being stopped early
+        % Save data often
         data.currentIteration = iter;
         data.currentIntraIteration = intraIter;
         data.iterations = iterations;
@@ -128,28 +117,6 @@ for iter=1:iterations
         data.llh_multi = llh_multi;
         data.w_multi = w_multi;
         
-%         save(dataTitle, 'data');
+        save(dataTitle, 'data');
     end
 end
-
-%% Save data
-
-data.currentIteration = iter;
-data.currentIntraIteration = intraIter;
-data.iterations = iterations;
-data.intraIterations = intraIterations;
-data.model = model;
-
-data.w_true = w_true;
-
-data.alpha_uni = alpha_uni;
-data.beta_uni = beta_uni;
-data.llh_uni = llh_uni;
-data.w_uni = w_uni;
-
-data.alpha_multi = alpha_multi;
-data.beta_multi = beta_multi;
-data.llh_multi = llh_multi;
-data.w_multi = w_multi;
-
-% save(dataTitle, 'data');
