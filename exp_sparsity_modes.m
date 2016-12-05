@@ -32,10 +32,10 @@ dataTitle = ['exp_sparsity/' datestr(datetime('now'))];
 
 data.numSamples = '20';
 data.numFuncs = '1000';
-data.numActiveFuncs = '1000-((iter-1)*10';
+data.numActiveFuncs = '1000-((iter-1)*20';
 data.experiment = 'Sparsity sweep v2';
 % data.description = '500 functions, 20 samples. Iterating over number of active weights (500-((iter-1)*10)';
-data.description = '500 functions (randoms), 20 samples. Iterating over number of active weights (500-((iter-1)*10)';
+data.description = '1000 functions (randoms), 20 samples. Iterating over number of active weights (500-((iter-1)*10)';
 numSamples = 20;
 numFuncs = 1000; %iter;
 
@@ -132,24 +132,3 @@ for iter=1:iterations
     end
 end
 
-%% Save data
-
-data.currentIteration = iter;
-data.currentIntraIteration = intraIter;
-data.iterations = iterations;
-data.intraIterations = intraIterations;
-data.model = model;
-
-data.w_true = w_true;
-
-data.alpha_uni = alpha_uni;
-data.beta_uni = beta_uni;
-data.llh_uni = llh_uni;
-data.w_uni = w_uni;
-
-data.alpha_multi = alpha_multi;
-data.beta_multi = beta_multi;
-data.llh_multi = llh_multi;
-data.w_multi = w_multi;
-
-% save(dataTitle, 'data');

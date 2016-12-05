@@ -7,7 +7,7 @@ model.sigma = 0.2; % Noise std deviation
 model.beta = (1/model.sigma.^2);
 model.dimension = 1;
 
-% s = RandStream('mt19937ar','Seed',2);
+% s = RandStream('mt19937ar','Seed', 2);
 s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
@@ -31,9 +31,8 @@ numActiveFuncs = 10;
 
 % model.alpha(1:10) = 1;
 wTemp = zeros(1,numFuncs);
-% idx=int16(unifrnd(1,100, [1 10]));
-idx=round(1:numFuncs/numActiveFuncs:numFuncs);
 
+idx=round(1:numFuncs/numActiveFuncs:numFuncs);
 % idx=1:numActiveFuncs;
 
 % wTemp = normrnd(0,sqrt(1/400), [1 numFuncs]);   %Noise on all 
@@ -44,40 +43,70 @@ wTemp(idx) = normrnd(0,sqrt(1/model.alpha), [1 size(idx)]);
 model.w = wTemp;
 
 
+timeSteps = 1;
+
 model.w = model.w*sqrt(1000);
-
-timeSteps = 15;
-
-x=model.w'*2*sin((1:timeSteps)*0.3);
+x=model.w'*(1+sin((1:timeSteps)*0.3));
 
 %% Construct sensor measurement
 
 % y = A * x + noise;
 y = forwardMatrix*x;
 
-trueBeta=2000;
+trueBeta=200;
 noise = normrnd(0, sqrt(1/trueBeta), [N timeSteps]);
 
 targets = y + noise;
 
-Phi = zeros(N, numFuncs, timeSteps);
-for t=1:timeSteps
-    for i=1:numFuncs
-        Phi(:,i,t) = forwardMatrix(:,i).*targets(:,t); %x(:,t)';
-    end
-end
+% Phi = zeros(N, numFuncs, timeSteps);
+% for t=1:timeSteps
+%     for i=1:numFuncs
+%         Phi(:,i,t) = forwardMatrix(:,i).*targets(:,t); %x(:,t)';
+%     end
+% end
 
 targetMean=mean(targets,2);
-Phi = mean(Phi,3);
+% Phi = mean(Phi,3);
 
 Phi = forwardMatrix;
 
+
+rmsX = sqrt(mean(y.^2));
+rmsNoise = sqrt(mean(noise.^2));
+SNR = (rmsX / rmsNoise)^ 2;
+SNRdB = 10*log10(SNR)
+
+% SNRAlt2 = var(y)/var(noise);
+% 10*log10(SNRAlt2)
 
 %% Determine sparsity 
 
 alphaInit = eye(size(forwardMatrix,2));
 % alpha_init(find(alpha_init)) = rand(1,size(A,2));
-alphaInit(logical(eye(size(alphaInit)))) = rand(1,size(forwardMatrix,2));
+
+% This is alright it seems:
+% alphaInitValues=0.001*ones(1,size(forwardMatrix,2));    
+
+
+alphaInitValues=ones(1,size(forwardMatrix,2));    %rand(1,size(forwardMatrix,2));
+idxGuess = round(unique(unifrnd(1,numFuncs, [1 numActiveFuncs])));
+
+for i=idxGuess
+    alphaInitValues(i) = 0.005;
+    for j=1:10
+        if i+j <= size(forwardMatrix,2)
+            alphaInitValues(i+j) = 0.01+0.01*j;
+        end 
+        try alphaInitValues(i-j) = 0.01+0.01*j;
+        catch
+            break
+        end       
+    end
+end
+
+
+% alphaInitValues(idx) = 0.01;
+alphaInit(logical(eye(size(alphaInit)))) = alphaInitValues; %rand(1,size(forwardMatrix,2));
 betaInit = rand;
 
 % Phi = A * x....   % Phi->size(22,numFuncs);
@@ -91,7 +120,7 @@ mn = zeros(numFuncs, timeSteps);
 
 for i = 1:1
     [A, beta, mn, llh] = maximum_evidence_multi(alphaInit, betaInit, Phi, targetMean);
-    [alphaSha, betaSha, mnSha, llhSha] = maximum_evidence(alphaInit(1,1),  betaInit, Phi, targetMean);
+%     [alphaSha, betaSha, mnSha, llhSha] = maximum_evidence(alphaInit(1,1),  betaInit, Phi, targetMean);
 %     alpha_init = Q(:,:,i);
 %     beta_init = beta(i);
 %     disp(['Time step: ' int2str(i)]);
@@ -101,23 +130,33 @@ end
 
 %
 idx'
-estimatedIndexes=find(diag(A) ~= 1e3)
-estimatedIndexesSha=find(mnSha ~= 0);
-
+idxEstimated=find(diag(A) ~= 1e3)
+% estimatedIndexesSha=find(mnSha ~= 0);
+numel(find(ismember(idx,idxEstimated) ~= 0))
 % meanmN = mean(mn,2);
+
+falsePos = numel(find(ismember(idxEstimated,idx) ==0));
+truePos = numel(find(ismember(idxEstimated,idx)  ~=0));
+falseNeg = numel(find(ismember(idx, idxEstimated)==0));
+precision=truePos/(truePos+falsePos);
+recall=truePos/(truePos+falseNeg);
+
+f1 = 2*(precision*recall)/(precision+recall)
+
+
 %%
 
 
 figure(33)
-subplot(3,1,1), plot(model.w);
-subplot(3,1,2), plot(mnSha);
-subplot(3,1,3), plot(mn);
+subplot(2,1,1), plot(model.w);
+subplot(2,1,2), plot(mn);
+% subplot(3,1,3), plot(mnSha);
 
 %%
-figure(44)
-subplot(3,1,1), plot(y);
-subplot(3,1,2), plot(forwardMatrix*mnSha);
-subplot(3,1,3), plot(forwardMatrix*mn);
+% figure(44)
+% subplot(3,1,1), plot(y);
+% subplot(3,1,2), plot(forwardMatrix*mnSha);
+% subplot(3,1,3), plot(forwardMatrix*mn);
 
 
 
