@@ -12,7 +12,7 @@ s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
 N = 20;
-numFuncs = 1000;
+numFuncs = 500;
 
 % limit = 3; %numFuncs/2;
 % stepSize = limit*2/(numFuncs-1);

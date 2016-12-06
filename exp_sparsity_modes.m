@@ -41,10 +41,6 @@ numFuncs = 500; %iter;
 
 model.alpha=2;
 
-% data.baseFunc.limit = 5;
-% data.baseFunc.stepSize = 'limit*2/(numActiveFuncs-1)';
-% data.baseFunc.spatial = 0.01;
-% data.baseFunc.function = '@(x) exp(-((x-mu_j).^2)/(2*s^2))';
 
 timeSteps = 1;
 for iter=1:iterations
@@ -64,8 +60,6 @@ for iter=1:iterations
         factor = sqrt(10*numFuncs/numActiveFuncs);
         model.w = factor*wTemp;
         w_true{iter, intraIter} = model.w';
-        
-        %         trainX = unifrnd(-3,3, [model.dimension numSamples]);
         
         y = forwardMatrix*x;
         Phi = forwardMatrix;
