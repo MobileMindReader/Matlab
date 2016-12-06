@@ -53,7 +53,7 @@ for iter=1:iterations
         wTemp(idx) = normrnd(0,sqrt(1/model.alpha), [1 size(idx)]);
         model.w = wTemp;
                 
-        factor = sqrt(10*numFuncs/numActiveFuncs);
+        factor = sqrt(numFuncs/numActiveFuncs);
         model.w = factor*wTemp;
         w_true{iter, intraIter} = model.w';
 
