@@ -258,37 +258,21 @@ alpha_mean_sparse_separate = zeros(iterations, numExperiments);
 alpha_mean_dense_separate = zeros(iterations, numExperiments);
 % alpha_mean_dense_shared = zeros(M, iterations);
 
-a_true = zeros(1,M); 
-a_true(1:20) = 2;
-a_true(21:end) = 1000;
-b_true = 25*ones(1,M);
+% a_true = zeros(1,M); 
+% a_true(1:20) = 2;
+% a_true(21:end) = 1000;
+% b_true = 25*ones(1,M);
 
 for i=1:iterations
     for j=1:numExperiments
         % Sparse
         nonZeroIdxSparse = find(w_sparse_separate{i,j} ~= 0);
         nonZeroIdxDense = find(w_dense_separate{i,j} ~= 0);
-        nonZeroIdxTrue = find(w_sparse_true{i,j} ~= 0);
+%         nonZeroIdxTrue = find(w_sparse_true{i,j} ~= 0);
         
         alpha_mean_sparse_separate(i,j) = mean(a_sparse_separate{i,j}(nonZeroIdxSparse));
         alpha_mean_dense_separate(i,j) = mean(a_dense_separate{i,j}(nonZeroIdxDense));
-%         alpha_mean_sparse_shared = a_sparse_shared(i,j);
-        
-%         alpha_mean_sparse_shared(:,i) = 
-
-%         alpha_mean_sparse_shared(:,i) = alpha_mean_sparse_shared(:,i) + (a_sparse_shared(i,j)*ones(1,M)' - a_true').^2;
-%         alpha_mean_sparse_separate(:,i) = alpha_mean_sparse_separate(:,i) + (a_sparse_separate{i,j} - a_true').^2;
-
-%            % Dense
-%         alpha_mean_dense_shared(:,i) = alpha_mean_dense_shared(:,i) + (a_dense_shared(i,j)*ones(1,M)' - a_true').^2;
-%         alpha_mean_dense_separate(:,i) = alpha_mean_dense_separate(:,i) + (a_dense_separate{i,j} - a_true').^2;
     end
-    
-%     alpha_mean_sparse_shared(:,i) = alpha_mean_sparse_shared(:,i)/numExperiments;
-%     alpha_mean_sparse_separate(:,i) = alpha_mean_sparse_separate(:,i)/numExperiments;
-%     
-%     alpha_mean_dense_shared(:,i) = alpha_mean_dense_shared(:,i)/numExperiments;
-%     alpha_mean_dense_separate(:,i) = alpha_mean_dense_separate(:,i)/numExperiments;
 end
 
 
