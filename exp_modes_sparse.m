@@ -11,7 +11,7 @@ s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
 iterations = 20;
-intraIterations = 20;
+intraIterations = 100;
 
 % Unimodal
 llh_uni = zeros(iterations, intraIterations);
@@ -28,13 +28,13 @@ w_multi = cell(iterations, intraIterations);
 input = cell(iterations, intraIterations);
 w_true = cell(iterations, intraIterations);
 
-dataTitle = ['exp_modes_multi_rand/' datestr(datetime('now'))];
+dataTitle = ['exp_modes_sparse/' datestr(datetime('now'))];
 
 data.SNRdB = zeros(iterations, intraIterations);
 data.numSamples = '50*iter';
 data.numFuncs = '500';
 data.numActiveFuncs = '20';
-data.experiment = 'Separate prior model';
+data.experiment = 'Sparse model';
 data.description = '500 functions, 20 weights drawn from one alpha, rest is zero. Iterating over N (50xiter). About the same SNR for all cases.';
 
 model.alpha=2;
