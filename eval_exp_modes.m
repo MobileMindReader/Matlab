@@ -117,6 +117,12 @@ for i=1:iterations
         % Shared alpha model
         w_mse_model_shared_estimate_separate(:,i) = w_mse_model_shared_estimate_separate(:,i) + (w_model_shared_estimate_separate{i,j}-w_model_shared_true{i,j}).^2/sum(abs(w_model_shared_true{i,j}));
         w_mse_model_shared_estimate_shared(:,i) = w_mse_model_shared_estimate_shared(:,i) + (w_model_shared_estimate_shared{i,j}-w_model_shared_true{i,j}).^2/sum(abs(w_model_shared_true{i,j}));
+        
+        %%%%% Alternate normalisation 
+%         w_mse_model_separate_estimate_separate(:,i) = w_mse_model_separate_estimate_separate(:,i) + ((w_model_separate_estimate_separate{i,j}-w_model_separate_true{i,j}).^2)/sqrt(mean(w_model_separate_true{i,j}.^2));
+%         w_mse_model_separate_estimate_shared(:,i) = w_mse_model_separate_estimate_shared(:,i) + (w_model_separate_estimate_shared{i,j}-w_model_separate_true{i,j}).^2/sqrt(mean(w_model_separate_true{i,j}.^2));
+%         w_mse_model_shared_estimate_separate(:,i) = w_mse_model_shared_estimate_separate(:,i) + (w_model_shared_estimate_separate{i,j}-w_model_shared_true{i,j}).^2/sqrt(mean(w_model_shared_true{i,j}.^2));
+%         w_mse_model_shared_estimate_shared(:,i) = w_mse_model_shared_estimate_shared(:,i) + (w_model_shared_estimate_shared{i,j}-w_model_shared_true{i,j}).^2/sqrt(mean(w_model_shared_true{i,j}.^2));
     end
     w_mse_model_separate_estimate_separate(:,i) = w_mse_model_separate_estimate_separate(:,i)/intraIterations;
     w_mse_model_separate_estimate_shared(:,i) = w_mse_model_separate_estimate_shared(:,i)/intraIterations;
@@ -125,22 +131,25 @@ for i=1:iterations
     w_mse_model_shared_estimate_shared(:,i) = w_mse_model_shared_estimate_shared(:,i)/intraIterations;
 end
 
-
 figure(1)
-subplot(2,1,1), plot(sum(w_mse_model_shared_estimate_shared,1)), hold on;
-subplot(2,1,1), plot(sum(w_mse_model_shared_estimate_separate,1)), hold off;
+subplot(2,1,1), plot(mean(w_mse_model_shared_estimate_shared,1)), hold on;
+subplot(2,1,1), plot(mean(w_mse_model_shared_estimate_separate,1)), hold off;
+% xlim([min(ticks) max(ticks)])
 set(gca,'XTick',ticks,'XTickLabel',tickLabels)%, 'YScale', 'log');
 set(gca,'fontsize',12);
-title('Sum of MSE for all parameters in dense model - normalised');
-xlabel('Number of samples'), ylabel('Sum of MSE for all parameters'); %, averaged over ' int2str(numExperiments) ' runs'
+title('Mean MSE for all weights in dense model');
+xlabel('Number of samples');
+ylabel('Relative MSE for all weights'); %, averaged over ' int2str(numExperiments) ' runs'
 legend('Shared prior estimation', 'Separate priors estimation');
 
-subplot(2,1,2), plot(sum(w_mse_model_separate_estimate_shared,1)), hold on;
-subplot(2,1,2), plot(sum(w_mse_model_separate_estimate_separate,1)), hold off;
+
+subplot(2,1,2), plot(mean(w_mse_model_separate_estimate_shared,1)), hold on;
+subplot(2,1,2), plot(mean(w_mse_model_separate_estimate_separate,1)), hold off;
 set(gca,'XTick',ticks,'XTickLabel',tickLabels)%, 'YScale', 'log');
 set(gca,'fontsize',12);
-xlabel('Number of samples'), ylabel('Sum of MSE for all parameters') 
-title('Sum of MSE for all parameters in sparse model - normalised');
+xlabel('Number of samples');
+ylabel('Relative MSE for all weights'); 
+title('Mean MSE for all weights in sparse model');
 legend('Shared prior estimation', 'Separate priors estimation');
 
 % std(w_true{1,1})^2*numFuncs;
