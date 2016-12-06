@@ -27,7 +27,7 @@ w_multi = cell(iterations, intraIterations);
 
 w_true = cell(iterations, intraIterations);
 
-dataTitle = ['exp_alpha_modes_dense/' datestr(datetime('now'))];
+dataTitle = ['exp_modes_dense/' datestr(datetime('now'))];
 
 model.alpha=2;
 
