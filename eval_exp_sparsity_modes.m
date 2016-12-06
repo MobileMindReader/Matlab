@@ -100,6 +100,7 @@ w_mse_model_separate_estimate_shared = zeros(M, iterations);
 % w_mse_model_shared_estimate_separate = zeros(M, iterations);
 % w_mse_model_shared_estimate_shared = zeros(M, iterations);
 
+disp('normalize')
 % Calculate MSE 
 for i=1:iterations
     for j=1:numExperiments
@@ -110,10 +111,10 @@ for i=1:iterations
 %         w_mse_model_shared_estimate_separate(:,i) = w_mse_model_shared_estimate_separate(:,i) + (w_model_shared_estimate_separate{i,j}-w_model_shared_true{i,j}).^2;
 %         w_mse_model_shared_estimate_shared(:,i) = w_mse_model_shared_estimate_shared(:,i) + (w_model_shared_estimate_shared{i,j}-w_model_shared_true{i,j}).^2;
     end
-    w_mse_model_separate_estimate_separate(:,i) = w_mse_model_separate_estimate_separate(:,i)/intraIterations;
-    w_mse_model_separate_estimate_shared(:,i) = w_mse_model_separate_estimate_shared(:,i)/intraIterations;    
-%     w_mse_model_shared_estimate_separate(:,i) = w_mse_model_shared_estimate_separate(:,i)/intraIterations;
-%     w_mse_model_shared_estimate_shared(:,i) = w_mse_model_shared_estimate_shared(:,i)/intraIterations;
+    w_mse_model_separate_estimate_separate(:,i) = w_mse_model_separate_estimate_separate(:,i)/numExperiments;
+    w_mse_model_separate_estimate_shared(:,i) = w_mse_model_separate_estimate_shared(:,i)/numExperiments;    
+%     w_mse_model_shared_estimate_separate(:,i) = w_mse_model_shared_estimate_separate(:,i)/numExperiments;
+%     w_mse_model_shared_estimate_shared(:,i) = w_mse_model_shared_estimate_shared(:,i)/numExperiments;
 end
 
 % TODO: Subtract signal amplitude 
@@ -207,8 +208,8 @@ for i=1:iterations
     
 %     dist_true_est_sep(i,:) = dist_true_est_sep(i,:)/ (500-((i-1)*10));
    
-%     f1_model_separate_estimate_separate(:,i) = f1_model_separate_estimate_separate(:,i)/intraIterations;
-%     f1_model_separate_estimate_shared(:,i) = f1_model_separate_estimate_shared(:,i)/intraIterations;
+%     f1_model_separate_estimate_separate(:,i) = f1_model_separate_estimate_separate(:,i)/numExperiments;
+%     f1_model_separate_estimate_shared(:,i) = f1_model_separate_estimate_shared(:,i)/numExperiments;
 end
 
 
@@ -287,8 +288,8 @@ for i=1:iterations
         a_mse_model_separate_estimate_shared(:,i) = a_mse_model_separate_estimate_shared(:,i) + (a_model_separate_estimate_shared(i,j)*ones(1,M)' - a_true').^2;
         a_mse_model_separate_estimate_separate(:,i) = a_mse_model_separate_estimate_separate(:,i) + (a_model_separate_estimate_separate{i,j} - a_true').^2;
     end
-    a_mse_model_separate_estimate_shared(:,i) = a_mse_model_separate_estimate_shared(:,i)/intraIterations;
-    a_mse_model_separate_estimate_separate(:,i) = a_mse_model_separate_estimate_separate(:,i)/intraIterations;
+    a_mse_model_separate_estimate_shared(:,i) = a_mse_model_separate_estimate_shared(:,i)/numExperiments;
+    a_mse_model_separate_estimate_separate(:,i) = a_mse_model_separate_estimate_separate(:,i)/numExperiments;
 end
 
 figure(3)

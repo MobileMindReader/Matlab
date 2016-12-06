@@ -112,23 +112,23 @@ w_mse_model_shared_estimate_shared = zeros(M, iterations);
 for i=1:iterations
     for j=1:numExperiments
         % Separate alpha model
-        w_mse_model_separate_estimate_separate(:,i) = w_mse_model_separate_estimate_separate(:,i) + ((w_model_separate_estimate_separate{i,j}-w_model_separate_true{i,j}).^2)/sum(abs(w_model_separate_true{i,j}));
-        w_mse_model_separate_estimate_shared(:,i) = w_mse_model_separate_estimate_shared(:,i) + (w_model_separate_estimate_shared{i,j}-w_model_separate_true{i,j}).^2/sum(abs(w_model_separate_true{i,j}));
-        % Shared alpha model
-        w_mse_model_shared_estimate_separate(:,i) = w_mse_model_shared_estimate_separate(:,i) + (w_model_shared_estimate_separate{i,j}-w_model_shared_true{i,j}).^2/sum(abs(w_model_shared_true{i,j}));
-        w_mse_model_shared_estimate_shared(:,i) = w_mse_model_shared_estimate_shared(:,i) + (w_model_shared_estimate_shared{i,j}-w_model_shared_true{i,j}).^2/sum(abs(w_model_shared_true{i,j}));
+%         w_mse_model_separate_estimate_separate(:,i) = w_mse_model_separate_estimate_separate(:,i) + ((w_model_separate_estimate_separate{i,j}-w_model_separate_true{i,j}).^2)/sum(abs(w_model_separate_true{i,j}));
+%         w_mse_model_separate_estimate_shared(:,i) = w_mse_model_separate_estimate_shared(:,i) + (w_model_separate_estimate_shared{i,j}-w_model_separate_true{i,j}).^2/sum(abs(w_model_separate_true{i,j}));
+%         % Shared alpha model
+%         w_mse_model_shared_estimate_separate(:,i) = w_mse_model_shared_estimate_separate(:,i) + (w_model_shared_estimate_separate{i,j}-w_model_shared_true{i,j}).^2/sum(abs(w_model_shared_true{i,j}));
+%         w_mse_model_shared_estimate_shared(:,i) = w_mse_model_shared_estimate_shared(:,i) + (w_model_shared_estimate_shared{i,j}-w_model_shared_true{i,j}).^2/sum(abs(w_model_shared_true{i,j}));
         
         %%%%% Alternate normalisation 
-%         w_mse_model_separate_estimate_separate(:,i) = w_mse_model_separate_estimate_separate(:,i) + ((w_model_separate_estimate_separate{i,j}-w_model_separate_true{i,j}).^2)/sqrt(mean(w_model_separate_true{i,j}.^2));
-%         w_mse_model_separate_estimate_shared(:,i) = w_mse_model_separate_estimate_shared(:,i) + (w_model_separate_estimate_shared{i,j}-w_model_separate_true{i,j}).^2/sqrt(mean(w_model_separate_true{i,j}.^2));
-%         w_mse_model_shared_estimate_separate(:,i) = w_mse_model_shared_estimate_separate(:,i) + (w_model_shared_estimate_separate{i,j}-w_model_shared_true{i,j}).^2/sqrt(mean(w_model_shared_true{i,j}.^2));
-%         w_mse_model_shared_estimate_shared(:,i) = w_mse_model_shared_estimate_shared(:,i) + (w_model_shared_estimate_shared{i,j}-w_model_shared_true{i,j}).^2/sqrt(mean(w_model_shared_true{i,j}.^2));
+        w_mse_model_separate_estimate_separate(:,i) = w_mse_model_separate_estimate_separate(:,i) + ((w_model_separate_estimate_separate{i,j}-w_model_separate_true{i,j}).^2)/sqrt(mean(w_model_separate_true{i,j}.^2));
+        w_mse_model_separate_estimate_shared(:,i) = w_mse_model_separate_estimate_shared(:,i) + (w_model_separate_estimate_shared{i,j}-w_model_separate_true{i,j}).^2/sqrt(mean(w_model_separate_true{i,j}.^2));
+        w_mse_model_shared_estimate_separate(:,i) = w_mse_model_shared_estimate_separate(:,i) + (w_model_shared_estimate_separate{i,j}-w_model_shared_true{i,j}).^2/sqrt(mean(w_model_shared_true{i,j}.^2));
+        w_mse_model_shared_estimate_shared(:,i) = w_mse_model_shared_estimate_shared(:,i) + (w_model_shared_estimate_shared{i,j}-w_model_shared_true{i,j}).^2/sqrt(mean(w_model_shared_true{i,j}.^2));
     end
-    w_mse_model_separate_estimate_separate(:,i) = w_mse_model_separate_estimate_separate(:,i)/intraIterations;
-    w_mse_model_separate_estimate_shared(:,i) = w_mse_model_separate_estimate_shared(:,i)/intraIterations;
+    w_mse_model_separate_estimate_separate(:,i) = w_mse_model_separate_estimate_separate(:,i)/numExperiments;
+    w_mse_model_separate_estimate_shared(:,i) = w_mse_model_separate_estimate_shared(:,i)/numExperiments;
     
-    w_mse_model_shared_estimate_separate(:,i) = w_mse_model_shared_estimate_separate(:,i)/intraIterations;
-    w_mse_model_shared_estimate_shared(:,i) = w_mse_model_shared_estimate_shared(:,i)/intraIterations;
+    w_mse_model_shared_estimate_separate(:,i) = w_mse_model_shared_estimate_separate(:,i)/numExperiments;
+    w_mse_model_shared_estimate_shared(:,i) = w_mse_model_shared_estimate_shared(:,i)/numExperiments;
 end
 
 figure(1)
@@ -272,11 +272,11 @@ for i=1:iterations
         a_mse_model_shared_estimate_shared(:,i) = a_mse_model_shared_estimate_shared(:,i) + (a_model_shared_estimate_shared(i,j)*ones(1,M)' - a_true').^2;
         a_mse_model_shared_estimate_separate(:,i) = a_mse_model_shared_estimate_separate(:,i) + (a_model_shared_estimate_separate{i,j} - a_true').^2;
     end
-    a_mse_model_separate_estimate_shared(:,i) = a_mse_model_separate_estimate_shared(:,i)/intraIterations;
-    a_mse_model_separate_estimate_separate(:,i) = a_mse_model_separate_estimate_separate(:,i)/intraIterations;
+    a_mse_model_separate_estimate_shared(:,i) = a_mse_model_separate_estimate_shared(:,i)/numExperiments;
+    a_mse_model_separate_estimate_separate(:,i) = a_mse_model_separate_estimate_separate(:,i)/numExperiments;
     
-    a_mse_model_shared_estimate_shared(:,i) = a_mse_model_shared_estimate_shared(:,i)/intraIterations;
-    a_mse_model_shared_estimate_separate(:,i) = a_mse_model_shared_estimate_separate(:,i)/intraIterations;
+    a_mse_model_shared_estimate_shared(:,i) = a_mse_model_shared_estimate_shared(:,i)/numExperiments;
+    a_mse_model_shared_estimate_separate(:,i) = a_mse_model_shared_estimate_separate(:,i)/numExperiments;
 end
 
 figure(3)
