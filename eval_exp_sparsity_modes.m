@@ -88,9 +88,10 @@ disp(data.description);
 
 clearvars dataFiles fileIndex fileName fileNames files
 
-ticks = 0:5:size(a_model_separate_estimate_shared,1);
-tickLabels = strsplit(int2str(500-((ticks-1)*10)));
-
+ticks = 1:5:size(a_model_separate_estimate_shared,1)+1;
+ticks(end) = ticks(end)-1;
+tickLabels = strsplit(int2str(510-((ticks)*10)));
+% tickLabels{end} = 10;
 
 %% MSE of weights
 
@@ -128,8 +129,8 @@ figure(1)
 
 plot(sum(w_mse_model_separate_estimate_shared,1)), hold on;
 plot(sum(w_mse_model_separate_estimate_separate,1)), hold off
-axis([-inf,inf,0,3e4])
-set(gca,'XTick',ticks,'XTickLabel',tickLabels);%, 'YScale', 'log');
+% axis([-inf,inf,0,3e4])
+set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
 xlabel(['#non-zero parameters, averaged over ' int2str(numExperiments) ' runs']), ylabel('Sum of MSE for all weights') 
 title('Sum of MSE for all weights with separate alpha priors');
 legend('Shared alpha estimation', 'Separate alpha estimation');
@@ -263,7 +264,12 @@ legend('Shared prior estimate','Separate priors estimate');
 %% SNR
 
 figure(99)
-plot(mean(SNR,2));
+plot(mean(SNR,2)), axis('equal');
+set(gca,'XTick',ticks,'XTickLabel',tickLabels);
+title('SNR');
+ylabel('dB');
+xlabel('Number of non-zero parameters');
+
 
 %% MSE of Alphas
 
@@ -272,7 +278,7 @@ a_mse_model_separate_estimate_shared = zeros(M, iterations);
 
 a_true = zeros(1,M); 
 a_true(1:10) = 2;
-a_true(11:100) = 1000;
+a_true(11:end) = 1000;
 b_true = 25*ones(1,M);
 
 for i=1:iterations
@@ -288,8 +294,8 @@ end
 figure(3)
 plot(sum(a_mse_model_separate_estimate_separate,1))%, hold on
 % plot(sum(a_mse_model_separate_estimate_shared,1)), hold off
-set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
-title('MSE of estimated alphas with separate priors');
+set(gca,'XTick',ticks,'XTickLabel',tickLabels);
+title('MSE of estimated alphas with separate priors - THIS DOES NOT REALLY MAKE SENSE');
 ylabel(['MSE of alpha averaged over ' int2str(numExperiments) ' experiments']);
 xlabel('#non-zero parameters')
 legend('Separate', 'Shared');
