@@ -11,7 +11,7 @@ s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
 iterations = 50;
-intraIterations = 20;
+intraIterations = 40;
 
 % Unimodal
 % llh_uni = zeros(iterations, intraIterations);
@@ -54,13 +54,12 @@ for iter=1:iterations
         wTemp = zeros(1,numFuncs);
         wTemp(idx) = normrnd(0,sqrt(1/model.alpha), [1 size(idx)]);
         model.w = wTemp;
-
-        x=model.w'*sin((1:timeSteps)*0.5);
-                
-        factor = sqrt(10*numFuncs/numActiveFuncs);
+        
+        factor = sqrt(numFuncs/numActiveFuncs);
         model.w = factor*wTemp;
         w_true{iter, intraIter} = model.w';
         
+        x=model.w'*sin((1:timeSteps)*0.5);                
         y = forwardMatrix*x;
         Phi = forwardMatrix;
         

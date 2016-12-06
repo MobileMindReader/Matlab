@@ -9,7 +9,7 @@ for i = 1:length(fileIndex)
     fileName = files(fileIndex(i)).name;
 %     if fileName == '12-Nov-2016 18:33:24-88.mat'
 %     if fileName(end-3:end) == '.mat'
-    if fileName == '05-Dec-2016 09:34:35.mat'
+    if fileName(1:2) == '06'
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
@@ -30,6 +30,8 @@ llh_model_separate_estimate_separate=[];
 w_model_separate_estimate_separate = [];
 w_model_separate_estimate_shared = [];    
 w_model_separate_true = [];
+
+SNR = [];
 
 % a_model_shared_estimate_shared = [];
 % b_model_shared_estimate_shared = [];
@@ -56,6 +58,7 @@ for data=dataFiles
         b_model_separate_estimate_separate = [b_model_separate_estimate_separate data.beta_multi];
         llh_model_separate_estimate_separate = [llh_model_separate_estimate_separate data.llh_multi];
         w_model_separate_estimate_separate = [w_model_separate_estimate_separate data.w_multi];
+        SNR = [SNR data.SNRdB];
 %     else % Load data into variables - shared alpha model
 %         w_model_shared_true = [w_model_shared_true data.w_true];
 %         a_model_shared_estimate_shared = [a_model_shared_estimate_shared data.alpha_uni];
@@ -125,7 +128,8 @@ figure(1)
 
 plot(sum(w_mse_model_separate_estimate_shared,1)), hold on;
 plot(sum(w_mse_model_separate_estimate_separate,1)), hold off
-set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
+axis([-inf,inf,0,3e4])
+set(gca,'XTick',ticks,'XTickLabel',tickLabels);%, 'YScale', 'log');
 xlabel(['#non-zero parameters, averaged over ' int2str(numExperiments) ' runs']), ylabel('Sum of MSE for all weights') 
 title('Sum of MSE for all weights with separate alpha priors');
 legend('Shared alpha estimation', 'Separate alpha estimation');
@@ -163,31 +167,33 @@ for i=1:iterations
         
         if (precisionSep+recallSep == 0)
             f1_msep_sep(i,j) = 0;
+        elseif isnan(precisionSep)
+            f1_msep_sep(i,j) = 0;
         else
             f1_msep_sep(i,j) = 2*(precisionSep*recallSep)/(precisionSep+recallSep);
         end
         
-        for idx = nonZeroIdxTrue'
-            [c ~] = min(abs(nonZeroIdxSep-idx));
-            [c2 ~] = min(abs(nonZeroIdxSha-idx));
-            
-            dist_true_est_sep(i,j) = dist_true_est_sep(i,j) + c;
-            dist_true_est_sha(i,j) = dist_true_est_sha(i,j) + c2;
-        end
-        dist_true_est_sep(i,j) = dist_true_est_sep(i,j)/numel(nonZeroIdxTrue);
-        dist_true_est_sha(i,j) = dist_true_est_sha(i,j)/numel(nonZeroIdxTrue);
-        
-        for idx = nonZeroIdxSep'
-            [c ~] = min(abs(nonZeroIdxTrue-idx));
-            dist_est_true_sep(i,j) = dist_est_true_sep(i,j) + c;
-        end
-        dist_est_true_sep(i,j) = dist_est_true_sep(i,j)/numel(nonZeroIdxSep);
-        
-        for idx = nonZeroIdxSha'
-            [c ~] = min(abs(nonZeroIdxTrue-idx));
-            dist_est_true_sha(i,j) = dist_est_true_sha(i,j) + c;
-        end
-        dist_est_true_sha(i,j) = dist_est_true_sha(i,j)/numel(nonZeroIdxSha);
+%         for idx = nonZeroIdxTrue'
+%             [c ~] = min(abs(nonZeroIdxSep-idx));
+%             [c2 ~] = min(abs(nonZeroIdxSha-idx));
+%             
+%             dist_true_est_sep(i,j) = dist_true_est_sep(i,j) + c;
+%             dist_true_est_sha(i,j) = dist_true_est_sha(i,j) + c2;
+%         end
+%         dist_true_est_sep(i,j) = dist_true_est_sep(i,j)/numel(nonZeroIdxTrue);
+%         dist_true_est_sha(i,j) = dist_true_est_sha(i,j)/numel(nonZeroIdxTrue);
+%         
+%         for idx = nonZeroIdxSep'
+%             [c ~] = min(abs(nonZeroIdxTrue-idx));
+%             dist_est_true_sep(i,j) = dist_est_true_sep(i,j) + c;
+%         end
+%         dist_est_true_sep(i,j) = dist_est_true_sep(i,j)/numel(nonZeroIdxSep);
+%         
+%         for idx = nonZeroIdxSha'
+%             [c ~] = min(abs(nonZeroIdxTrue-idx));
+%             dist_est_true_sha(i,j) = dist_est_true_sha(i,j) + c;
+%         end
+%         dist_est_true_sha(i,j) = dist_est_true_sha(i,j)/numel(nonZeroIdxSha);
         
         falsePosSha = numel(find(ismember(nonZeroIdxSha,nonZeroIdxTrue) ==0));
         truePosSha = numel(find(ismember(nonZeroIdxSha,nonZeroIdxTrue)  ~=0));
@@ -203,6 +209,7 @@ for i=1:iterations
 %     f1_model_separate_estimate_separate(:,i) = f1_model_separate_estimate_separate(:,i)/intraIterations;
 %     f1_model_separate_estimate_shared(:,i) = f1_model_separate_estimate_shared(:,i)/intraIterations;
 end
+
 
 
 figure(2)
@@ -253,6 +260,10 @@ legend('Shared prior estimate','Separate priors estimate');
 % std(w_true{1,1})^2*numFuncs;
 
 
+%% SNR
+
+figure(99)
+plot(mean(SNR,2));
 
 %% MSE of Alphas
 
