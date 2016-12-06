@@ -10,7 +10,7 @@ model.dimension = 1;
 s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
-iterations = 20;
+iterations = 40;
 intraIterations = 100;
 
 % Unimodal
@@ -34,16 +34,16 @@ model.alpha=2;
 
 data.SNRdB = zeros(iterations, intraIterations);
 data.numSamples = '50*iter';
-data.numFuncs = '500';
-data.numActiveFuncs = '500';
+data.numFuncs = '1000';
+data.numActiveFuncs = '1000';
 data.experiment = 'Dense model';
-data.description = '500 functions, all weights drawn from one alpha. Iterating over N (25xiter). About the same SNR for all cases.';
+data.description = '1000 functions, all weights drawn from one alpha. Iterating over N (25xiter). About the same SNR for all cases.';
 
 for iter=1:iterations
     for intraIter=1:intraIterations 
         
         numSamples = 50*iter;
-        numFuncs = 500; %iter;
+        numFuncs = 1000; %iter;
         
         forwardMatrix = randn(numSamples, numFuncs);
         
