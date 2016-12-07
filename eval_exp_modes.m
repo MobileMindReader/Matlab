@@ -22,6 +22,8 @@ for i = 1:length(fileIndex)
     fileName = files(fileIndex(i)).name;
     if fileName(1:14) == '06-Dec-2016 20'
         fileNames{end+1} = files(fileIndex(i)).name;
+    elseif fileName(1:2) == '07'
+        fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
 for i=1:numel(fileNames)

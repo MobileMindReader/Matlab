@@ -28,7 +28,7 @@ w_multi = cell(iterations, intraIterations);
 input = cell(iterations, intraIterations);
 w_true = cell(iterations, intraIterations);
 
-dataTitle = ['exp_modes_sparse/' datestr(datetime('now'))];
+dataTitle = ['exp_modes_sparse/v2-' datestr(datetime('now'))];
 
 data.SNRdB = zeros(iterations, intraIterations);
 data.numSamples = '50*iter';
