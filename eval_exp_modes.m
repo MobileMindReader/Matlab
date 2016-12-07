@@ -253,15 +253,15 @@ legend('Shared prior estimate','Separate priors estimate');
 %% Mean of Alphas
 
 alpha_mean_sparse_separate = zeros(iterations, numExperiments);
-% alpha_mean_sparse_shared = zeros(M, iterations);
-
 alpha_mean_dense_separate = zeros(iterations, numExperiments);
-% alpha_mean_dense_shared = zeros(M, iterations);
 
-% a_true = zeros(1,M); 
-% a_true(1:20) = 2;
-% a_true(21:end) = 1000;
-% b_true = 25*ones(1,M);
+alpha_std_sparse_separate = zeros(iterations, numExperiments);
+alpha_std_dense_separate = zeros(iterations, numExperiments);
+
+err_sparse_separate = zeros(iterations,numExperiments);
+err_dense_separate = zeros(iterations,numExperiments);
+err_sparse_shared = zeros(iterations,1);
+err_dense_shared = zeros(iterations,1);
 
 for i=1:iterations
     for j=1:numExperiments
@@ -272,11 +272,56 @@ for i=1:iterations
         
         alpha_mean_sparse_separate(i,j) = mean(a_sparse_separate{i,j}(nonZeroIdxSparse));
         alpha_mean_dense_separate(i,j) = mean(a_dense_separate{i,j}(nonZeroIdxDense));
+        
+        alpha_std_sparse_separate(i,j) = std(a_sparse_separate{i,j}(nonZeroIdxSparse));
+        alpha_std_dense_separate(i,j) = std(a_dense_separate{i,j}(nonZeroIdxDense));
+        
+        err_sparse_separate(i,j) = alpha_std_sparse_separate(i,j)/(sqrt(50*i));
+        err_dense_separate(i,j) = alpha_std_dense_separate(i,j)/(sqrt(50*i));
     end
+    
+    err_sparse_shared(i) = std(a_sparse_shared(i,:))/(sqrt(50*i));
+    err_dense_shared(i) = std(a_dense_shared(i,:))/(sqrt(50*i));
 end
 
+figure(3)
 
+% subplot(2,1,1), plot(mean(a_dense_shared,2)), hold on;
+% subplot(2,1,1), plot(mean(alpha_mean_dense_separate,2)), hold off;
+subplot(2,1,1), errorbar(mean(a_dense_shared,2), err_dense_shared); hold on;
+subplot(2,1,1), errorbar(mean(alpha_mean_dense_separate,2), mean(err_dense_separate,2)); hold off;
 
+set(gca,'XTick',ticks,'XTickLabel',tickLabels)%, 'YScale', 'log');
+title('Mean alpha for all weights in dense model');
+xlabel('Number of samples')%, ylabel('F1-score') 
+legend('Shared prior estimate','Separate priors estimate');
+
+% subplot(2,1,2), plot(mean(a_sparse_shared,2)), hold on;
+% subplot(2,1,2), plot(mean(alpha_mean_sparse_separate,2)), hold off;
+subplot(2,1,2), errorbar(mean(a_sparse_shared,2), err_sparse_shared); hold on;
+subplot(2,1,2), errorbar(mean(alpha_mean_sparse_separate,2), mean(err_sparse_separate,2)); hold off;
+
+set(gca,'XTick',ticks,'XTickLabel',tickLabels)%, 'YScale', 'log');
+title('Mean alpha for non-zero weights in sparse model');
+xlabel('Number of samples')%, ylabel('F1-score') 
+legend('Shared prior estimate','Separate priors estimate');
+%%
+
+figure(4)
+
+subplot(2,1,1), plot(std(a_dense_shared,0,2)), hold on;
+subplot(2,1,1), plot(mean(alpha_std_dense_separate,2)), hold off;
+set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
+title('Mean alpha for all weights in dense model');
+xlabel('Number of samples')%, ylabel('F1-score') 
+legend('Shared prior estimate','Separate priors estimate');
+
+subplot(2,1,2), plot(std(a_sparse_shared,0,2)), hold on;
+subplot(2,1,2), plot(mean(alpha_std_sparse_separate,2)), hold off;
+set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
+title('Mean alpha for non-zero weights in sparse model');
+xlabel('Number of samples')%, ylabel('F1-score') 
+legend('Shared prior estimate','Separate priors estimate');
 
 
 %%
