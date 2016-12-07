@@ -50,7 +50,7 @@ for iter=1:iterations
         model.w = normrnd(0,sqrt(1/model.alpha), [1 numFuncs]);
         w_true{iter, intraIter} = model.w';
         
-        x=model.w'*sin(0.5);        
+        x=model.w'*sin(0.5);
        
         y = forwardMatrix*x;
         Phi = forwardMatrix;

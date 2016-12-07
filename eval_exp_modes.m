@@ -288,38 +288,42 @@ figure(3)
 
 % subplot(2,1,1), plot(mean(a_dense_shared,2)), hold on;
 % subplot(2,1,1), plot(mean(alpha_mean_dense_separate,2)), hold off;
-subplot(2,1,1), errorbar(mean(a_dense_shared,2), err_dense_shared); hold on;
-subplot(2,1,1), errorbar(mean(alpha_mean_dense_separate,2), mean(err_dense_separate,2)); hold off;
-
+subplot(2,1,1), erb1=errorbar(mean(a_dense_shared,2), err_dense_shared); hold on;
+subplot(2,1,1), erb2=errorbar(mean(alpha_mean_dense_separate,2), mean(err_dense_separate,2)); hold off;
+axis([0, inf, -inf, inf]);
 set(gca,'XTick',ticks,'XTickLabel',tickLabels)%, 'YScale', 'log');
+set(erb1(1),'Linewidth',2)
+set(erb2(1),'Linewidth',2)
 title('Mean alpha for all weights in dense model');
 xlabel('Number of samples')%, ylabel('F1-score') 
 legend('Shared prior estimate','Separate priors estimate');
 
 % subplot(2,1,2), plot(mean(a_sparse_shared,2)), hold on;
 % subplot(2,1,2), plot(mean(alpha_mean_sparse_separate,2)), hold off;
-subplot(2,1,2), errorbar(mean(a_sparse_shared,2), err_sparse_shared); hold on;
-subplot(2,1,2), errorbar(mean(alpha_mean_sparse_separate,2), mean(err_sparse_separate,2)); hold off;
-
+subplot(2,1,2), erb3=errorbar(mean(a_sparse_shared,2), err_sparse_shared); hold on;
+subplot(2,1,2), erb4=errorbar(mean(alpha_mean_sparse_separate,2), mean(err_sparse_separate,2)); hold off;
+axis([0, inf, -inf, inf]);
 set(gca,'XTick',ticks,'XTickLabel',tickLabels)%, 'YScale', 'log');
+set(erb3(1),'Linewidth',2);
+set(erb4(1),'Linewidth',2)
 title('Mean alpha for non-zero weights in sparse model');
 xlabel('Number of samples')%, ylabel('F1-score') 
 legend('Shared prior estimate','Separate priors estimate');
-%%
+%% STD of alpha
 
 figure(4)
 
 subplot(2,1,1), plot(std(a_dense_shared,0,2)), hold on;
 subplot(2,1,1), plot(mean(alpha_std_dense_separate,2)), hold off;
 set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
-title('Mean alpha for all weights in dense model');
+title('Mean std of alpha for all weights in dense model');
 xlabel('Number of samples')%, ylabel('F1-score') 
 legend('Shared prior estimate','Separate priors estimate');
 
 subplot(2,1,2), plot(std(a_sparse_shared,0,2)), hold on;
 subplot(2,1,2), plot(mean(alpha_std_sparse_separate,2)), hold off;
 set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
-title('Mean alpha for non-zero weights in sparse model');
+title('Mean std of alpha for non-zero weights in sparse model');
 xlabel('Number of samples')%, ylabel('F1-score') 
 legend('Shared prior estimate','Separate priors estimate');
 
