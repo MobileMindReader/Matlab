@@ -57,7 +57,7 @@ for iter=1:iterations
         model.w = factor*wTemp;
         w_true{iter, intraIter} = model.w';
 
-        x=model.w'*sin(0.5);
+        x=model.w';
         y = forwardMatrix*x;
         noise = normrnd(0, sqrt(1/model.beta), [numSamples 1]);
 
