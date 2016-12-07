@@ -10,7 +10,7 @@ model.dimension = 1;
 s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
-iterations = 40;
+iterations = 20;
 intraIterations = 100;
 
 % Unimodal
@@ -32,10 +32,10 @@ dataTitle = ['exp_modes_sparse/' datestr(datetime('now'))];
 
 data.SNRdB = zeros(iterations, intraIterations);
 data.numSamples = '50*iter';
-data.numFuncs = '1000';
+data.numFuncs = '500';
 data.numActiveFuncs = '20';
 data.experiment = 'Sparse model';
-data.description = '1000 functions, 20 weights drawn from one alpha, rest is zero. Iterating over N (50xiter). About the same SNR for all cases.';
+data.description = '500 functions, 20 weights drawn from one alpha, rest is zero. Iterating over N (50xiter). About the same SNR for all cases.';
 
 model.alpha=2;
 
@@ -43,7 +43,7 @@ for iter=1:iterations
     for intraIter=1:intraIterations 
         
         numSamples = 50*iter;
-        numFuncs = 1000; 
+        numFuncs = 500; 
         numActiveFuncs = 20;
         
         forwardMatrix = randn(numSamples, numFuncs);

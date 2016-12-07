@@ -309,44 +309,92 @@ set(erb4(1),'Linewidth',2)
 title('Mean alpha for non-zero weights in sparse model');
 xlabel('Number of samples')%, ylabel('F1-score') 
 legend('Shared prior estimate','Separate priors estimate');
-%% STD of alpha
+
+% %% STD of alpha
+% figure(4)
+% subplot(2,1,1), plot(std(a_dense_shared,0,2)), hold on;
+% subplot(2,1,1), plot(mean(alpha_std_dense_separate,2)), hold off;
+% set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
+% title('Mean std of alpha for all weights in dense model');
+% xlabel('Number of samples')%, ylabel('F1-score') 
+% legend('Shared prior estimate','Separate priors estimate');
+% 
+% subplot(2,1,2), plot(std(a_sparse_shared,0,2)), hold on;
+% subplot(2,1,2), plot(mean(alpha_std_sparse_separate,2)), hold off;
+% set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
+% title('Mean std of alpha for non-zero weights in sparse model');
+% xlabel('Number of samples')%, ylabel('F1-score') 
+% legend('Shared prior estimate','Separate priors estimate');
+% 
+% figure(3)
+% subplot(2,1,1), plot(sum(alpha_mean_dense_separate,1)), hold on;
+% subplot(2,1,1), plot(sum(alpha_mean_dense_shared,1)), hold off
+% set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'fontsize',12);
+% title('MSE of estimated alphas with shared prior');
+% ylabel(['MSE of alpha averaged over ' int2str(numExperiments) ' experiments']);
+% xlabel('Number of samples');
+% legend('Shared prior estimate','Separate priors estimate');
+% 
+% subplot(2,1,2), plot(sum(alpha_mean_sparse_separate,1)), hold on
+% subplot(2,1,2), plot(sum(alpha_mean_sparse_shared,1)), hold off
+% set(gca,'XTick',ticks, 'XTickLabel',tickLabels, 'fontsize',12);
+% title('MSE of estimated alphas with separate priors');
+% ylabel(['MSE of alpha averaged over ' int2str(numExperiments) ' experiments']);
+% xlabel('Number of samples');
+% legend('Shared prior estimate','Separate priors estimate');
+
+
+%% Beta estimation comparison
 
 figure(4)
+subplot(2,1,1), semilogy(1:iterations, mean(b_dense_shared,2)), hold on;
+subplot(2,1,1), semilogy(1:iterations, mean(b_dense_separate,2));
+subplot(2,1,1), semilogy(1:iterations, model.beta*ones(1,iterations));  hold off
+set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
+set(gca, 'fontsize',12);
+legend('Shared prior estimation','Separate priors estimation', 'True beta');
+title('beta estimation in shared prior model');
+ylabel(['beta averaged over ' int2str(numExperiments) ' experiments']);
+xlabel('# of samples');
 
-subplot(2,1,1), plot(std(a_dense_shared,0,2)), hold on;
-subplot(2,1,1), plot(mean(alpha_std_dense_separate,2)), hold off;
-set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
-title('Mean std of alpha for all weights in dense model');
-xlabel('Number of samples')%, ylabel('F1-score') 
-legend('Shared prior estimate','Separate priors estimate');
-
-subplot(2,1,2), plot(std(a_sparse_shared,0,2)), hold on;
-subplot(2,1,2), plot(mean(alpha_std_sparse_separate,2)), hold off;
-set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
-title('Mean std of alpha for non-zero weights in sparse model');
-xlabel('Number of samples')%, ylabel('F1-score') 
-legend('Shared prior estimate','Separate priors estimate');
+subplot(2,1,2), semilogy(1:iterations, mean(b_sparse_shared,2)), hold on;
+subplot(2,1,2), semilogy(1:iterations, mean(b_sparse_separate,2));
+subplot(2,1,2), semilogy(1:iterations, model.beta*ones(1,iterations));  hold off
+% trueRatio = (model.beta);
+% semilogy(1:iterations, trueRatio*ones(1,iterations), '-r');
+set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
+set(gca,'fontsize',12);
+title('beta estimation in separate prior model');
+legend('Shared prior estimation','Separate priors estimation','True beta');
+ylabel(['beta averaged over ' int2str(numExperiments) ' experiments']);
+xlabel('# of samples');
 
 
-%%
-figure(3)
-subplot(2,1,1), plot(sum(alpha_mean_dense_separate,1)), hold on;
-subplot(2,1,1), plot(sum(alpha_mean_dense_shared,1)), hold off
-set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'fontsize',12);
-title('MSE of estimated alphas with shared prior');
 
-ylabel(['MSE of alpha averaged over ' int2str(numExperiments) ' experiments']);
-xlabel('Number of samples');
-legend('Shared prior estimate','Separate priors estimate');
 
-subplot(2,1,2), plot(sum(alpha_mean_sparse_separate,1)), hold on
-subplot(2,1,2), plot(sum(alpha_mean_sparse_shared,1)), hold off
-set(gca,'XTick',ticks, 'XTickLabel',tickLabels, 'fontsize',12);
-title('MSE of estimated alphas with separate priors');
 
-ylabel(['MSE of alpha averaged over ' int2str(numExperiments) ' experiments']);
-xlabel('Number of samples');
-legend('Shared prior estimate','Separate priors estimate');
+
+%% Ratios
+
+
+figure(6)
+
+% ratios(iter, intraIter) = alpha/beta;
+subplot(2,1,1), semilogy(1:iterations, (mean(a_dense_shared,2)./mean(b_dense_shared,2))), hold on;
+subplot(2,1,1), semilogy(1:iterations, (mean(alpha_mean_dense_separate,2)./mean(b_dense_separate,2))), hold off;
+
+subplot(2,1,2), semilogy(1:iterations, (mean(a_sparse_shared,2)./mean(b_sparse_shared,2))), hold on;%;, hold on;
+subplot(2,1,2), semilogy(1:iterations, (mean(alpha_mean_sparse_separate,2)./mean(b_sparse_separate,2))), hold off;
+
+set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
+set(gca,'fontsize',12);
+title('beta estimation in separate prior model');
+legend('Shared prior estimation','Separate priors estimation');
+ylabel(['beta averaged over ' int2str(numExperiments) ' experiments']);
+xlabel('# of samples');
+
+
+
 
 %%
 
@@ -465,32 +513,6 @@ set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
 set(gca,'YScale', 'log');
 legend('Estimated with shared prior', 'Estimated with separate priors (sum of 10 first)');
 title('Alpha estimation in separate prior model (First 10 functions assumed active)'), ylabel(['alpha averaged over ' int2str(numExperiments) ' experiments']);
-xlabel('# of samples');
-
-
-%% Beta estimation comparison
-
-figure(7)
-subplot(2,1,1), semilogy(1:iterations, mean(b_dense_shared,2)), hold on;
-subplot(2,1,1), semilogy(1:iterations, mean(b_dense_separate,2));
-subplot(2,1,1), semilogy(1:iterations, model.beta*ones(1,iterations));  hold off
-set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
-set(gca, 'fontsize',12);
-legend('Shared prior estimation','Separate priors estimation', 'True beta');
-title('beta estimation in shared prior model');
-ylabel(['beta averaged over ' int2str(numExperiments) ' experiments']);
-xlabel('# of samples');
-
-subplot(2,1,2), semilogy(1:iterations, mean(b_sparse_shared,2)), hold on;
-subplot(2,1,2), semilogy(1:iterations, mean(b_sparse_separate,2));
-subplot(2,1,2), semilogy(1:iterations, model.beta*ones(1,iterations));  hold off
-% trueRatio = (model.beta);
-% semilogy(1:iterations, trueRatio*ones(1,iterations), '-r');
-set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
-set(gca,'fontsize',12);
-title('beta estimation in separate prior model');
-legend('Shared prior estimation','Separate priors estimation','True beta');
-ylabel(['beta averaged over ' int2str(numExperiments) ' experiments']);
 xlabel('# of samples');
 
 
