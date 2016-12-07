@@ -7,7 +7,10 @@ fileIndex = find(~[files.isdir]);
 fileNames={}; dataFilesDense = {};
 for i = 1:length(fileIndex)
     fileName = files(fileIndex(i)).name;
-    if fileName(end-3:end) == '.mat'
+%     if fileName(end-3:end) == '.mat'
+%         fileNames{end+1} = files(fileIndex(i)).name;
+%     end
+    if fileName(1:2) == 'v2'
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
@@ -20,9 +23,12 @@ fileIndex = find(~[files.isdir]);
 fileNames={}; dataFilesSparse = {};
 for i = 1:length(fileIndex)
     fileName = files(fileIndex(i)).name;
-    if fileName(1:14) == '06-Dec-2016 20'
-        fileNames{end+1} = files(fileIndex(i)).name;
-    elseif fileName(1:2) == '07'
+%     if fileName(1:14) == '06-Dec-2016 20'
+%         fileNames{end+1} = files(fileIndex(i)).name;
+%     elseif fileName(1:2) == '07'
+%         fileNames{end+1} = files(fileIndex(i)).name;
+%     end
+    if fileName(1:2) == 'v2'
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
@@ -154,6 +160,7 @@ xlabel('Number of samples');
 ylabel('Relative MSE for all weights'); 
 legend('Shared prior estimation', 'Separate priors estimation');
 
+print(figure(1), 'figures/sample_sweep_weight_relative_mse','-dpdf')
 % std(w_true{1,1})^2*numFuncs;
 
 %% F1 Score
@@ -242,6 +249,7 @@ xlabel('Number of samples');
 ylabel('F1-score for non-zero weights');
 legend('Shared prior estimate','Separate priors estimate');
 
+print(figure(2), 'figures/sample_sweep_f1','-dpdf')
 
 %% Alpha averages? What should this show?
 % 
@@ -292,7 +300,7 @@ for i=1:iterations
 end
 
 
-expectedAlpha = (1/(sqrt(1/2)*sin(0.5)))^2;
+expectedAlpha = (1/(sqrt(1/2)))^2;
 
 figure(3)
 
@@ -301,7 +309,7 @@ figure(3)
 subplot(2,1,1), erb1=errorbar(mean(a_dense_shared,2), err_dense_shared); hold on;
 subplot(2,1,1), erb2=errorbar(mean(alpha_mean_dense_separate,2), mean(err_dense_separate,2));
 subplot(2,1,1), plot(1:iterations, expectedAlpha*ones(1,iterations), '--'), hold off;
-axis([0, inf, -inf, inf]);
+axis([0, inf, 1, 100]);
 set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
 set(gca,'fontsize',12);
 set(erb1(1),'Linewidth',2)
@@ -316,7 +324,7 @@ legend('Shared prior estimate','Separate priors estimate', 'Expected alpha');
 subplot(2,1,2), erb3=errorbar(mean(a_sparse_shared,2), err_sparse_shared); hold on;
 subplot(2,1,2), erb4=errorbar(mean(alpha_mean_sparse_separate,2), mean(err_sparse_separate,2));
 subplot(2,1,2), plot(1:iterations, expectedAlpha*ones(1,iterations), '--'), hold off;
-axis([0, inf, -inf, inf]);
+axis([0, inf, 1, inf]);
 set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
 set(gca,'fontsize',12);
 set(erb3(1),'Linewidth',2);
@@ -325,6 +333,9 @@ title('Sparse model');
 xlabel('Number of samples');
 ylabel({'Mean of estimated alphas','Non-zero weights only'});
 legend('Shared prior estimate','Separate priors estimate', 'Expected alpha');
+
+
+print(figure(3), 'figures/sample_sweep_alpha','-dpdf')
 
 % %% STD of alpha
 % figure(4)
@@ -385,12 +396,12 @@ legend('Shared prior estimation','Separate priors estimation','True beta');
 ylabel(['Estimated beta']);
 xlabel('Number of samples');
 
-
+print(figure(4), 'figures/sample_sweep_beta','-dpdf')
 
 
 %% Ratios
 
-figure(6)
+figure(5)
 
 % ratios(iter, intraIter) = alpha/beta;
 subplot(2,1,1), semilogy(1:iterations, (mean(a_dense_shared,2)./mean(b_dense_shared,2))), hold on;
@@ -414,6 +425,7 @@ ylabel(['alpha/beta ratio']);
 xlabel('Number of samples');
 
 
+print(figure(5), 'figures/sample_sweep_ratio','-dpdf')
 
 
 %%
@@ -425,20 +437,20 @@ axis('equal');
 legend('Dense model', 'Sparse model');
 
 %% WHAT should this show ?????????
-
-figure(4)
-
-plot(1:iterations, mean(a_sparse_shared,2)), hold on;
-
-% plot([1:data.iterations], ratio_approx_means, '-k')
-trueRatio = (model.alpha);
-plot(1:iterations, trueRatio*ones(1,iterations), '-r');
-hold off
-set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
-
-ylabel(['alpha/beta ratio averaged over ' int2str(numExperiments) ' experiments']);
-xlabel('# of samples');
-% legend('Estimated ratio', 'True ratio');
+% 
+% figure(4)
+% 
+% plot(1:iterations, mean(a_sparse_shared,2)), hold on;
+% 
+% % plot([1:data.iterations], ratio_approx_means, '-k')
+% trueRatio = (model.alpha);
+% plot(1:iterations, trueRatio*ones(1,iterations), '-r');
+% hold off
+% set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
+% 
+% ylabel(['alpha/beta ratio averaged over ' int2str(numExperiments) ' experiments']);
+% xlabel('# of samples');
+% % legend('Estimated ratio', 'True ratio');
 
 
 %% Log likelihood 
@@ -457,16 +469,16 @@ for i=1:iterations
     llh_norm_sparse_shared(i,:) = llh_sparse_shared(i,:)/(i*25);
 end
 
-figure(5)
-subplot(2,1,1), plot(mean(llh_norm_dense_separate,2),'b'), hold on;
-subplot(2,1,1), plot(mean(llh_norm_dense_shared,2),'r'), hold off;
+figure(8)
+subplot(2,1,1), plot(mean(llh_norm_dense_separate,2)), hold on;
+subplot(2,1,1), plot(mean(llh_norm_dense_shared,2)), hold off;
 set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
 title('Normalized log likelihood with shared prior');
 legend('Separate', 'Shared');
 xlabel('# of samples'), ylabel(['Log likelihood averaged over ' int2str(numExperiments) ' experiments']);
 
-subplot(2,1,2), plot(mean(llh_norm_sparse_separate,2),'b'), hold on;
-subplot(2,1,2), plot(mean(llh_norm_sparse_shared,2),'r'), hold off;
+subplot(2,1,2), plot(mean(llh_norm_sparse_separate,2)), hold on;
+subplot(2,1,2), plot(mean(llh_norm_sparse_shared,2)), hold off;
 set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
 title('Normalized log likelihood with separate priors');
 legend('Separate', 'Shared');
@@ -475,65 +487,65 @@ xlabel('# of samples'), ylabel(['Log likelihood averaged over ' int2str(numExper
 
 %% Alpha estimation mean with error bars - std/sqrt(N)
 
-active_functions=10;
-
-err_sparse_shared = zeros(1,iterations);
-err_sparse_separate = zeros(active_functions, iterations);
-
-err_dense_shared = zeros(1,iterations);
-err_dense_separate = zeros(100, iterations);
-
-std_sparse_shared = std(a_sparse_shared,0,2);
-std_dense_shared = std(a_dense_shared,0,2);
-
-a_active_sparse_separate = zeros(iterations,numExperiments,active_functions);
-a_active_dense_separate = zeros(iterations,numExperiments,100);
-
-for i=1:iterations
-    err_sparse_shared(i) = std_sparse_shared(i)/sqrt(25*i);
-    err_dense_shared(i) = std_dense_shared(i)/sqrt(25*i);
-    
-%     separate_error(i) = std(vertcat(alpha_separate{i,:}))/sqrt(25*i);
-    for j=1:numExperiments
-        a_active_sparse_separate(i,j,:) = a_sparse_separate{i,j}(1:active_functions);
-        a_active_dense_separate(i,j,:) = a_dense_separate{i,j}(1:end);
-    end
-    
-    err_sparse_separate(:,i) = squeeze(std(a_active_sparse_separate(i,:,:),0,2))/sqrt(25*i);
-    err_dense_separate(:,i) = squeeze(std(a_active_dense_separate(i,:,:),0,2))/sqrt(25*i);
-end
-
-% std_sparse_separate = squeeze(std(a_active_sparse_separate,0,2));
-% std_dense_separate = squeeze(std(a_active_dense_separate,0,2));
-
+% active_functions=10;
+% 
+% err_sparse_shared = zeros(1,iterations);
+% err_sparse_separate = zeros(active_functions, iterations);
+% 
+% err_dense_shared = zeros(1,iterations);
+% err_dense_separate = zeros(100, iterations);
+% 
+% std_sparse_shared = std(a_sparse_shared,0,2);
+% std_dense_shared = std(a_dense_shared,0,2);
+% 
+% a_active_sparse_separate = zeros(iterations,numExperiments,active_functions);
+% a_active_dense_separate = zeros(iterations,numExperiments,100);
+% 
 % for i=1:iterations
-%     err_sparse_separate(:,i) = a_std_sparse_separate(i,:)/sqrt(25*i);
-%     err_dense_separate(:,i) = a_std_dense_separate(i,:)/sqrt(25*i);
+%     err_sparse_shared(i) = std_sparse_shared(i)/sqrt(25*i);
+%     err_dense_shared(i) = std_dense_shared(i)/sqrt(25*i);
+%     
+% %     separate_error(i) = std(vertcat(alpha_separate{i,:}))/sqrt(25*i);
+%     for j=1:numExperiments
+%         a_active_sparse_separate(i,j,:) = a_sparse_separate{i,j}(1:active_functions);
+%         a_active_dense_separate(i,j,:) = a_dense_separate{i,j}(1:end);
+%     end
+%     
+%     err_sparse_separate(:,i) = squeeze(std(a_active_sparse_separate(i,:,:),0,2))/sqrt(25*i);
+%     err_dense_separate(:,i) = squeeze(std(a_active_dense_separate(i,:,:),0,2))/sqrt(25*i);
 % end
-
-
-figure(6)
-subplot(2,1,1), errorbar(mean(a_dense_shared,2), err_dense_shared); hold on;
-subplot(2,1,1), errorbar(mean(sum(a_active_dense_separate,3)/100,2), mean(err_dense_separate,1)); hold off;
-set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
-set(gca,'YScale', 'log');
-legend('Estimated with shared prior', 'Estimated with separate priors (sum of all)');
-title('Alpha estimation in shared prior model'), ylabel(['alpha averaged over ' int2str(numExperiments) ' experiments']);
-xlabel('# of samples');
-% (std/sqrt(N))
-
-% errorbar(squeeze(mean(active_alphas,2)), error_separate');
-% errorbar(squeeze(mean(active_alphas(:,:,idx),2))', error_separate(idx,:));
-
-subplot(2,1,2), errorbar(mean(a_sparse_shared,2), err_sparse_shared); hold on;
-subplot(2,1,2), errorbar(mean(sum(a_active_sparse_separate,3)/active_functions,2), mean(err_sparse_separate,1)); hold off;
-
-% meanSTD = std(std_sparse_separate,0,2);
-set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
-set(gca,'YScale', 'log');
-legend('Estimated with shared prior', 'Estimated with separate priors (sum of 10 first)');
-title('Alpha estimation in separate prior model (First 10 functions assumed active)'), ylabel(['alpha averaged over ' int2str(numExperiments) ' experiments']);
-xlabel('# of samples');
+% 
+% % std_sparse_separate = squeeze(std(a_active_sparse_separate,0,2));
+% % std_dense_separate = squeeze(std(a_active_dense_separate,0,2));
+% 
+% % for i=1:iterations
+% %     err_sparse_separate(:,i) = a_std_sparse_separate(i,:)/sqrt(25*i);
+% %     err_dense_separate(:,i) = a_std_dense_separate(i,:)/sqrt(25*i);
+% % end
+% 
+% 
+% figure(6)
+% subplot(2,1,1), errorbar(mean(a_dense_shared,2), err_dense_shared); hold on;
+% subplot(2,1,1), errorbar(mean(sum(a_active_dense_separate,3)/100,2), mean(err_dense_separate,1)); hold off;
+% set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
+% set(gca,'YScale', 'log');
+% legend('Estimated with shared prior', 'Estimated with separate priors (sum of all)');
+% title('Alpha estimation in shared prior model'), ylabel(['alpha averaged over ' int2str(numExperiments) ' experiments']);
+% xlabel('# of samples');
+% % (std/sqrt(N))
+% 
+% % errorbar(squeeze(mean(active_alphas,2)), error_separate');
+% % errorbar(squeeze(mean(active_alphas(:,:,idx),2))', error_separate(idx,:));
+% 
+% subplot(2,1,2), errorbar(mean(a_sparse_shared,2), err_sparse_shared); hold on;
+% subplot(2,1,2), errorbar(mean(sum(a_active_sparse_separate,3)/active_functions,2), mean(err_sparse_separate,1)); hold off;
+% 
+% % meanSTD = std(std_sparse_separate,0,2);
+% set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
+% set(gca,'YScale', 'log');
+% legend('Estimated with shared prior', 'Estimated with separate priors (sum of 10 first)');
+% title('Alpha estimation in separate prior model (First 10 functions assumed active)'), ylabel(['alpha averaged over ' int2str(numExperiments) ' experiments']);
+% xlabel('# of samples');
 
 
 %%
