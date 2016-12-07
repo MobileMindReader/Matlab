@@ -139,7 +139,7 @@ subplot(2,1,1), plot(mean(w_mse_dense_separate,1)), hold off;
 % xlim([min(ticks) max(ticks)])
 set(gca,'XTick',ticks,'XTickLabel',tickLabels)%, 'YScale', 'log');
 set(gca,'fontsize',12);
-title('Mean MSE for all weights in dense model');
+title('Dense model');
 xlabel('Number of samples');
 ylabel('Relative MSE for all weights'); %, averaged over ' int2str(numExperiments) ' runs'
 legend('Shared prior estimation', 'Separate priors estimation');
@@ -149,9 +149,9 @@ subplot(2,1,2), plot(mean(w_mse_sparse_shared,1)), hold on;
 subplot(2,1,2), plot(mean(w_mse_sparse_separate,1)), hold off;
 set(gca,'XTick',ticks,'XTickLabel',tickLabels)%, 'YScale', 'log');
 set(gca,'fontsize',12);
+title('Sparse model');
 xlabel('Number of samples');
 ylabel('Relative MSE for all weights'); 
-title('Mean MSE for all weights in sparse model');
 legend('Shared prior estimation', 'Separate priors estimation');
 
 % std(w_true{1,1})^2*numFuncs;
@@ -227,16 +227,21 @@ figure(2)
 subplot(2,1,1), plot(mean(f1_msha_sha,2)), hold on;
 subplot(2,1,1), plot(mean(f1_msha_sep,2)), hold off;
 set(gca,'XTick',ticks,'XTickLabel',tickLabels);% 'YScale', 'log');
-title('F1-score for non-zero parameters in dense model');
-xlabel('Number of samples')%, ylabel('F1-score') 
-legend('Shared prior estimate','Separate priors estimate');
+set(gca,'fontsize',12);
+title('Dense model');
+xlabel('Number of samples');
+ylabel('F1-score for non-zero weights');
+legend('Shared prior estimate','Separate priors estimate','location','SouthEast');
 
 subplot(2,1,2), plot(mean(f1_msep_sha,2)), hold on;
 subplot(2,1,2), plot(mean(f1_msep_sep,2)), hold off;
 set(gca,'XTick',ticks,'XTickLabel',tickLabels);% 'YScale', 'log');
-title('F1-score for non-zero parameters in sparse model');
-xlabel('Number of samples')%, ylabel('F1-score') 
+set(gca,'fontsize',12);
+title('Sparse model');
+xlabel('Number of samples'); 
+ylabel('F1-score for non-zero weights');
 legend('Shared prior estimate','Separate priors estimate');
+
 
 %% Alpha averages? What should this show?
 % 
@@ -286,35 +291,40 @@ for i=1:iterations
     err_dense_shared(i) = std(a_dense_shared(i,:))/(sqrt(50*i));
 end
 
+
+expectedAlpha = (1/(sqrt(1/2)*sin(0.5)))^2;
+
 figure(3)
 
 % subplot(2,1,1), plot(mean(a_dense_shared,2)), hold on;
 % subplot(2,1,1), plot(mean(alpha_mean_dense_separate,2)), hold off;
 subplot(2,1,1), erb1=errorbar(mean(a_dense_shared,2), err_dense_shared); hold on;
-subplot(2,1,1), erb2=errorbar(mean(alpha_mean_dense_separate,2), mean(err_dense_separate,2)); hold off;
+subplot(2,1,1), erb2=errorbar(mean(alpha_mean_dense_separate,2), mean(err_dense_separate,2));
+subplot(2,1,1), plot(1:iterations, expectedAlpha*ones(1,iterations), '--'), hold off;
 axis([0, inf, -inf, inf]);
-set(gca,'XTick',ticks,'XTickLabel',tickLabels)%, 'YScale', 'log');
+set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
 set(gca,'fontsize',12);
 set(erb1(1),'Linewidth',2)
 set(erb2(1),'Linewidth',2)
 title('Dense model');
 xlabel('Number of samples')%, ylabel('F1-score') 
 ylabel({'Mean of estimated alphas', 'Non-zero weights only'});
-legend('Shared prior estimate','Separate priors estimate');
+legend('Shared prior estimate','Separate priors estimate', 'Expected alpha');
 
 % subplot(2,1,2), plot(mean(a_sparse_shared,2)), hold on;
 % subplot(2,1,2), plot(mean(alpha_mean_sparse_separate,2)), hold off;
 subplot(2,1,2), erb3=errorbar(mean(a_sparse_shared,2), err_sparse_shared); hold on;
-subplot(2,1,2), erb4=errorbar(mean(alpha_mean_sparse_separate,2), mean(err_sparse_separate,2)); hold off;
+subplot(2,1,2), erb4=errorbar(mean(alpha_mean_sparse_separate,2), mean(err_sparse_separate,2));
+subplot(2,1,2), plot(1:iterations, expectedAlpha*ones(1,iterations), '--'), hold off;
 axis([0, inf, -inf, inf]);
-set(gca,'XTick',ticks,'XTickLabel',tickLabels)%, 'YScale', 'log');
+set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
 set(gca,'fontsize',12);
 set(erb3(1),'Linewidth',2);
 set(erb4(1),'Linewidth',2)
 title('Sparse model');
 xlabel('Number of samples');
 ylabel({'Mean of estimated alphas','Non-zero weights only'});
-legend('Shared prior estimate','Separate priors estimate');
+legend('Shared prior estimate','Separate priors estimate', 'Expected alpha');
 
 % %% STD of alpha
 % figure(4)
@@ -355,7 +365,7 @@ legend('Shared prior estimate','Separate priors estimate');
 figure(4)
 subplot(2,1,1), semilogy(1:iterations, mean(b_dense_shared,2)), hold on;
 subplot(2,1,1), semilogy(1:iterations, mean(b_dense_separate,2));
-subplot(2,1,1), semilogy(1:iterations, model.beta*ones(1,iterations));  hold off
+subplot(2,1,1), semilogy(1:iterations, model.beta*ones(1,iterations), '--');  hold off
 set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
 set(gca, 'fontsize',12);
 legend('Shared prior estimation','Separate priors estimation', 'True beta');
@@ -365,7 +375,7 @@ xlabel('Number of samples');
 
 subplot(2,1,2), semilogy(1:iterations, mean(b_sparse_shared,2)), hold on;
 subplot(2,1,2), semilogy(1:iterations, mean(b_sparse_separate,2));
-subplot(2,1,2), semilogy(1:iterations, model.beta*ones(1,iterations));  hold off
+subplot(2,1,2), semilogy(1:iterations, model.beta*ones(1,iterations), '--');  hold off
 % trueRatio = (model.beta);
 % semilogy(1:iterations, trueRatio*ones(1,iterations), '-r');
 set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
@@ -380,13 +390,12 @@ xlabel('Number of samples');
 
 %% Ratios
 
-
 figure(6)
 
 % ratios(iter, intraIter) = alpha/beta;
 subplot(2,1,1), semilogy(1:iterations, (mean(a_dense_shared,2)./mean(b_dense_shared,2))), hold on;
 subplot(2,1,1), semilogy(1:iterations, (mean(alpha_mean_dense_separate,2)./mean(b_dense_separate,2)));
-subplot(2,1,1), semilogy(1:iterations, (2/25)*ones(1,iterations)), hold off;
+subplot(2,1,1), semilogy(1:iterations, (expectedAlpha/25)*ones(1,iterations), '--'), hold off;
 set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
 set(gca,'fontsize',12);
 title('Dense model');
@@ -396,7 +405,7 @@ xlabel('Number of samples');
 
 subplot(2,1,2), semilogy(1:iterations, (mean(a_sparse_shared,2)./mean(b_sparse_shared,2))), hold on;%;, hold on;
 subplot(2,1,2), semilogy(1:iterations, (mean(alpha_mean_sparse_separate,2)./mean(b_sparse_separate,2)));
-subplot(2,1,2), semilogy(1:iterations, (2/25)*ones(1,iterations)), hold off;
+subplot(2,1,2), semilogy(1:iterations, (expectedAlpha/25)*ones(1,iterations), '--'), hold off;
 set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
 set(gca,'fontsize',12);
 title('Sparse model');

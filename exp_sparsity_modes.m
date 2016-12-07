@@ -59,7 +59,7 @@ for iter=1:iterations
         model.w = factor*wTemp;
         w_true{iter, intraIter} = model.w';
         
-        x=model.w'*sin((1:timeSteps)*0.5);                
+        x=model.w'; %*sin((1:timeSteps)*0.5);                
         y = forwardMatrix*x;
         Phi = forwardMatrix;
         
