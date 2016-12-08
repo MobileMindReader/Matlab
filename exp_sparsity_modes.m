@@ -11,7 +11,7 @@ s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
 iterations = 50;
-intraIterations = 40;
+intraIterations = 50;
 
 % Unimodal
 % llh_uni = zeros(iterations, intraIterations);
