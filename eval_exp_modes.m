@@ -588,7 +588,7 @@ axis('square');
 %% Scatter plot and histogram of weight estimation
 
 figure(9)
-idxExp=unique(int16(unifrnd(1,1000, [1 50])));
+idxExp=unique(int16(unifrnd(1,1000, [1 10])));
 idx=[1,20];
 x=[];
 y=[];
@@ -605,13 +605,17 @@ end
 % y2 = vertcat(w_sparse_separate{20,idx});
 
 
-h = scatterhist(x(:), y(:), 'Group', [idx(1)*ones(1, numel(x)/2) idx(2)*ones(1, numel(x)/2)],'Style','bar');
+h = scatterhist(x(:), y(:), 'Group', [idx(1)*ones(1, numel(x)/2) idx(2)*ones(1, numel(x)/2)], 'Style','stairs');
 legend('N=50','N=1000', 'Location', 'NorthWest');
 title('Estimated weights as a function of the true weights for 100 estimated weights (10 non-zero)');
 ylabel('Estimated weight'), xlabel('True weight');
-% set(gca,'YScale','log');
+
+% this = h(2).findobj;
+% uistack(this(3), 'top');
+
 set(h(2:3),'YScale','log');
-axis(h(1), 'square');
+axis(h(1),'auto');  % Sync axes
+% axis(h(1), 'square');
 
 
 % %% Scatter plot and histogram of weight estimation

@@ -9,7 +9,7 @@ for i = 1:length(fileIndex)
     fileName = files(fileIndex(i)).name;
 %     if fileName == '12-Nov-2016 18:33:24-88.mat'
 %     if fileName(end-3:end) == '.mat'
-    if fileName(1:6) == '07-Dec'
+    if fileName(1:6) == 'v2-08-' %'07-Dec'
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
@@ -113,6 +113,10 @@ legend('Shared prior estimation', 'Separate priors estimation');
 f1_msep_sep = zeros(iterations, numExperiments);
 f1_msep_sha = zeros(iterations, numExperiments);
 
+num_active_true = zeros(iterations, numExperiments);
+num_active_sep = zeros(iterations, numExperiments);
+num_active_sha = zeros(iterations, numExperiments);
+
 dist_true_est_sep = zeros(iterations, numExperiments);
 dist_true_est_sha = zeros(iterations, numExperiments);
 
@@ -124,14 +128,18 @@ dist_sha = zeros(iterations, numExperiments);
 % Calculate MSE 
 for i=1:iterations
     for j=1:numExperiments
-        % Separate alpha model
         nonZeroIdxSep = find(w_sparse_separate{i,j} ~= 0);
         nonZeroIdxSha = find(w_sparse_shared{i,j} ~= 0);
         nonZeroIdxTrue = find(w_sparse_true{i,j} ~= 0);
         
+        num_active_sep(i,j) = numel(nonZeroIdxSep);
+        num_active_sha(i,j) = numel(nonZeroIdxSha);
+        num_active_true(i,j) = numel(nonZeroIdxTrue);
+        
         falsePosSep = numel(find(ismember(nonZeroIdxSep,nonZeroIdxTrue) ==0));
         truePosSep = numel(find(ismember(nonZeroIdxSep,nonZeroIdxTrue)  ~=0));
         falseNegSep = numel(find(ismember(nonZeroIdxTrue, nonZeroIdxSep)==0));
+        
         precisionSep=truePosSep/(truePosSep+falsePosSep);
         recallSep=truePosSep/(truePosSep+falseNegSep);
         
@@ -187,10 +195,15 @@ figure(2)
 plot(mean(f1_msep_sha,2)), hold on;
 plot(mean(f1_msep_sep,2)), hold off;
 set(gca,'XTick',ticks,'XTickLabel',tickLabels);
-ylabel(['Averaged over ' int2str(numExperiments) ' experiments']);
+set(gca,'fontsize',12);
+ylabel('F1-score for true non-zero weights');
 xlabel('Number of non-zero parameters')
-title('F1-score for non-zero parameters');
+title('');
 legend('Shared prior estimate','Separate priors estimate');
+
+% print(figure(2), 'figures/sparsity_sweep_f1','-dpdf')
+
+%%
 
 % figure(22)
 % plot(mean(dist_true_est_sha,2)), hold on;
@@ -263,7 +276,7 @@ end
 
 expectedAlpha = (1/(sqrt(1/2)))^2;
 
-figure(3)
+figure(4)
 
 erb3=errorbar(mean(a_sparse_shared,2), err_sparse_shared); hold on;
 erb4=errorbar(mean(alpha_mean_sparse_separate,2), mean(err_sparse_separate,2));
@@ -279,37 +292,9 @@ ylabel({'Mean of estimated alphas','Non-zero weights only'});
 legend('Shared prior estimate','Separate priors estimate', 'Expected alpha');
 
 
-% print(figure(3), 'figures/sample_sweep_alpha','-dpdf')
+% print(figure(4), 'figures/sparsity_sweep_alpha','-dpdf')
 
 
-%% MSE of Alphas (OLD)
-
-a_mse_model_separate_estimate_separate = zeros(M, iterations);
-a_mse_model_separate_estimate_shared = zeros(M, iterations);
-
-a_true = zeros(1,M); 
-a_true(1:10) = 2;
-a_true(11:end) = 1000;
-b_true = 25*ones(1,M);
-
-for i=1:iterations
-    for j=1:numExperiments
-        % Separate priors
-        a_mse_model_separate_estimate_shared(:,i) = a_mse_model_separate_estimate_shared(:,i) + (a_sparse_shared(i,j)*ones(1,M)' - a_true').^2;
-        a_mse_model_separate_estimate_separate(:,i) = a_mse_model_separate_estimate_separate(:,i) + (a_sparse_separate{i,j} - a_true').^2;
-    end
-    a_mse_model_separate_estimate_shared(:,i) = a_mse_model_separate_estimate_shared(:,i)/numExperiments;
-    a_mse_model_separate_estimate_separate(:,i) = a_mse_model_separate_estimate_separate(:,i)/numExperiments;
-end
-
-figure(3)
-plot(sum(a_mse_model_separate_estimate_separate,1))%, hold on
-% plot(sum(a_mse_model_separate_estimate_shared,1)), hold off
-set(gca,'XTick',ticks,'XTickLabel',tickLabels);
-title('MSE of estimated alphas with separate priors - THIS DOES NOT REALLY MAKE SENSE');
-ylabel(['MSE of alpha averaged over ' int2str(numExperiments) ' experiments']);
-xlabel('#non-zero parameters')
-legend('Separate', 'Shared');
 
 %% WHAT should this show ?????????
 
@@ -339,8 +324,8 @@ end
 
 figure(5)
 
-plot(mean(llh_norm_model_separate_estimate_separate,2),'b'), hold on;
-plot(mean(llh_norm_model_separate_estimate_shared,2),'r'), hold off;
+plot(mean(llh_norm_model_separate_estimate_separate,2)), hold on;
+plot(mean(llh_norm_model_separate_estimate_shared,2)), hold off;
 set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
 title('Normalized log likelihood with separate priors');
 legend('Separate', 'Shared');
@@ -402,7 +387,7 @@ xlabel('# non-zero parameters');
 
 figure(8)
 
-idx=unique(int16(unifrnd(1,2000, [1 400])));
+idx=unique(int16(unifrnd(1,1000, [1 400])));
 for i=1:1
     
 %     w_est = mean(horzcat(w_sparse_separate{i,:}),2);
@@ -466,5 +451,28 @@ title('Estimated weights as a function of the true weights for 500 estimated wei
 ylabel('Estimated weight'), xlabel('True weight');
 % set(gca,'YScale','log');
 set(h(2:3),'YScale','log');
-axis(h(1), 'square');
+axis(h(1), 'equal');
 
+
+%% Weird stuff
+figure(3)
+
+idx=unique(int16(unifrnd(1,1000, [1 400])));
+for i=1:1
+    for j=1:numExperiments % int16(unifrnd(1,2000, [1 400]))
+        y=num_active_sep(i,j);
+        x=num_active_true(i,j);
+
+        plot(x,y, '+b'), hold on;
+    end
+    
+end
+for i=50:50
+    for j=1:numExperiments
+        y=num_active_sep(i,j);
+        x=num_active_true(i,j);
+        plot(x,y, '+r'), hold on;
+    end
+end
+hold off;
+axis('square');

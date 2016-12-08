@@ -3,7 +3,7 @@ clear;
 
 % True parameters
 model.noiseMean = 0;
-model.sigma = 0.02; % Noise std deviation
+model.sigma = 0.2; % Noise std deviation
 model.beta = (1/model.sigma.^2);
 model.dimension = 1;
 
@@ -27,7 +27,7 @@ w_multi = cell(iterations, intraIterations);
 
 w_true = cell(iterations, intraIterations);
 
-dataTitle = ['exp_sparsity/v2-' datestr(datetime('now'))];
+dataTitle = ['exp_sparsity/v2-' datestr(datetime('now')) '-' int2str(run)];
 
 
 data.numSamples = '100';
@@ -36,11 +36,11 @@ data.numActiveFuncs = '500-((iter-1)*10';
 data.experiment = 'Sparsity sweep in random forward model';
 % data.description = '500 functions, 20 samples. Iterating over number of active weights (500-((iter-1)*10)';
 data.description = '500 functions (randoms), 20 samples. Iterating over number of active weights (500-((iter-1)*10)';
+
 numSamples = 100;
-numFuncs = 500; %iter;
+numFuncs = 500;
 
 model.alpha=2;
-
 
 timeSteps = 1;
 for iter=1:iterations
