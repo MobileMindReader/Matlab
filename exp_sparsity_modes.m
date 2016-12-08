@@ -1,5 +1,5 @@
 %% Initializing
-clear;
+% clear;
 
 % True parameters
 model.noiseMean = 0;

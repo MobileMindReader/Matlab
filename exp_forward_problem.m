@@ -10,10 +10,11 @@ forwardModel = importdata('model/mBrainLeadfield.mat');
 % RandStream.setGlobalStream(s);
 
 reducedSize=500;
+idx=randperm(size(forwardModel,2),reducedSize);
 
-A = forwardModel(:,1:reducedSize);
+A = forwardModel(:,idx);
 
-A = randn(22, reducedSize);
+% A = randn(22, reducedSize);
 
 model.alpha = 2;
 
