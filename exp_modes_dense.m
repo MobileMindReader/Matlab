@@ -62,8 +62,7 @@ for iter=1:iterations
         rmsX = sqrt(mean(y.^2));
         rmsNoise = sqrt(mean(noise.^2));
         SNR = (rmsX / rmsNoise)^ 2;
-        SNRdB = 10*log10(SNR);
-        data.SNRdB(iter, intraIter) = SNRdB;
+        data.SNRdB(iter, intraIter) = 10*log10(SNR);
 
         
 %%%% Initialize alpha and beta

@@ -9,7 +9,7 @@ for i = 1:length(fileIndex)
     fileName = files(fileIndex(i)).name;
 %     if fileName == '12-Nov-2016 18:33:24-88.mat'
 %     if fileName(end-3:end) == '.mat'
-    if fileName(1:2) == '06'
+    if fileName(1:6) == '07-Dec'
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
@@ -21,27 +21,17 @@ end
 %% Load data into variables 
 % separate alpha model
 
-a_model_separate_estimate_shared = [];
-b_model_separate_estimate_shared = [];
-a_model_separate_estimate_separate = [];
-b_model_separate_estimate_separate = [];
-llh_model_separate_estimate_shared=[];
-llh_model_separate_estimate_separate=[];
-w_model_separate_estimate_separate = [];
-w_model_separate_estimate_shared = [];    
-w_model_separate_true = [];
+a_sparse_shared = [];
+b_sparse_shared = [];
+a_sparse_separate = [];
+b_sparse_separate = [];
+llh_sparse_shared=[];
+llh_sparse_separate=[];
+w_sparse_separate = [];
+w_sparse_shared = [];    
+w_sparse_true = [];
 
 SNR = [];
-
-% a_model_shared_estimate_shared = [];
-% b_model_shared_estimate_shared = [];
-% a_model_shared_estimate_separate = [];
-% b_model_shared_estimate_separate = [];
-% llh_model_shared_estimate_shared=[];
-% llh_model_shared_estimate_separate=[];
-% w_model_shared_estimate_separate = [];
-% w_model_shared_estimate_shared = [];    
-% w_model_shared_true = [];
 
 for data=dataFiles
     data = data{:};
@@ -49,29 +39,17 @@ for data=dataFiles
         if (data.currentIteration ~= data.iterations)
             continue
         end
-        w_model_separate_true = [w_model_separate_true data.w_true];
-        a_model_separate_estimate_shared = [a_model_separate_estimate_shared data.alpha_uni];
-        b_model_separate_estimate_shared = [b_model_separate_estimate_shared data.beta_uni];
-        llh_model_separate_estimate_shared = [llh_model_separate_estimate_shared data.llh_uni];
-        w_model_separate_estimate_shared = [w_model_separate_estimate_shared data.w_uni];
-        a_model_separate_estimate_separate = [a_model_separate_estimate_separate data.alpha_multi];
-        b_model_separate_estimate_separate = [b_model_separate_estimate_separate data.beta_multi];
-        llh_model_separate_estimate_separate = [llh_model_separate_estimate_separate data.llh_multi];
-        w_model_separate_estimate_separate = [w_model_separate_estimate_separate data.w_multi];
+        w_sparse_true = [w_sparse_true data.w_true];
+        a_sparse_shared = [a_sparse_shared data.alpha_uni];
+        b_sparse_shared = [b_sparse_shared data.beta_uni];
+        llh_sparse_shared = [llh_sparse_shared data.llh_uni];
+        w_sparse_shared = [w_sparse_shared data.w_uni];
+        a_sparse_separate = [a_sparse_separate data.alpha_multi];
+        b_sparse_separate = [b_sparse_separate data.beta_multi];
+        llh_sparse_separate = [llh_sparse_separate data.llh_multi];
+        w_sparse_separate = [w_sparse_separate data.w_multi];
         SNR = [SNR data.SNRdB];
-%     else % Load data into variables - shared alpha model
-%         w_model_shared_true = [w_model_shared_true data.w_true];
-%         a_model_shared_estimate_shared = [a_model_shared_estimate_shared data.alpha_uni];
-%         b_model_shared_estimate_shared = [b_model_shared_estimate_shared data.beta_uni];
-%         llh_model_shared_estimate_shared = [llh_model_shared_estimate_shared data.llh_uni];
-%         w_model_shared_estimate_shared = [w_model_shared_estimate_shared data.w_uni];
-%         a_model_shared_estimate_separate = [a_model_shared_estimate_separate data.alpha_multi];
-%         b_model_shared_estimate_separate = [b_model_shared_estimate_separate data.beta_multi];
-%         llh_model_shared_estimate_separate = [llh_model_shared_estimate_separate data.llh_multi];
-%         w_model_shared_estimate_separate = [w_model_shared_estimate_separate data.w_multi];
-%     end
 end
-
 
 % 
 
@@ -82,62 +60,52 @@ numActiveFuncs = data.numActiveFuncs;
 iterations = data.iterations;
 intraIterations = data.intraIterations;
 model = data.model;
-numExperiments = size(w_model_separate_true,2);
+numExperiments = size(w_sparse_true,2);
 
 disp(data.description);
 
 clearvars dataFiles fileIndex fileName fileNames files
 
-ticks = 1:5:size(a_model_separate_estimate_shared,1)+1;
+ticks = 1:5:size(a_sparse_shared,1)+1;
 ticks(end) = ticks(end)-1;
 tickLabels = strsplit(int2str(510-((ticks)*10)));
 % tickLabels{end} = 10;
 
 %% MSE of weights
 
-w_mse_model_separate_estimate_separate = zeros(M, iterations);
-w_mse_model_separate_estimate_shared = zeros(M, iterations);
-% w_mse_model_shared_estimate_separate = zeros(M, iterations);
-% w_mse_model_shared_estimate_shared = zeros(M, iterations);
 
-disp('normalize')
+w_mse_sparse_separate = zeros(M, iterations);
+w_mse_sparse_shared = zeros(M, iterations);
+
 % Calculate MSE 
 for i=1:iterations
     for j=1:numExperiments
         % Separate alpha model
-        w_mse_model_separate_estimate_separate(:,i) = w_mse_model_separate_estimate_separate(:,i) + (w_model_separate_estimate_separate{i,j}-w_model_separate_true{i,j}).^2;
-        w_mse_model_separate_estimate_shared(:,i) = w_mse_model_separate_estimate_shared(:,i) + (w_model_separate_estimate_shared{i,j}-w_model_separate_true{i,j}).^2;
-        % Shared alpha model
-%         w_mse_model_shared_estimate_separate(:,i) = w_mse_model_shared_estimate_separate(:,i) + (w_model_shared_estimate_separate{i,j}-w_model_shared_true{i,j}).^2;
-%         w_mse_model_shared_estimate_shared(:,i) = w_mse_model_shared_estimate_shared(:,i) + (w_model_shared_estimate_shared{i,j}-w_model_shared_true{i,j}).^2;
+%         w_mse_sparse_separate(:,i) = w_mse_sparse_separate(:,i) + ((w_sparse_separate{i,j}-w_sparse_true{i,j}).^2)/sum(abs(w_sparse_true{i,j}));
+%         w_mse_sparse_shared(:,i) = w_mse_sparse_shared(:,i) + (w_sparse_shared{i,j}-w_sparse_true{i,j}).^2/sum(abs(w_sparse_true{i,j}));
+        
+        %%%%% Alternate normalisation 
+        w_mse_sparse_separate(:,i) = w_mse_sparse_separate(:,i) + ((w_sparse_separate{i,j}-w_sparse_true{i,j}).^2)/sqrt(mean(w_sparse_true{i,j}.^2));
+        w_mse_sparse_shared(:,i) = w_mse_sparse_shared(:,i) + (w_sparse_shared{i,j}-w_sparse_true{i,j}).^2/sqrt(mean(w_sparse_true{i,j}.^2));
     end
-    w_mse_model_separate_estimate_separate(:,i) = w_mse_model_separate_estimate_separate(:,i)/numExperiments;
-    w_mse_model_separate_estimate_shared(:,i) = w_mse_model_separate_estimate_shared(:,i)/numExperiments;    
-%     w_mse_model_shared_estimate_separate(:,i) = w_mse_model_shared_estimate_separate(:,i)/numExperiments;
-%     w_mse_model_shared_estimate_shared(:,i) = w_mse_model_shared_estimate_shared(:,i)/numExperiments;
+    w_mse_sparse_separate(:,i) = w_mse_sparse_separate(:,i)/numExperiments;
+    w_mse_sparse_shared(:,i) = w_mse_sparse_shared(:,i)/numExperiments;
+    
 end
 
-% TODO: Subtract signal amplitude 
-
 figure(1)
+plot(mean(w_mse_sparse_shared,1)), hold on;
+plot(mean(w_mse_sparse_separate,1)), hold off;
+% xlim([min(ticks) max(ticks)])
+set(gca,'XTick',ticks,'XTickLabel',tickLabels)%, 'YScale', 'log');
+set(gca,'fontsize',12);
+title(' ... ');
+xlabel('Number of non-zero weights');
+ylabel('Relative MSE for all weights'); %, averaged over ' int2str(numExperiments) ' runs'
+legend('Shared prior estimation', 'Separate priors estimation');
 
-% subplot(2,1,1), plot(sum(w_mse_model_shared_estimate_separate,1)), hold on;
-% subplot(2,1,1), plot(sum(w_mse_model_shared_estimate_shared,1)), hold off
-% set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
-% title('Sum of MSE for all weights with shared alpha prior');
-% xlabel(['#samples, averaged over ' int2str(numExperiments) ' experiments']), ylabel('Sum of MSE for all weights') 
-% legend('Separate alpha estimation', 'Shared alpha estimation');
+% print(figure(1), 'figures/sample_sweep_weight_relative_mse','-dpdf')
 
-plot(sum(w_mse_model_separate_estimate_shared,1)), hold on;
-plot(sum(w_mse_model_separate_estimate_separate,1)), hold off
-% axis([-inf,inf,0,3e4])
-set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
-xlabel(['#non-zero parameters, averaged over ' int2str(numExperiments) ' runs']), ylabel('Sum of MSE for all weights') 
-title('Sum of MSE for all weights with separate alpha priors');
-legend('Shared alpha estimation', 'Separate alpha estimation');
-
-
-% std(w_true{1,1})^2*numFuncs;
 
 
 %% F1 Score
@@ -157,9 +125,9 @@ dist_sha = zeros(iterations, numExperiments);
 for i=1:iterations
     for j=1:numExperiments
         % Separate alpha model
-        nonZeroIdxSep = find(w_model_separate_estimate_separate{i,j} ~= 0);
-        nonZeroIdxSha = find(w_model_separate_estimate_shared{i,j} ~= 0);
-        nonZeroIdxTrue = find(w_model_separate_true{i,j} ~= 0);
+        nonZeroIdxSep = find(w_sparse_separate{i,j} ~= 0);
+        nonZeroIdxSha = find(w_sparse_shared{i,j} ~= 0);
+        nonZeroIdxTrue = find(w_sparse_true{i,j} ~= 0);
         
         falsePosSep = numel(find(ismember(nonZeroIdxSep,nonZeroIdxTrue) ==0));
         truePosSep = numel(find(ismember(nonZeroIdxSep,nonZeroIdxTrue)  ~=0));
@@ -251,8 +219,8 @@ legend('Shared prior estimate','Separate priors estimate');
 % xlabel(['#samples, averaged over ' int2str(numExperiments) ' experiments']), ylabel('Sum of MSE for all weights') 
 % legend('Separate alpha estimation', 'Shared alpha estimation');
 % 
-% subplot(2,1,2), plot(sum(w_mse_model_separate_estimate_separate,1)), hold on;
-% subplot(2,1,2), plot(sum(w_mse_model_separate_estimate_shared,1)), hold off
+% subplot(2,1,2), plot(sum(w_mse_sparse_separate,1)), hold on;
+% subplot(2,1,2), plot(sum(w_mse_sparse_shared,1)), hold off
 % set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
 % xlabel(['#samples, averaged over ' int2str(numExperiments) ' experiments']), ylabel('Sum of MSE for all weights') 
 % title('Sum of MSE for all weights with separate alpha priors (10 active functions)');
@@ -272,7 +240,49 @@ ylabel('dB');
 xlabel('Number of non-zero parameters');
 
 
-%% MSE of Alphas
+%% Mean of Alphas
+
+alpha_mean_sparse_separate = zeros(iterations, numExperiments);
+alpha_std_sparse_separate = zeros(iterations, numExperiments);
+
+err_sparse_separate = zeros(iterations,numExperiments);
+err_sparse_shared = zeros(iterations,1);
+
+for i=1:iterations
+    for j=1:numExperiments
+        % Sparse
+        nonZeroIdxSparse = find(w_sparse_separate{i,j} ~= 0);
+%         nonZeroIdxTrue = find(w_sparse_true{i,j} ~= 0); 
+        alpha_mean_sparse_separate(i,j) = mean(a_sparse_separate{i,j}(nonZeroIdxSparse));
+        alpha_std_sparse_separate(i,j) = std(a_sparse_separate{i,j}(nonZeroIdxSparse));
+        err_sparse_separate(i,j) = alpha_std_sparse_separate(i,j)/(sqrt(50*i));
+    end
+    err_sparse_shared(i) = std(a_sparse_shared(i,:))/(sqrt(50*i));
+end
+
+
+expectedAlpha = (1/(sqrt(1/2)))^2;
+
+figure(3)
+
+erb3=errorbar(mean(a_sparse_shared,2), err_sparse_shared); hold on;
+erb4=errorbar(mean(alpha_mean_sparse_separate,2), mean(err_sparse_separate,2));
+plot(1:iterations, expectedAlpha*ones(1,iterations), '--'), hold off;
+axis([0, inf, 1, inf]);
+set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
+set(gca,'fontsize',12);
+set(erb3(1),'Linewidth',2);
+set(erb4(1),'Linewidth',2)
+title('Sparse model');
+xlabel('Number of samples');
+ylabel({'Mean of estimated alphas','Non-zero weights only'});
+legend('Shared prior estimate','Separate priors estimate', 'Expected alpha');
+
+
+% print(figure(3), 'figures/sample_sweep_alpha','-dpdf')
+
+
+%% MSE of Alphas (OLD)
 
 a_mse_model_separate_estimate_separate = zeros(M, iterations);
 a_mse_model_separate_estimate_shared = zeros(M, iterations);
@@ -285,8 +295,8 @@ b_true = 25*ones(1,M);
 for i=1:iterations
     for j=1:numExperiments
         % Separate priors
-        a_mse_model_separate_estimate_shared(:,i) = a_mse_model_separate_estimate_shared(:,i) + (a_model_separate_estimate_shared(i,j)*ones(1,M)' - a_true').^2;
-        a_mse_model_separate_estimate_separate(:,i) = a_mse_model_separate_estimate_separate(:,i) + (a_model_separate_estimate_separate{i,j} - a_true').^2;
+        a_mse_model_separate_estimate_shared(:,i) = a_mse_model_separate_estimate_shared(:,i) + (a_sparse_shared(i,j)*ones(1,M)' - a_true').^2;
+        a_mse_model_separate_estimate_separate(:,i) = a_mse_model_separate_estimate_separate(:,i) + (a_sparse_separate{i,j} - a_true').^2;
     end
     a_mse_model_separate_estimate_shared(:,i) = a_mse_model_separate_estimate_shared(:,i)/numExperiments;
     a_mse_model_separate_estimate_separate(:,i) = a_mse_model_separate_estimate_separate(:,i)/numExperiments;
@@ -305,7 +315,7 @@ legend('Separate', 'Shared');
 
 figure(4)
 
-plot(1:iterations, mean(a_model_separate_estimate_shared,2)), hold on;
+plot(1:iterations, mean(a_sparse_shared,2)), hold on;
 
 % plot([1:data.iterations], ratio_approx_means, '-k')
 trueRatio = (model.alpha);
@@ -323,8 +333,8 @@ llh_norm_model_separate_estimate_separate = zeros(iterations, numExperiments);
 llh_norm_model_separate_estimate_shared = zeros(iterations, numExperiments);
 
 for i=1:iterations
-    llh_norm_model_separate_estimate_separate(i,:) = llh_model_separate_estimate_separate(i,:)/(i*25);
-    llh_norm_model_separate_estimate_shared(i,:) = llh_model_separate_estimate_shared(i,:)/(i*25);
+    llh_norm_model_separate_estimate_separate(i,:) = llh_sparse_separate(i,:)/(i*25);
+    llh_norm_model_separate_estimate_shared(i,:) = llh_sparse_shared(i,:)/(i*25);
 end
 
 figure(5)
@@ -344,14 +354,14 @@ active_functions=numActiveFuncs;
 err_model_separate_estimate_shared = zeros(1,iterations);
 err_model_separate_estimate_separate = zeros(active_functions, iterations);
 
-std_model_separate_estimate_shared = std(a_model_separate_estimate_shared,0,2);
+std_model_separate_estimate_shared = std(a_sparse_shared,0,2);
 
 a_active_model_separate_estimate_separate = zeros(iterations,numExperiments,active_functions);
 
 for i=1:iterations
     err_model_separate_estimate_shared(i) = std_model_separate_estimate_shared(i)/sqrt(25*i);
     for j=1:numExperiments
-        a_active_model_separate_estimate_separate(i,j,:) = a_model_separate_estimate_separate{i,j}(1:active_functions);
+        a_active_model_separate_estimate_separate(i,j,:) = a_sparse_separate{i,j}(1:active_functions);
     end
     err_model_separate_estimate_separate(:,i) = squeeze(std(a_active_model_separate_estimate_separate(i,:,:),0,2))/sqrt(25*i);
 end
@@ -359,7 +369,7 @@ end
 
 figure(6)
 
-errorbar(mean(a_model_separate_estimate_shared,2), err_model_separate_estimate_shared); hold on;
+errorbar(mean(a_sparse_shared,2), err_model_separate_estimate_shared); hold on;
 errorbar(mean(sum(a_active_model_separate_estimate_separate,3)/active_functions,2), mean(err_model_separate_estimate_separate,1)); hold off;
 
 % meanSTD = std(std_model_separate_estimate_separate,0,2);
@@ -375,8 +385,8 @@ xlabel('# non-zero parameters');
 
 figure(7)
 
-semilogy(1:iterations, mean(b_model_separate_estimate_separate,2)), hold on;
-semilogy(1:iterations, mean(b_model_separate_estimate_shared,2));
+semilogy(1:iterations, mean(b_sparse_separate,2)), hold on;
+semilogy(1:iterations, mean(b_sparse_shared,2));
 semilogy(1:iterations, model.beta*ones(1,iterations));  hold off
 % trueRatio = (model.beta);
 % semilogy(1:iterations, trueRatio*ones(1,iterations), '-r');
@@ -395,19 +405,19 @@ figure(8)
 idx=unique(int16(unifrnd(1,2000, [1 400])));
 for i=1:1
     
-%     w_est = mean(horzcat(w_model_separate_estimate_separate{i,:}),2);
-%     w_true= mean(horzcat(w_model_separate_true{i,:}),2);
+%     w_est = mean(horzcat(w_sparse_separate{i,:}),2);
+%     w_true= mean(horzcat(w_sparse_true{i,:}),2);
 
 %     [rows, cols, value]=find(w_est>0 & w_true>0);    
 %     w_est(rows,cols)
     
-%     y = mean(horzcat(w_model_separate_estimate_separate{i,:}),2);
-%     x = mean(horzcat(w_model_separate_true{i,:}),2);
+%     y = mean(horzcat(w_sparse_separate{i,:}),2);
+%     x = mean(horzcat(w_sparse_true{i,:}),2);
 %     plot(w_est,w_true, '+b'), hold on;
 
     for j=idx % int16(unifrnd(1,2000, [1 400]))
-        y=w_model_separate_estimate_separate{i,j};
-        x=w_model_separate_true{i,j};
+        y=w_sparse_separate{i,j};
+        x=w_sparse_true{i,j};
 %         y=y(y~=0 & x~=0);
 %         x=x(y~=0);
         plot(x,y, '+b'), hold on;
@@ -416,8 +426,8 @@ for i=1:1
 end
 for i=20:20
     for j=idx
-        y=w_model_separate_estimate_separate{i,j};
-        x=w_model_separate_true{i,j};
+        y=w_sparse_separate{i,j};
+        x=w_sparse_true{i,j};
         plot(x,y, '+r'), hold on;
     end
 end
@@ -434,20 +444,20 @@ x=[];
 y=[];
 % for i=idx
     for j=idxExp
-        x = [x (w_model_separate_true{1,j})];
-        y = [y (w_model_separate_estimate_separate{1,j})];
+        x = [x (w_sparse_true{1,j})];
+        y = [y (w_sparse_separate{1,j})];
     end
 % end
 for j=idxExp2
-    x = [x (w_model_separate_true{50,j})];
-    y = [y (w_model_separate_estimate_separate{50,j})];
+    x = [x (w_sparse_true{50,j})];
+    y = [y (w_sparse_separate{50,j})];
 end
 
-% x1 = (w_model_separate_true{idx, idxExp});
-% y1 = horzcat(w_model_separate_estimate_separate{idx,idxExp});
+% x1 = (w_sparse_true{idx, idxExp});
+% y1 = horzcat(w_sparse_separate{idx,idxExp});
 
-% x2 = vertcat(w_model_separate_true{20,idx});
-% y2 = vertcat(w_model_separate_estimate_separate{20,idx});
+% x2 = vertcat(w_sparse_true{20,idx});
+% y2 = vertcat(w_sparse_separate{20,idx});
 
 
 h = scatterhist(x(:), y(:), 'Group', [idx(1)*ones(1, 500*numel(idxExp)) idx(2)*ones(1, 500*numel(idxExp2))],'Style','bar');

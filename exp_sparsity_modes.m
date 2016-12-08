@@ -27,16 +27,16 @@ w_multi = cell(iterations, intraIterations);
 
 w_true = cell(iterations, intraIterations);
 
-dataTitle = ['exp_sparsity/' datestr(datetime('now'))];
+dataTitle = ['exp_sparsity/v2-' datestr(datetime('now'))];
 
 
-data.numSamples = '20';
+data.numSamples = '100';
 data.numFuncs = '500';
 data.numActiveFuncs = '500-((iter-1)*10';
 data.experiment = 'Sparsity sweep in random forward model';
 % data.description = '500 functions, 20 samples. Iterating over number of active weights (500-((iter-1)*10)';
 data.description = '500 functions (randoms), 20 samples. Iterating over number of active weights (500-((iter-1)*10)';
-numSamples = 20;
+numSamples = 100;
 numFuncs = 500; %iter;
 
 model.alpha=2;
@@ -72,8 +72,7 @@ for iter=1:iterations
         rmsX = sqrt(mean(y.^2));
         rmsNoise = sqrt(mean(noise.^2));
         SNR = (rmsX / rmsNoise)^ 2;
-        SNRdB = 10*log10(SNR)
-        data.SNRdB(iter, intraIter) = SNRdB;
+        data.SNRdB(iter, intraIter) = 10*log10(SNR);
         
 %%%% Initialize alpha and beta
         beta_init = rand;
