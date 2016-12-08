@@ -9,7 +9,11 @@ forwardModel = importdata('model/mBrainLeadfield.mat');
 % s = RandStream('mt19937ar','Seed','shuffle');
 % RandStream.setGlobalStream(s);
 
-reducedSize=500;
+s = RandStream('mt19937ar','Seed', 2);
+RandStream.setGlobalStream(s);
+
+
+reducedSize=800;
 idx=randperm(size(forwardModel,2),reducedSize);
 
 A = forwardModel(:,idx);
@@ -18,7 +22,12 @@ A = forwardModel(:,idx);
 
 model.alpha = 2;
 
-timeSteps=1;  %20;
+
+inputAverageTimeSteps=5;  %20;
+estimationAverageSteps=5;
+
+timeSteps = 10*inputAverageTimeSteps*estimationAverageSteps;
+
 
 numSamples = size(A,1);     % The number og sensors corresponds to sample size..
 % numSensors = size(A,1);   % The number og sensors corresponds to sample size..
@@ -26,7 +35,9 @@ numSamples = size(A,1);     % The number og sensors corresponds to sample size..
 numFuncs = size(A,2);
 numActiveFuncs=10;
 
-activeIndexes = unique(int16(unifrnd(1,reducedSize, [1 numActiveFuncs])));
+% activeIndexes = unique(int16(unifrnd(1,reducedSize, [1 numActiveFuncs])));
+activeIndexes = randperm(size(idx,2), numActiveFuncs);
+
 % activeIndexes = 1:32:768;
 % activeIndexes = 2;1:numFuncs;
 % activeIndexes = [4 8];
@@ -61,17 +72,29 @@ trueBeta=200;
 noise = normrnd(0, sqrt(1/trueBeta), [size(A,1) timeSteps]);
 % y = A * x + noise;
 targets = y + noise;
+
+
 targetMean=mean(targets,2);
 
-Phi = zeros(numSamples, numFuncs, timeSteps);
-for t=1:timeSteps
-%     for i=1:numSamples
-%         Phi(i,:,t) = A(i,:).*x(:,t)';
-%     end
-    for i=1:numFuncs
-        Phi(:,i,t) = A(:,i).*targets(:,t); %x(:,t)';
-    end    
+smoothTargets = zeros(size(A,1), timeSteps/estimationAverageSteps);
+
+
+k=inputAverageTimeSteps;
+for i=0:timeSteps/estimationAverageSteps-1
+    smoothTargets(:,i+1) = mean(targets(:,(i*k)+1:(i+1)*k),2);
 end
+
+
+
+% Phi = zeros(numSamples, numFuncs, timeSteps);
+% for t=1:timeSteps
+% %     for i=1:numSamples
+% %         Phi(i,:,t) = A(i,:).*x(:,t)';
+% %     end
+%     for i=1:numFuncs
+%         Phi(:,i,t) = A(:,i).*targets(:,t); %x(:,t)';
+%     end    
+% end
 
 % surf(y)
 % %%
@@ -107,18 +130,33 @@ betaInit = rand;
 
 % disp('Start working on larger time windows');
 
-Q = zeros(numFuncs, numFuncs, timeSteps);
-beta = zeros(1, timeSteps);
-llh = zeros(1, timeSteps);
-mn = zeros(numFuncs, timeSteps);
+Q = zeros(numFuncs, numFuncs, timeSteps/estimationAverageSteps);
+beta = zeros(1, timeSteps/estimationAverageSteps);
+llh = zeros(1, timeSteps/estimationAverageSteps);
+mn = zeros(numFuncs, timeSteps/estimationAverageSteps);
 
-
-for i = 1:1
-    
-    [Q(:,:,i), beta(i), mn(:,i), llh(i)] = maximum_evidence_multi(alphaInit, betaInit, Phi(:,:,i), targetMean(:,i));
-%     alpha_init = Q(:,:,i);
-%     beta_init = beta(i);
-    disp(['Time step: ' int2str(i)]);
+res=[];
+wres=[];
+for t = 0:(timeSteps/estimationAverageSteps)/inputAverageTimeSteps-1
+    for i=(t*estimationAverageSteps)+1:(t+1)*estimationAverageSteps
+        [Q(:,:,i), beta(i), mn(:,i), llh(i)] = maximum_evidence_multi(alphaInit, betaInit, A, smoothTargets(:,i));
+        %     alpha_init = Q(:,:,i);
+        %     beta_init = beta(i);
+        Qtemp = diag(Q(:,:,i));
+        
+        
+        if isempty(res)
+            res = Qtemp;
+            wres = mn(:,i);
+        else
+            res = res.* Qtemp;
+            res = res/sum(res);
+            wres=wres.*mn(:,i);
+        end
+        %     wres(wres == 0) = 1;
+        
+        disp(['Time step: ' int2str(i)]);
+    end
 end
 
 Qmean = mean(Q,3);
@@ -126,6 +164,29 @@ Qmean = mean(Q,3);
 %
 estimatedIndexes=find(diag(Qmean) ~= 1e4);
 meanmN = mean(mn,2);
+
+%%
+
+figure(71), surf(x);
+% set(gca, 'ZScale', 'log');
+figure(72), surf(mn);
+
+%% F1-score
+
+nonZeroIdxEst = find(meanmN ~= 0);
+nonZeroIdxTrue = activeIndexes';%find( ~= 0);
+
+falsePos = numel(find(ismember(nonZeroIdxEst,nonZeroIdxTrue) ==0));
+truePos = numel(find(ismember(nonZeroIdxEst,nonZeroIdxTrue)  ~=0));
+falseNeg = numel(find(ismember(nonZeroIdxTrue, nonZeroIdxEst)==0));
+precision=truePos/(truePos+falsePos);
+recall=truePos/(truePos+falseNeg);
+
+f1 = 2*(precision*recall)/(precision+recall)
+
+
+
+
 
 %%
 
@@ -151,7 +212,7 @@ comparison(1:numel(meanmN(estimatedIndexes)),4) = estimatedIndexes;
 % Qmod(find(Qmod == 1e4)) = 1/1e6;
 
 xEstimate = zeros(numFuncs, 1);
-for i=1:timeSteps
+for i=1:timeSteps/estimationAverageSteps
     xEstimate(:,i) = y(:,i)'/(Qmean*A');
 end
 
@@ -176,16 +237,16 @@ figure(3)
 
 for i=1:4
     idx=activeIndexes(i);
-    subplot(4,4,i), plot(1:timeSteps,xEstimate(idx,:));
+    subplot(4,4,i), plot(1:inputAverageTimeSteps,xEstimate(idx,:));
     title('Source reconstructed signal');
-    subplot(4,4,i+4), plot(1:timeSteps,x(idx,:));
+    subplot(4,4,i+4), plot(1:inputAverageTimeSteps,x(idx,:));
     title('Simulated source signal');
 end
 for i=5:8
     idx=activeIndexes(i);
-    subplot(4,4,4+i), plot(1:timeSteps,xEstimate(idx,:));
+    subplot(4,4,4+i), plot(1:inputAverageTimeSteps,xEstimate(idx,:));
     title('Source reconstructed signal');
-    subplot(4,4,8+i), plot(1:timeSteps,x(idx,:));
+    subplot(4,4,8+i), plot(1:inputAverageTimeSteps,x(idx,:));
     title('Simulated source signal');
 end
 %%
