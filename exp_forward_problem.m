@@ -23,10 +23,11 @@ A = forwardModel(:,idx);
 model.alpha = 2;
 
 
-inputAverageTimeSteps=5;  %20;
-estimationAverageSteps=5;
+inputAverageTimeSteps=1;  %20;
+estimationAverageSteps=1;
 
-timeSteps = 10*inputAverageTimeSteps*estimationAverageSteps;
+steps = 5;
+timeSteps = steps * inputAverageTimeSteps*estimationAverageSteps;
 
 
 numSamples = size(A,1);     % The number og sensors corresponds to sample size..
@@ -36,7 +37,7 @@ numFuncs = size(A,2);
 numActiveFuncs=10;
 
 % activeIndexes = unique(int16(unifrnd(1,reducedSize, [1 numActiveFuncs])));
-activeIndexes = randperm(size(idx,2), numActiveFuncs);
+activeIndexes = sort(randperm(size(idx,2), numActiveFuncs));
 
 % activeIndexes = 1:32:768;
 % activeIndexes = 2;1:numFuncs;
@@ -45,101 +46,52 @@ activeIndexes = randperm(size(idx,2), numActiveFuncs);
 model.w = zeros(numFuncs,1);
 model.w(activeIndexes) = normrnd(0,sqrt(1/model.alpha), [1 size(activeIndexes)]);
 
-model.w=model.w*sqrt(100);
+% model.w=model.w*sqrt(100);
 
 x=model.w*sin((1:timeSteps)*0.5);
-% x(activeIndexes) = sin((1:timeSteps)*0.5);
 
-% x(1)=0;
-% x=[1:10]';
-% x=sin((1:timeSteps)*0.5);
-
-% y = zeros(numSamples,timeSteps);
-% Phi = zeros(numSamples,timeSteps);
-
-
-% y=0;
-% y=[];
-
-% for i=1:numSamples % = numSensors = 22
-%     y(i) = A(i,:)*(model.w.*x);
-% end
-% y = A*(model.w.*x);
-%%
-y = A*x;
 
 trueBeta=200;
 noise = normrnd(0, sqrt(1/trueBeta), [size(A,1) timeSteps]);
-% y = A * x + noise;
+
+y = A*x;
 targets = y + noise;
 
-
-targetMean=mean(targets,2);
-
-smoothTargets = zeros(size(A,1), timeSteps/estimationAverageSteps);
-
+smoothTargets = zeros(size(A,1), timeSteps/inputAverageTimeSteps);
 
 k=inputAverageTimeSteps;
-for i=0:timeSteps/estimationAverageSteps-1
+for i=0:timeSteps/inputAverageTimeSteps-1
     smoothTargets(:,i+1) = mean(targets(:,(i*k)+1:(i+1)*k),2);
 end
 
+%% SNR
+
+rmsX = sqrt(mean(y.^2));
+rmsNoise = sqrt(mean(noise.^2));
+SNR = (rmsX/rmsNoise)^2;
+SNRdB = 10*log10(SNR)
 
 
-% Phi = zeros(numSamples, numFuncs, timeSteps);
-% for t=1:timeSteps
-% %     for i=1:numSamples
-% %         Phi(i,:,t) = A(i,:).*x(:,t)';
-% %     end
-%     for i=1:numFuncs
-%         Phi(:,i,t) = A(:,i).*targets(:,t); %x(:,t)';
-%     end    
-% end
-
-% surf(y)
-% %%
-% for i=activeIndexes
-% %     offset=randn;
-% %     scale=2;
-%     for t=1:timeSteps
-% %         x(i,t) = scale * sin(t+offset*pi);
-%         x(i,t) = sin(t);
-%     end
-% end
-% [rows, ~] = find(x);
-% % plot(1:timeSteps, x(unique(rows),:) )
-% clearvars 'offset' 'scale' 'i' 't' 'rows'
-
-%% Construct sensor measurement
-
-
-% figure(1)
-% plot(y)
-% 
-% % plot(1:timeSteps, y)
-% surf(y)
-
-%% Determine sparsity 
+%% Reconstruct
 
 alphaInit = eye(size(A,2));
 % alpha_init(find(alpha_init)) = rand(1,size(A,2));
 alphaInit(logical(eye(size(alphaInit)))) = rand(1,size(A,2));
 betaInit = rand;
 
-% Phi = A * x....   % Phi->size(22,numFuncs);
 
-% disp('Start working on larger time windows');
 
-Q = zeros(numFuncs, numFuncs, timeSteps/estimationAverageSteps);
-beta = zeros(1, timeSteps/estimationAverageSteps);
-llh = zeros(1, timeSteps/estimationAverageSteps);
-mn = zeros(numFuncs, timeSteps/estimationAverageSteps);
+Q = zeros(numFuncs, numFuncs, timeSteps/inputAverageTimeSteps);
+beta = zeros(1, timeSteps/inputAverageTimeSteps);
+llh = zeros(1, timeSteps/inputAverageTimeSteps);
+mn = zeros(numFuncs, timeSteps/inputAverageTimeSteps);
 
 res=[];
 wres=[];
-for t = 0:(timeSteps/estimationAverageSteps)/inputAverageTimeSteps-1
+% for t = 0:(timeSteps)/inputAverageTimeSteps-1
+t=0;
     for i=(t*estimationAverageSteps)+1:(t+1)*estimationAverageSteps
-        [Q(:,:,i), beta(i), mn(:,i), llh(i)] = maximum_evidence_multi(alphaInit, betaInit, A, smoothTargets(:,i));
+        [Q(:,:,i), beta(i), mn, llh(i)] = maximum_evidence_multi(alphaInit, betaInit, A, smoothTargets);
         %     alpha_init = Q(:,:,i);
         %     beta_init = beta(i);
         Qtemp = diag(Q(:,:,i));
@@ -150,27 +102,30 @@ for t = 0:(timeSteps/estimationAverageSteps)/inputAverageTimeSteps-1
             wres = mn(:,i);
         else
             res = res.* Qtemp;
-            res = res/sum(res);
+            res = res./sum(res);
             wres=wres.*mn(:,i);
         end
         %     wres(wres == 0) = 1;
         
         disp(['Time step: ' int2str(i)]);
     end
-end
+% end
 
 Qmean = mean(Q,3);
-
 %
 estimatedIndexes=find(diag(Qmean) ~= 1e4);
 meanmN = mean(mn,2);
 
 %%
 
+
+
+
 figure(71), surf(x);
+title('True source');
 % set(gca, 'ZScale', 'log');
 figure(72), surf(mn);
-
+title('Estimate');
 %% F1-score
 
 nonZeroIdxEst = find(meanmN ~= 0);
