@@ -10,7 +10,7 @@ model.dimension = 1;
 s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
-iterations = 20;
+iterations = 4;
 intraIterations = 100;
 
 % Unimodal
@@ -27,22 +27,22 @@ w_multi = cell(iterations, intraIterations);
 
 w_true = cell(iterations, intraIterations);
 
-dataTitle = ['exp_modes_dense/v2-' datestr(datetime('now'))];
+dataTitle = ['exp_modes_dense/v2_extra-' datestr(datetime('now'))];
 
 model.alpha=2;
 
 
 data.SNRdB = zeros(iterations, intraIterations);
-data.numSamples = '50*iter';
+data.numSamples = '10*iter';
 data.numFuncs = '500';
 data.numActiveFuncs = '500';
 data.experiment = 'Dense model';
-data.description = '500 functions, all weights drawn from one alpha. Iterating over N (50xiter). About the same SNR for all cases.';
+data.description = '500 functions, all weights drawn from one alpha. Iterating over N (10xiter). About the same SNR for all cases.';
 
 for iter=1:iterations
     for intraIter=1:intraIterations 
         
-        numSamples = 50*iter;
+        numSamples = 10*iter;
         numFuncs = 500; %iter;
         
         forwardMatrix = randn(numSamples, numFuncs);

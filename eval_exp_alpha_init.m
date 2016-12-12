@@ -9,7 +9,8 @@ for i = 1:length(fileIndex)
     fileName = files(fileIndex(i)).name;
     if fileName(1) == '.'       
         continue; 
-    elseif fileName(end-3:end) == '.mat'
+%     elseif fileName(end-3:end) == '.mat'
+    elseif fileName(1:11) == 'v2-ok-posed'
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
@@ -41,7 +42,7 @@ numSamples = 22;
 
 figure(8)
 % idx=unique(int16(unifrnd(1,2000, [1 400])));
-for i = 1:100 %size(alpha,1)
+for i = 1:1000 %size(alpha,1)
 %     for j = 1:20
 %         
 %     %     for j=idx % int16(unifrnd(1,2000, [1 400]))
@@ -66,26 +67,32 @@ for i = 1:100 %size(alpha,1)
         terminate = size(alphas,2);
     end
     
-    x=alphas(1,1);
-    y=alphas(2,1);
+    idx=[1 2];
+    x=alphas(idx(1),1);
+    y=alphas(idx(2),1);
+%     z=alphas(idx(3),1);
     plot(x,y,'ob'), hold on;
+%     
+%     x=alphas(1,end);
+%     y=alphas(2,end);
+%     plot(x,y,'xr'), hold on;
+%     axis([-50 1100 -50 1100]);
     
-    x=alphas(1,end);
-    y=alphas(2,end);
-    plot(x,y,'xr'), hold on;
-    axis([-50 1100 -50 1100]);
-    
-%     for j=2:terminate
-%         x=alphas(1,j);
-%         y=alphas(2,j);
-% %         if x == 1000 || y == 1000
-% %             continue; 
-% %         end
-%         plot(x,y,'or'), hold on;
-%         axis([-50 1100 -50 1100]);
-% %         drawnow
-% %         pause;
-%     end
+    for j=2:terminate
+        x=alphas(idx(1),j);
+        y=alphas(idx(2),j);
+%         z=alphas(idx(3),j);
+%         if x == 1000 || y == 1000
+%             continue; 
+%         end
+        if x > 10 || y > 10
+            continue;
+        end
+        plot(x,y,'or'), hold on;
+        axis([-10 10 -10 10]);
+%         drawnow
+%         pause;
+    end
 end
 
 hold off;

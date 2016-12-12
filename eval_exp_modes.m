@@ -144,7 +144,7 @@ subplot(2,1,1), plot(mean(w_mse_dense_separate,1)), hold off;
 % xlim([min(ticks) max(ticks)])
 set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
 set(gca,'fontsize',12);
-title('Dense model');
+title('Dense model (500 ');
 xlabel('Number of samples');
 ylabel('Relative MSE for all weights'); %, averaged over ' int2str(numExperiments) ' runs'
 legend('Shared prior estimation', 'Separate priors estimation');
@@ -277,6 +277,9 @@ err_dense_separate = zeros(iterations,numExperiments);
 err_sparse_shared = zeros(iterations,1);
 err_dense_shared = zeros(iterations,1);
 
+nonZeroParamsDenseSeparate = zeros(iterations,numExperiments);
+nonZeroParamsSparseSeparate = zeros(iterations,numExperiments);
+
 for i=1:iterations
     for j=1:numExperiments
         % Sparse
@@ -292,6 +295,9 @@ for i=1:iterations
         
         err_sparse_separate(i,j) = alpha_std_sparse_separate(i,j)/(sqrt(50*i));
         err_dense_separate(i,j) = alpha_std_dense_separate(i,j)/(sqrt(50*i));
+        
+        nonZeroParamsDenseSeparate(i,j) = numel(nonZeroIdxDense);
+        nonZeroParamsSparseSeparate(i,j) = numel(nonZeroIdxSparse);
     end
     
     err_sparse_shared(i) = std(a_sparse_shared(i,:))/(sqrt(50*i));
@@ -313,7 +319,7 @@ set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
 set(gca,'fontsize',12);
 set(erb1(1),'Linewidth',2)
 set(erb2(1),'Linewidth',2)
-title('Dense model');
+title('Dense model (500/500 non-zero parameters)');
 xlabel('Number of samples')%, ylabel('F1-score') 
 ylabel({'Mean of estimated alphas', 'Non-zero weights only'});
 legend('Shared prior estimate','Separate priors estimate', 'Expected alpha');
@@ -328,13 +334,13 @@ set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
 set(gca,'fontsize',12);
 set(erb3(1),'Linewidth',2);
 set(erb4(1),'Linewidth',2)
-title('Sparse model');
+title('Sparse model (20/500 non-zero parameters)');
 xlabel('Number of samples');
 ylabel({'Mean of estimated alphas','Non-zero weights only'});
 legend('Shared prior estimate','Separate priors estimate', 'Expected alpha');
 
 
-print(figure(3), 'figures/sample_sweep_alpha','-dpdf')
+% print(figure(3), 'figures/sample_sweep_alpha','-dpdf')
 
 % %% STD of alpha
 % figure(4)
