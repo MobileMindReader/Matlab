@@ -13,15 +13,14 @@ model.alpha=2;
 s = RandStream('mt19937ar','Seed',2);
 RandStream.setGlobalStream(s);
 
-iterations = 100;
+iterations = 10;
 
 % Multimodal
 llh_multi = zeros(iterations, 1);
-beta_multi = zeros(iterations, 1);
 w_multi = cell(iterations, 1);
 
 % w_true = cell(iterations, 1);
-
+run=1
 dataTitle = ['exp_alpha_init/v1-run-' int2str(run)];
 
 numSamples = 22;
@@ -53,7 +52,8 @@ targets = y + noise;
 
 data.iterations = iterations;
 data.alpha_init = zeros(iterations, numFuncs);
-data.alpha = zeros(iterations, numFuncs);
+data.alpha = cell(iterations, 1);
+data.beta = cell(iterations,1);
 
 for iter=1:iterations
     
@@ -63,10 +63,12 @@ for iter=1:iterations
 %     alpha_init(logical(eye(size(alpha_init)))) = rand(1,numFuncs);
     data.alpha_init(iter,:) = rand(1,numFuncs);
     
-    [A, beta, mn_multi, llh] = maximum_evidence_multi(data.alpha_init(iter,:), beta_init, forwardMatrix, targets);
-    data.alpha(iter, :) = diag(A);
+%     [A, beta, mn_multi, llh] = maximum_evidence_multi(data.alpha_init(iter,:), beta_init, forwardMatrix, targets);
+    [alphas, betas, mn_multi, llh] = maximum_evidence_multi_tracking(data.alpha_init(iter,:), beta_init, forwardMatrix, targets);
+%     data.alpha(iter, :) = diag(A);
+    data.alpha{iter} = alphas;
     
-    data.beta_multi(iter) = beta;
+    data.beta{iter} = betas;
     data.llh_multi(iter) = llh;
     data.w_multi{iter} = mn_multi;
     
@@ -75,7 +77,7 @@ for iter=1:iterations
     if mod(iter, 5) == 0
         disp(iter);        
         
-        save(dataTitle, 'data');
+%         save(dataTitle, 'data');
     end
 end
 
