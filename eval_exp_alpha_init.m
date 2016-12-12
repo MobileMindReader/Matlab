@@ -39,27 +39,53 @@ numSamples = 22;
 
 %%
 
-
 figure(8)
-
 % idx=unique(int16(unifrnd(1,2000, [1 400])));
-for i = size(alpha,1)
-    for j = 1:20
-        
-    %     for j=idx % int16(unifrnd(1,2000, [1 400]))
-    %         y=w_sparse_separate{i,j};
-    %         x=w_sparse_true{i,j};
-    % %         y=y(y~=0 & x~=0);
-    % %         x=x(y~=0);
-    %         plot(x,y, '+b'), hold on;
-    %     end
-        
-%         x=alpha(i,j);
+for i = 1:100 %size(alpha,1)
+%     for j = 1:20
+%         
+%     %     for j=idx % int16(unifrnd(1,2000, [1 400]))
+%     %         y=w_sparse_separate{i,j};
+%     %         x=w_sparse_true{i,j};
+%     % %         y=y(y~=0 & x~=0);
+%     % %         x=x(y~=0);
+%     %         plot(x,y, '+b'), hold on;
+%     %     end
+%         
+% %         x=alpha(i,j);
+% %         y=alpha_init(i,j);
+%         x=alpha(1:2,j);
 %         y=alpha_init(i,j);
-        x=alpha(1:2,j);
-        y=alpha_init(i,j);
-        plot(x,y, '+r'), hold on;
+%         plot(x,y, '+r'), hold on;
+%     end
+    
+    alphas=alpha{i};
+
+    terminate = 30;
+    if terminate > size(alphas,2)
+        terminate = size(alphas,2);
     end
+    
+    x=alphas(1,1);
+    y=alphas(2,1);
+    plot(x,y,'ob'), hold on;
+    
+    x=alphas(1,end);
+    y=alphas(2,end);
+    plot(x,y,'xr'), hold on;
+    axis([-50 1100 -50 1100]);
+    
+%     for j=2:terminate
+%         x=alphas(1,j);
+%         y=alphas(2,j);
+% %         if x == 1000 || y == 1000
+% %             continue; 
+% %         end
+%         plot(x,y,'or'), hold on;
+%         axis([-50 1100 -50 1100]);
+% %         drawnow
+% %         pause;
+%     end
 end
 
 hold off;

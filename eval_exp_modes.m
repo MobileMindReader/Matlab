@@ -119,18 +119,15 @@ w_mse_dense_shared = zeros(M, iterations);
 % Calculate MSE 
 for i=1:iterations
     for j=1:numExperiments
-        % Separate alpha model
-%         w_mse_sparse_separate(:,i) = w_mse_sparse_separate(:,i) + ((w_sparse_separate{i,j}-w_sparse_true{i,j}).^2)/sum(abs(w_sparse_true{i,j}));
-%         w_mse_sparse_shared(:,i) = w_mse_sparse_shared(:,i) + (w_sparse_shared{i,j}-w_sparse_true{i,j}).^2/sum(abs(w_sparse_true{i,j}));
-%         % Shared alpha model
-%         w_mse_dense_separate(:,i) = w_mse_dense_separate(:,i) + (w_dense_separate{i,j}-w_dense_true{i,j}).^2/sum(abs(w_dense_true{i,j}));
-%         w_mse_dense_shared(:,i) = w_mse_dense_shared(:,i) + (w_dense_shared{i,j}-w_dense_true{i,j}).^2/sum(abs(w_dense_true{i,j}));
+        
+        mag_sparse = mean(w_sparse_true{i,j}.^2); % sqrt(mean(w_sparse_true{i,j}.^2));
+        mag_dense = mean(w_dense_true{i,j}.^2); %sqrt(mean(w_dense_true{i,j}.^2));
         
         %%%%% Alternate normalisation 
-        w_mse_sparse_separate(:,i) = w_mse_sparse_separate(:,i) + ((w_sparse_separate{i,j}-w_sparse_true{i,j}).^2)/sqrt(mean(w_sparse_true{i,j}.^2));
-        w_mse_sparse_shared(:,i) = w_mse_sparse_shared(:,i) + (w_sparse_shared{i,j}-w_sparse_true{i,j}).^2/sqrt(mean(w_sparse_true{i,j}.^2));
-        w_mse_dense_separate(:,i) = w_mse_dense_separate(:,i) + (w_dense_separate{i,j}-w_dense_true{i,j}).^2/sqrt(mean(w_dense_true{i,j}.^2));
-        w_mse_dense_shared(:,i) = w_mse_dense_shared(:,i) + (w_dense_shared{i,j}-w_dense_true{i,j}).^2/sqrt(mean(w_dense_true{i,j}.^2));
+        w_mse_sparse_separate(:,i) = w_mse_sparse_separate(:,i) + ((w_sparse_separate{i,j}-w_sparse_true{i,j}).^2)/mag_sparse;
+        w_mse_sparse_shared(:,i) = w_mse_sparse_shared(:,i) + (w_sparse_shared{i,j}-w_sparse_true{i,j}).^2/mag_sparse;
+        w_mse_dense_separate(:,i) = w_mse_dense_separate(:,i) + (w_dense_separate{i,j}-w_dense_true{i,j}).^2/mag_dense;
+        w_mse_dense_shared(:,i) = w_mse_dense_shared(:,i) + (w_dense_shared{i,j}-w_dense_true{i,j}).^2/mag_dense;
     end
     w_mse_sparse_separate(:,i) = w_mse_sparse_separate(:,i)/numExperiments;
     w_mse_sparse_shared(:,i) = w_mse_sparse_shared(:,i)/numExperiments;
@@ -139,11 +136,13 @@ for i=1:iterations
     w_mse_dense_shared(:,i) = w_mse_dense_shared(:,i)/numExperiments;
 end
 
+disp('Mean or sum, or for each?');
+
 figure(1)
 subplot(2,1,1), plot(mean(w_mse_dense_shared,1)), hold on;
 subplot(2,1,1), plot(mean(w_mse_dense_separate,1)), hold off;
 % xlim([min(ticks) max(ticks)])
-set(gca,'XTick',ticks,'XTickLabel',tickLabels)%, 'YScale', 'log');
+set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
 set(gca,'fontsize',12);
 title('Dense model');
 xlabel('Number of samples');
@@ -153,7 +152,7 @@ legend('Shared prior estimation', 'Separate priors estimation');
 
 subplot(2,1,2), plot(mean(w_mse_sparse_shared,1)), hold on;
 subplot(2,1,2), plot(mean(w_mse_sparse_separate,1)), hold off;
-set(gca,'XTick',ticks,'XTickLabel',tickLabels)%, 'YScale', 'log');
+set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
 set(gca,'fontsize',12);
 title('Sparse model');
 xlabel('Number of samples');

@@ -9,18 +9,17 @@ model.dimension = 1;
 model.alpha=2;
 
 
-% s = RandStream('mt19937ar','Seed','shuffle');
-s = RandStream('mt19937ar','Seed',2);
+s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
-iterations = 10;
+iterations = 40;
 
 % Multimodal
 llh_multi = zeros(iterations, 1);
 w_multi = cell(iterations, 1);
 
 % w_true = cell(iterations, 1);
-run=1
+
 dataTitle = ['exp_alpha_init/v1-run-' int2str(run)];
 
 numSamples = 22;
@@ -77,7 +76,7 @@ for iter=1:iterations
     if mod(iter, 5) == 0
         disp(iter);        
         
-%         save(dataTitle, 'data');
+        save(dataTitle, 'data');
     end
 end
 
