@@ -1,5 +1,5 @@
 %% Initializing
-clear;
+% clear;
 
 % True parameters
 model.noiseMean = 0;
@@ -27,7 +27,7 @@ w_multi = cell(iterations, intraIterations);
 
 w_true = cell(iterations, intraIterations);
 
-dataTitle = ['exp_modes_dense/v2_extra-' datestr(datetime('now'))];
+dataTitle = ['exp_modes_dense/v2_extra-' int2str(run)];
 
 model.alpha=2;
 
@@ -90,7 +90,7 @@ for iter=1:iterations
         end
     end
 
-    if mod(iter, 5) == 0
+%     if mod(iter, 5) == 0
         % Save data often
         data.currentIteration = iter;
         data.currentIntraIteration = intraIter;
@@ -111,6 +111,6 @@ for iter=1:iterations
         data.w_multi = w_multi;
         
         save(dataTitle, 'data');
-    end
+%     end
 end
 

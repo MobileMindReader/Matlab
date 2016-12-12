@@ -1,5 +1,5 @@
 %% Initializing
-clear;
+% clear;
 
 % True parameters
 model.noiseMean = 0;
@@ -28,7 +28,7 @@ w_multi = cell(iterations, intraIterations);
 input = cell(iterations, intraIterations);
 w_true = cell(iterations, intraIterations);
 
-dataTitle = ['exp_modes_sparse/v2-extra-' datestr(datetime('now'))];
+dataTitle = ['exp_modes_sparse/v2-extra-' int2str(run)];
 
 data.SNRdB = zeros(iterations, intraIterations);
 data.numSamples = '10*iter';
@@ -94,9 +94,7 @@ for iter=1:iterations
         end
     end
 
-    if mod(iter, 5) == 0
-        [iter intraIter]        
-        
+%     if mod(iter, 5) == 0
         % Save data often
         data.currentIteration = iter;
         data.currentIntraIteration = intraIter;
@@ -117,5 +115,5 @@ for iter=1:iterations
         data.w_multi = w_multi;
         
         save(dataTitle, 'data');
-    end
+%     end
 end
