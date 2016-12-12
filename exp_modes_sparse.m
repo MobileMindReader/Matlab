@@ -72,8 +72,9 @@ for iter=1:iterations
 %%%% Initialize alpha and beta
         beta_init = rand;
         alpha_uni_init = rand;
-        alpha_multi_init = eye(numFuncs);
-        alpha_multi_init(logical(eye(size(alpha_multi_init)))) = rand(1,numFuncs);
+%         alpha_multi_init = eye(numFuncs);
+%         alpha_multi_init(logical(eye(size(alpha_multi_init)))) = rand(1,numFuncs);
+        alpha_multi_init = rand(1,numFuncs);
         
 %%%% Unimodal alpha      
         [alpha, beta, mn_uni, llh] = maximum_evidence(alpha_uni_init, beta_init, forwardMatrix, targets);
