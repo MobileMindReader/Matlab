@@ -15,7 +15,7 @@ RandStream.setGlobalStream(s);
 % forwardModel = importdata('model/mBrainLeadfield.mat');
 % forwardMatrix = forwardModel(:,1:reducedSize);
 
-N = 22; %size(forwardMatrix,1);
+N = 20; %size(forwardMatrix,1);
 numFuncs = 500; % size(forwardMatrix,2);
 
 forwardMatrix = randn(N, numFuncs);
@@ -27,13 +27,13 @@ model.alpha = 2;% zeros(1,numFuncs); %0.2*ones(1,numFuncs); % 2?
 % trueIdx=[1 2 5];
 % model.alpha(trueIdx) = 1;
 
-numActiveFuncs = 10;
+numActiveFuncs = 20;
 
 % model.alpha(1:10) = 1;
 wTemp = zeros(1,numFuncs);
 
-idx=round(1:numFuncs/numActiveFuncs:numFuncs);
-% idx=1:numActiveFuncs;
+% idx=round(1:numFuncs/numActiveFuncs:numFuncs);
+idx=1:numActiveFuncs;
 
 % wTemp = normrnd(0,sqrt(1/400), [1 numFuncs]);   %Noise on all 
 
@@ -45,15 +45,15 @@ model.w = wTemp;
 
 timeSteps = 1;
 
-model.w = model.w*sqrt(1000);
-x=model.w'*(1+sin((1:timeSteps)*0.3));
+model.w = model.w*sqrt(500/20);
+x=model.w'; % *(1+sin((1:timeSteps)*0.3));
 
 %% Construct sensor measurement
 
 % y = A * x + noise;
 y = forwardMatrix*x;
 
-trueBeta=200;
+trueBeta=model.beta;
 noise = normrnd(0, sqrt(1/trueBeta), [N timeSteps]);
 
 targets = y + noise;
@@ -104,9 +104,11 @@ for i=idxGuess
     end
 end
 
-
+%%
 % alphaInitValues(idx) = 0.01;
-alphaInit(logical(eye(size(alphaInit)))) = alphaInitValues; %rand(1,size(forwardMatrix,2));
+% alphaInit = alphaInitValues; %rand(1,size(forwardMatrix,2));
+
+alphaInit = rand(1,size(forwardMatrix,2));
 betaInit = rand;
 
 % Phi = A * x....   % Phi->size(22,numFuncs);
@@ -120,7 +122,7 @@ mn = zeros(numFuncs, timeSteps);
 
 for i = 1:1
     [A, beta, mn, llh] = maximum_evidence_multi(alphaInit, betaInit, Phi, targetMean);
-%     [alphaSha, betaSha, mnSha, llhSha, gamma] = maximum_evidence(alphaInit(1,1),  betaInit, Phi, targetMean);
+    [alphaSha, betaSha, mnSha, llhSha, gamma] = maximum_evidence(alphaInit(1,1),  betaInit, Phi, targetMean);
 %     alpha_init = Q(:,:,i);
 %     beta_init = beta(i);
 %     disp(['Time step: ' int2str(i)]);
@@ -143,6 +145,8 @@ recall=truePos/(truePos+falseNeg);
 
 f1 = 2*(precision*recall)/(precision+recall)
 
+beta
+betaSha
 
 %%
 

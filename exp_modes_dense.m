@@ -10,7 +10,7 @@ model.dimension = 1;
 s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
-iterations = 40;
+iterations = 20;
 intraIterations = 100;
 
 % Unimodal

@@ -1,7 +1,7 @@
 function [alphas, betas, mN, llh] = maximum_evidence_multi_tracking(alpha_init, beta, Phi, t)
 
-tolerance = 1e-3;
-maxIterations = 300;
+tolerance = 1e-5;
+maxIterations = 1000;
 
 llh = zeros(1,maxIterations);
 M = size(Phi,2);
@@ -93,6 +93,6 @@ for i=2:maxIterations
         break;
     end
 end
-llh = llh(i);
+llh = llh(1:i);
 
 end

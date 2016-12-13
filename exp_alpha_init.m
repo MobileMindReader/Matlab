@@ -12,15 +12,11 @@ model.alpha=2;
 s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
-iterations = 40;
-
-% Multimodal
-llh_multi = zeros(iterations, 1);
-w_multi = cell(iterations, 1);
+iterations = 20;
 
 % w_true = cell(iterations, 1);
 
-dataTitle = ['exp_alpha_init/v1-run-' int2str(run)];
+dataTitle = ['exp_alpha_init/v2-run-' int2str(run)];
 
 numSamples = 22;
 numFuncs = 768;
@@ -51,8 +47,10 @@ targets = y + noise;
 
 data.iterations = iterations;
 data.alpha_init = zeros(iterations, numFuncs);
+data.description = 'v2';
 data.alpha = cell(iterations, 1);
 data.beta = cell(iterations,1);
+data.llh = cell(iterations,1);
 
 for iter=1:iterations
     
@@ -68,8 +66,8 @@ for iter=1:iterations
     data.alpha{iter} = alphas;
     
     data.beta{iter} = betas;
-    data.llh_multi(iter) = llh;
-    data.w_multi{iter} = mn_multi;
+    data.llh{iter} = llh;
+    data.w{iter} = mn_multi;
     
     data.currentIteration = iter;
     
