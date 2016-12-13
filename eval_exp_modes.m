@@ -10,7 +10,9 @@ for i = 1:length(fileIndex)
 %     if fileName(end-3:end) == '.mat'
 %         fileNames{end+1} = files(fileIndex(i)).name;
 %     end
-    if fileName(1:2) == 'v2'
+    if fileName(1) == '.'
+        continue;
+    elseif fileName(1:5) == 'v2-07'
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
@@ -28,7 +30,9 @@ for i = 1:length(fileIndex)
 %     elseif fileName(1:2) == '07'
 %         fileNames{end+1} = files(fileIndex(i)).name;
 %     end
-    if fileName(1:2) == 'v2'
+    if fileName(1) == '.'
+        continue;
+    elseif fileName(1:5) == 'v2-07'
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
@@ -116,6 +120,12 @@ w_mse_sparse_shared = zeros(M, iterations);
 w_mse_dense_separate = zeros(M, iterations);
 w_mse_dense_shared = zeros(M, iterations);
 
+
+w_mse_rand_sparse_separate = zeros(M, iterations);
+w_mse_rand_sparse_shared = zeros(M, iterations);
+w_mse_rand_dense_separate = zeros(M, iterations);
+w_mse_rand_dense_shared = zeros(M, iterations);
+
 % Calculate MSE 
 for i=1:iterations
     for j=1:numExperiments
@@ -123,17 +133,33 @@ for i=1:iterations
         mag_sparse = mean(w_sparse_true{i,j}.^2); % sqrt(mean(w_sparse_true{i,j}.^2));
         mag_dense = mean(w_dense_true{i,j}.^2); %sqrt(mean(w_dense_true{i,j}.^2));
         
-        %%%%% Alternate normalisation 
         w_mse_sparse_separate(:,i) = w_mse_sparse_separate(:,i) + ((w_sparse_separate{i,j}-w_sparse_true{i,j}).^2)/mag_sparse;
         w_mse_sparse_shared(:,i) = w_mse_sparse_shared(:,i) + (w_sparse_shared{i,j}-w_sparse_true{i,j}).^2/mag_sparse;
         w_mse_dense_separate(:,i) = w_mse_dense_separate(:,i) + (w_dense_separate{i,j}-w_dense_true{i,j}).^2/mag_dense;
         w_mse_dense_shared(:,i) = w_mse_dense_shared(:,i) + (w_dense_shared{i,j}-w_dense_true{i,j}).^2/mag_dense;
+        
+        
+        %%% Randoms        
+        w_dense_rand = normrnd(0,sqrt(1/2), [M 1]); % rand(M,1);
+        w_sparse_rand = 5*normrnd(0,sqrt(1/2), [M 1]); % rand(M,1);
+        w_sparse_rand(21:end) = 0;
+        
+%         w_mse_rand_sparse_separate(:,i) = w_mse_rand_sparse_separate(:,i) + ((w_sparse_rand-w_sparse_true{i,j}).^2)/mag_sparse;
+%         w_mse_rand_sparse_shared(:,i) = w_mse_rand_sparse_shared(:,i) + (w_sparse_rand-w_sparse_true{i,j}).^2/mag_sparse;
+        w_mse_rand_dense_separate(:,i) = w_mse_rand_dense_separate(:,i) + (w_sparse_rand-w_dense_true{i,j}).^2/mag_dense;
+        w_mse_rand_dense_shared(:,i) = w_mse_rand_dense_shared(:,i) + (w_dense_rand-w_dense_true{i,j}).^2/mag_dense;
     end
+    
     w_mse_sparse_separate(:,i) = w_mse_sparse_separate(:,i)/numExperiments;
     w_mse_sparse_shared(:,i) = w_mse_sparse_shared(:,i)/numExperiments;
-    
     w_mse_dense_separate(:,i) = w_mse_dense_separate(:,i)/numExperiments;
     w_mse_dense_shared(:,i) = w_mse_dense_shared(:,i)/numExperiments;
+    
+    %%% Randoms
+%     w_mse_rand_sparse_separate(:,i) = w_mse_rand_sparse_separate(:,i)/numExperiments;
+%     w_mse_rand_sparse_shared(:,i) = w_mse_rand_sparse_shared(:,i)/numExperiments;
+    w_mse_rand_dense_separate(:,i) = w_mse_rand_dense_separate(:,i)/numExperiments;
+    w_mse_rand_dense_shared(:,i) = w_mse_rand_dense_shared(:,i)/numExperiments;
 end
 
 disp('Mean or sum, or for each?');
@@ -144,7 +170,7 @@ subplot(2,1,1), plot(mean(w_mse_dense_separate,1)), hold off;
 % xlim([min(ticks) max(ticks)])
 set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
 set(gca,'fontsize',12);
-title('Dense model (500 ');
+title('Dense model (500/500 non-zero parameters)');
 xlabel('Number of samples');
 ylabel('Relative MSE for all weights'); %, averaged over ' int2str(numExperiments) ' runs'
 legend('Shared prior estimation', 'Separate priors estimation');
@@ -154,13 +180,38 @@ subplot(2,1,2), plot(mean(w_mse_sparse_shared,1)), hold on;
 subplot(2,1,2), plot(mean(w_mse_sparse_separate,1)), hold off;
 set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
 set(gca,'fontsize',12);
-title('Sparse model');
+title('Sparse model (20/500 non-zero parameters)');
 xlabel('Number of samples');
 ylabel('Relative MSE for all weights'); 
 legend('Shared prior estimation', 'Separate priors estimation');
 
 print(figure(1), 'figures/sample_sweep_weight_relative_mse','-dpdf')
 % std(w_true{1,1})^2*numFuncs;
+%%
+
+figure(111)
+subplot(2,1,1), plot(mean(w_mse_rand_dense_shared,1)), hold on;
+subplot(2,1,1), plot(mean(w_mse_rand_dense_separate,1)), hold off;
+% xlim([min(ticks) max(ticks)])
+set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
+set(gca,'fontsize',12);
+title('Dense model (500/500 non-zero parameters)');
+xlabel('Number of samples');
+ylabel('Relative MSE for all weights'); %, averaged over ' int2str(numExperiments) ' runs'
+legend('Shared prior estimation', 'Separate priors estimation');
+
+
+% subplot(2,1,2), plot(mean(w_mse_rand_sparse_shared,1)), hold on;
+% subplot(2,1,2), plot(mean(w_mse_rand_sparse_separate,1)), hold off;
+% set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
+% set(gca,'fontsize',12);
+% title('Sparse model (20/500 non-zero parameters)');
+% xlabel('Number of samples');
+% ylabel('Relative MSE for all weights'); 
+% legend('Shared prior estimation', 'Separate priors estimation');
+
+% print(figure(1), 'figures/sample_sweep_weight_relative_mse','-dpdf')
+
 
 %% F1 Score
 
@@ -248,6 +299,7 @@ xlabel('Number of samples');
 ylabel('F1-score for non-zero weights');
 legend('Shared prior estimate','Separate priors estimate');
 
+%%
 print(figure(2), 'figures/sample_sweep_f1','-dpdf')
 
 %% Alpha averages? What should this show?
@@ -342,6 +394,8 @@ legend('Shared prior estimate','Separate priors estimate', 'Expected alpha');
 
 % print(figure(3), 'figures/sample_sweep_alpha','-dpdf')
 
+
+%%
 % %% STD of alpha
 % figure(4)
 % subplot(2,1,1), plot(std(a_dense_shared,0,2)), hold on;
@@ -385,7 +439,7 @@ subplot(2,1,1), semilogy(1:iterations, model.beta*ones(1,iterations), '--');  ho
 set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
 set(gca, 'fontsize',12);
 legend('Shared prior estimation','Separate priors estimation', 'True beta');
-title('Dense model');
+title('Dense model (500/500 non-zero parameters)');
 ylabel(['Estimated beta']);
 xlabel('Number of samples');
 
@@ -396,7 +450,7 @@ subplot(2,1,2), semilogy(1:iterations, model.beta*ones(1,iterations), '--');  ho
 % semilogy(1:iterations, trueRatio*ones(1,iterations), '-r');
 set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
 set(gca,'fontsize',12);
-title('Sparse model');
+title('Sparse model (20/500 non-zero parameters)');
 legend('Shared prior estimation','Separate priors estimation','True beta');
 ylabel(['Estimated beta']);
 xlabel('Number of samples');

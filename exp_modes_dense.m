@@ -10,7 +10,7 @@ model.dimension = 1;
 s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
-iterations = 4;
+iterations = 40;
 intraIterations = 100;
 
 % Unimodal
@@ -27,22 +27,22 @@ w_multi = cell(iterations, intraIterations);
 
 w_true = cell(iterations, intraIterations);
 
-dataTitle = ['exp_modes_dense/v2_extra-' int2str(run)];
+dataTitle = ['exp_modes_dense/v2-' datestr(datetime('now')) '-' int2str(run)];
 
 model.alpha=2;
 
 
 data.SNRdB = zeros(iterations, intraIterations);
-data.numSamples = '10*iter';
+data.numSamples = '50*iter';
 data.numFuncs = '500';
 data.numActiveFuncs = '500';
 data.experiment = 'Dense model';
-data.description = '500 functions, all weights drawn from one alpha. Iterating over N (10xiter). About the same SNR for all cases.';
+data.description = '500 functions, all weights drawn from one alpha. Iterating over N (50xiter). About the same SNR for all cases.';
 
 for iter=1:iterations
     for intraIter=1:intraIterations 
         
-        numSamples = 10*iter;
+        numSamples = 40*iter;
         numFuncs = 500; %iter;
         
         forwardMatrix = randn(numSamples, numFuncs);
@@ -53,7 +53,7 @@ for iter=1:iterations
         x=model.w';
        
         y = forwardMatrix*x;
-        Phi = forwardMatrix;
+        data.forwardMatrx = forwardMatrix;
         
         noise = normrnd(0, sqrt(1/model.beta), [numSamples 1]);
         
@@ -73,14 +73,14 @@ for iter=1:iterations
         alpha_multi_init = rand(1,numFuncs);
         
 %%%% Unimodal alpha      
-        [alpha, beta, mn_uni, llh] = maximum_evidence(alpha_uni_init, beta_init, Phi, targets);
+        [alpha, beta, mn_uni, llh] = maximum_evidence(alpha_uni_init, beta_init, forwardMatrix, targets);
         beta_uni(iter, intraIter) = beta;
         alpha_uni(iter, intraIter) = alpha;
         llh_uni(iter, intraIter) = llh;
         w_uni{iter, intraIter} = mn_uni;
         
 %%%% Multi-modal alpha
-        [A, beta, mn_multi, llh] = maximum_evidence_multi(alpha_multi_init, beta_init, Phi, targets);
+        [A, beta, mn_multi, llh] = maximum_evidence_multi(alpha_multi_init, beta_init, forwardMatrix, targets);
         beta_multi(iter, intraIter) = beta;
         alpha_multi{iter, intraIter} = diag(A);
         llh_multi(iter, intraIter) = llh;
