@@ -10,7 +10,8 @@ for i = 1:length(fileIndex)
     if fileName(1) == '.'       
         continue; 
 %     elseif fileName(end-3:end) == '.mat'
-    elseif fileName(1:11) == 'v2-ok-posed'
+%     elseif fileName(1:11) == 'v2-ok-posed'
+    elseif fileName(1:6) == 'v2-run'
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
@@ -23,7 +24,7 @@ end
 
 alpha_init = [];
 alpha = [];
-
+llh = [];
 for data=dataFiles
     data = data{:};
     if (data.currentIteration ~= data.iterations)
@@ -31,6 +32,7 @@ for data=dataFiles
     end
     alpha_init = [alpha_init data.alpha_init'];
     alpha = [alpha data.alpha'];
+    llh = [llh data.llh];
 end
 
 numFuncs = 768;

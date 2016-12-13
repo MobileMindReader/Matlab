@@ -43,13 +43,20 @@ activeIndexes = sort(randperm(size(idx,2), numActiveFuncs));
 % activeIndexes = 2;1:numFuncs;
 % activeIndexes = [4 8];
 
+
 model.w = zeros(numFuncs,1);
 model.w(activeIndexes) = normrnd(0,sqrt(1/model.alpha), [1 size(activeIndexes)]);
-
+% model.w(activeIndexes) = [3 10 -0.345 -11 3.33 9.5 -5.5 0.8 -1.4 6.667];
 % model.w=model.w*sqrt(100);
 
-x=model.w*sin((1:timeSteps)*0.5);
+% x=zeros(size(A,2), timeSteps);
+% for i=1:size(A,2)
+%     for t=1:timeSteps
+%         x(i,t)=model.w(i)*sin((t)*0.5*randn)*randn;
+%     end
+% end
 
+x=model.w*sin((1:timeSteps)*0.5);
 
 trueBeta=200;
 noise = normrnd(0, sqrt(1/trueBeta), [size(A,1) timeSteps]);
@@ -76,7 +83,7 @@ SNRdB = 10*log10(SNR)
 
 alphaInit = eye(size(A,2));
 % alpha_init(find(alpha_init)) = rand(1,size(A,2));
-alphaInit(logical(eye(size(alphaInit)))) = rand(1,size(A,2));
+alphaInit = rand(1,size(A,2));
 betaInit = rand;
 
 
@@ -91,7 +98,7 @@ wres=[];
 % for t = 0:(timeSteps)/inputAverageTimeSteps-1
 t=0;
     for i=(t*estimationAverageSteps)+1:(t+1)*estimationAverageSteps
-        [Q(:,:,i), beta(i), mn, llh(i)] = maximum_evidence_multi(alphaInit, betaInit, A, smoothTargets);
+        [Q(:,:,i), beta(i), mn, llh(i)] = MSBL(alphaInit, betaInit, A, smoothTargets);
         %     alpha_init = Q(:,:,i);
         %     beta_init = beta(i);
         Qtemp = diag(Q(:,:,i));
