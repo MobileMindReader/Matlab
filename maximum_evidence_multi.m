@@ -56,7 +56,7 @@ for i=2:maxIterations
 %     Ew = mean(sum((t-Phi*mN).^2));    % More time step targets
     
     betaInv = Ew/(N-sum(gamma));
-    betaInv = sum(betaInv);
+%     betaInv = sum(betaInv);
     beta = 1/betaInv;
     
     betas(i)=beta;
@@ -73,8 +73,8 @@ for i=2:maxIterations
     L=chol(C);
     logdetC = 2*sum(log(diag(L)));
     
-%     b=L'\t;
-    b=L'\mean(t,2);
+    b=L'\t;
+%     b=L'\mean(t,2);
     
     % Multiple time steps input
 %     templlh=-0.5*(N*log(2*pi)+logdetC + b'*b);
