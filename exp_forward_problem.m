@@ -9,7 +9,7 @@ forwardModel = importdata('model/mBrainLeadfield.mat');
 % s = RandStream('mt19937ar','Seed','shuffle');
 % RandStream.setGlobalStream(s);
 
-s = RandStream('mt19937ar','Seed', 'shuffle');
+s = RandStream('mt19937ar','Seed', 5);
 RandStream.setGlobalStream(s);
 
 
@@ -53,14 +53,13 @@ model.w(activeIndexes) = normrnd(0,sqrt(1/model.alpha), [1 size(activeIndexes)])
 
 % model.w=model.w*sqrt(100);
 
-x=zeros(size(A,2), timeSteps);
-for i=1:size(A,2)
-    for t=1:timeSteps
-        x(i,t)=model.w(i)*sin((t)*0.5*randn)*randn;
-    end
-end
-
-% x=model.w*sin((1:timeSteps)*0.5);
+x=model.w*sin((1:timeSteps)*0.5);
+% x=zeros(size(A,2), timeSteps);
+% for i=1:size(A,2)
+%     for t=1:timeSteps
+%         x(i,t)=model.w(i)*sin((t)*0.5*randn)*randn;
+%     end
+% end
 
 trueBeta=200;
 noise = normrnd(0, sqrt(1/trueBeta), [size(A,1) timeSteps]);
@@ -122,8 +121,13 @@ wres=[];
 
 for t=1:1       % Add something
     [Gamma, beta, xStar, llh] = MSBL(alphaInit, betaInit, A, targets);
-    
 end
+
+% xStar2 = zeros(numFuncs, steps);
+% for t=1:steps
+%     [Gamma, beta, xStar2(:,t), ~] = maximum_evidence_multi(alphaInit, betaInit, A, targets(:,t));
+%     t
+% end
 
 
 % Qmean = mean(Q,3);
@@ -136,12 +140,15 @@ end
 
 
 
-
 figure(71), surf(x);
 title('True source');
 % set(gca, 'ZScale', 'log');
 figure(72), surf(xStar);
-title('Estimate');
+title('M-SBL estimate');
+
+% figure(73), surf(xStar2);
+% title('ARD estimate');
+
 %% F1-score
 
 nonZeroIdxEst = find(mean(xStar,2) ~= 0);

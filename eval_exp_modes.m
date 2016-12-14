@@ -285,7 +285,7 @@ subplot(2,1,1), plot(mean(f1_msha_sha,2)), hold on;
 subplot(2,1,1), plot(mean(f1_msha_sep,2)), hold off;
 set(gca,'XTick',ticks,'XTickLabel',tickLabels);% 'YScale', 'log');
 set(gca,'fontsize',12);
-title('Dense model');
+title('Dense model (500/500 non-zero parameters)');
 xlabel('Number of samples');
 ylabel('F1-score for non-zero weights');
 legend('Shared prior estimate','Separate priors estimate','location','SouthEast');
@@ -294,7 +294,7 @@ subplot(2,1,2), plot(mean(f1_msep_sha,2)), hold on;
 subplot(2,1,2), plot(mean(f1_msep_sep,2)), hold off;
 set(gca,'XTick',ticks,'XTickLabel',tickLabels);% 'YScale', 'log');
 set(gca,'fontsize',12);
-title('Sparse model');
+title('Sparse model (20/500 non-zero parameters)');
 xlabel('Number of samples'); 
 ylabel('F1-score for non-zero weights');
 legend('Shared prior estimate','Separate priors estimate');
@@ -468,7 +468,7 @@ subplot(2,1,1), semilogy(1:iterations, (mean(alpha_mean_dense_separate,2)./mean(
 subplot(2,1,1), semilogy(1:iterations, (expectedAlpha/25)*ones(1,iterations), '--'), hold off;
 set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
 set(gca,'fontsize',12);
-title('Dense model');
+title('Dense model (500/500 non-zero parameters)');
 legend('Shared prior estimation','Separate priors estimation', 'Expected', 'location','SouthEast');
 ylabel(['alpha/beta ratio']);
 xlabel('Number of samples');
@@ -478,11 +478,12 @@ subplot(2,1,2), semilogy(1:iterations, (mean(alpha_mean_sparse_separate,2)./mean
 subplot(2,1,2), semilogy(1:iterations, (expectedAlpha/25)*ones(1,iterations), '--'), hold off;
 set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
 set(gca,'fontsize',12);
-title('Sparse model');
+title('Sparse model (20/500 non-zero parameters)');
 legend('Shared prior estimation','Separate priors estimation', 'Expected', 'location','SouthEast');
 ylabel(['alpha/beta ratio']);
 xlabel('Number of samples');
 
+%%
 
 print(figure(5), 'figures/sample_sweep_ratio','-dpdf')
 
@@ -647,7 +648,7 @@ axis('square');
 %% Scatter plot and histogram of weight estimation
 
 figure(9)
-idxExp=unique(int16(unifrnd(1,1000, [1 10])));
+idxExp=unique(int16(unifrnd(1,1000, [1 20])));
 idx=[1,20];
 x=[];
 y=[];
@@ -664,18 +665,23 @@ end
 % y2 = vertcat(w_sparse_separate{20,idx});
 
 
-h = scatterhist(x(:), y(:), 'Group', [idx(1)*ones(1, numel(x)/2) idx(2)*ones(1, numel(x)/2)], 'Style','stairs');
+h = scatterhist(x(:), y(:), 'Group', [idx(1)*ones(1, numel(x)/2) idx(2)*ones(1, numel(x)/2)], 'Style','bar');
 legend('N=50','N=1000', 'Location', 'NorthWest');
-title('Estimated weights as a function of the true weights for 100 estimated weights (10 non-zero)');
+title('Estimated parameters in sparse model (20/500 non-zero parameters)');
+% title('Estimated weights as a function of the true weights for estimated weights (10 non-zero)');
 ylabel('Estimated weight'), xlabel('True weight');
 
+set(h,'fontsize',12);
 % this = h(2).findobj;
 % uistack(this(3), 'top');
 
 set(h(2:3),'YScale','log');
 axis(h(1),'auto');  % Sync axes
-% axis(h(1), 'square');
+axis(h(1), 'square');
 
+%%
+print(figure(9), 'figures/sample_sweep_weight_underdetermined','-dpdf')
+%%
 
 % %% Scatter plot and histogram of weight estimation
 % 

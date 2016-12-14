@@ -426,8 +426,8 @@ axis('square');
 %% Scatter plot and histogram of weight estimation
 
 figure(9)
-idxExp=unique(int16(unifrnd(1,numExperiments, [1 30])));
-idxExp2=unique(int16(unifrnd(1,numExperiments, [1 80])));
+idxExp=unique(int16(unifrnd(1,numExperiments, [1 40])));
+idxExp2=unique(int16(unifrnd(1,numExperiments, [1 40])));
 idx=[1,50];
 x=[];
 y=[];
