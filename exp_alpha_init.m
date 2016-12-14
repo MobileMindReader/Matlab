@@ -9,23 +9,24 @@ model.dimension = 1;
 model.alpha=2;
 
 
-s = RandStream('mt19937ar','Seed','shuffle');
+% s = RandStream('mt19937ar','Seed','shuffle');
+s = RandStream('mt19937ar','Seed', 0);
 RandStream.setGlobalStream(s);
 
-iterations = 20;
+iterations = 10;
 
 % w_true = cell(iterations, 1);
 
 dataTitle = ['exp_alpha_init/v2-run-' int2str(run)];
 
-numSamples = 22;
-numFuncs = 768;
+numSamples = 20;
+numFuncs = 100;
 
-numActiveFuncs = 20;
+numActiveFuncs = 10;
 
 forwardMatrix = randn(numSamples, numFuncs);
 
-idx=1:numActiveFuncs;  % round(1:numFuncs/numActiveFuncs:numFuncs);
+idx=1:numActiveFuncs;   % round(1:numFuncs/numActiveFuncs:numFuncs);
 
 wTemp = zeros(1,numFuncs);
 wTemp(idx) = normrnd(0,sqrt(1/model.alpha), [1 size(idx)]);
@@ -58,23 +59,30 @@ for iter=1:iterations
     beta_init = model.beta;  % rand;
 %     alpha_init(iter, :) = eye(numFuncs);
 %     alpha_init(logical(eye(size(alpha_init)))) = rand(1,numFuncs);
-    data.alpha_init(iter,:) = rand(1,numFuncs);
+    data.alpha_init(iter,:) = 1*(iter-0.99)*ones(1,numFuncs);
     
 %     [A, beta, mn_multi, llh] = maximum_evidence_multi(data.alpha_init(iter,:), beta_init, forwardMatrix, targets);
     [alphas, betas, mn_multi, llh] = maximum_evidence_multi_tracking(data.alpha_init(iter,:), beta_init, forwardMatrix, targets);
+    [alphas2, betas2, mn_multi2, llh2] = MSBL(data.alpha_init(iter,:), beta_init, forwardMatrix, targets);
 %     data.alpha(iter, :) = diag(A);
     data.alpha{iter} = alphas;
-    
+    data.alpha2{iter} = alphas2;
     data.beta{iter} = betas;
+    data.beta2{iter} = betas2;
     data.llh{iter} = llh;
+    data.llh2{iter} = llh2;
+    
+    data.llh2{iter} = llh2;
+    
     data.w{iter} = mn_multi;
+    data.w2{iter} = mn_multi2;
     
     data.currentIteration = iter;
     
     if mod(iter, 5) == 0
         disp(iter);        
         
-        save(dataTitle, 'data');
+%         save(dataTitle, 'data');
     end
 end
 

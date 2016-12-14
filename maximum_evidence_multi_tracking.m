@@ -40,7 +40,6 @@ for i=2:maxIterations
         % Limit values to 10^3 and 10^-3
 
         A(j,j) = max(1e-6, min(1e3,gamma(j)/(mN(j)^2)));  % A(j,j) = gamma(j)/(mN(j)^2);
-%         A(j,j) = max(1e-6, min(1e3,gamma(j)/(sum(mN(j,:))^2)));   % More time step targets
         
         % Mark which indexes reach the limit and remove from later equations
         if A(j,j) >= 1e3
@@ -53,10 +52,8 @@ for i=2:maxIterations
     alphas(:,i) = diag(A);
     
     Ew = (sum((t-Phi*mN).^2));
-%     Ew = mean(sum((t-Phi*mN).^2));    % More time step targets
     
     betaInv = Ew/(N-sum(gamma));
-    betaInv = sum(betaInv);
     beta = 1/betaInv;
     
     betas(i)=beta;
@@ -66,21 +63,13 @@ for i=2:maxIterations
         AInv(j,j) = 1/A(j,j);
     end
     
-    %     C_old = betaInv*eye(N) + (Phi/A)*Phi';  % Check performance gains on this stuff
-%     oldC = C;
     C = betaInv*eye(N) + Phi*AInv*Phi';
     
     L=chol(C);
     logdetC = 2*sum(log(diag(L)));
     
-%     b=L'\t;
-    b=L'\mean(t,2);
-    
-    % Multiple time steps input
-%     templlh=-0.5*(N*log(2*pi)+logdetC + b'*b);
-%     llh(i)=mean(diag(templlh));
-    
-    
+    b=L'\t;
+        
     % One time step input
     llh(i) = -0.5*(N*log(2*pi)+logdetC + b'*b);   %7.85
     

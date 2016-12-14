@@ -28,85 +28,6 @@ end
 zeroIndexes = zeros(1,modelSize);
 % C=zeros(N,N);
 for k=2:maxIterations
-
-    
-%     SigmaInv = A + beta * PhiTPhi;
-%     SigmaInvU = chol(SigmaInv);
-%     SigmaU = inv(SigmaInvU);
-%     Sigma = SigmaU*SigmaU';  %A^-1 = L^-1'*L^-1 = U^-1 * U^-1'
-%     
-%     mN = beta * (Sigma*(Phi'*T));
-%     mN(zeroIndexes == 1) = 0;
-%     
-% %     m =  
-%     
-%     gamma = zeros(1,M);
-%     for j=1:M
-%         gamma(j) = 1-A(j,j)*Sigma(j,j);
-%     end
-% % 
-% %     for j=1:M
-% %         % Limit values to 10^3 and 10^-3
-% % 
-% % %         A(j,j) = gamma(j)/(mN(j)^2);
-% % 
-% % %         A(j,j) = max(1e-6, min(1e3,gamma(j)/(mN(j)^2)));  
-% %         
-% %         A(j,j) = max(1e-6, min(1e3,gamma(j)/(sum(mN(j,:))^2)));   % More time step targets
-% %         
-% %         
-% %         % Mark which indexes reach the limit and remove from later equations
-% %         if A(j,j) >= 1e3
-% %             zeroIndexes(j) = 1;
-% %             mN(j,:) = 0;
-% %             Phi(:,j) = 0;
-% %         end
-% %     end
-%     
-% 
-% 
-% 
-%     %|| EW ||_2^2:
-% %     ew_mn_sum = 0;
-% %     for j=1:length(t)
-% %         ew_mn_sum = ew_mn_sum + (t(j)-(mN'*Phi(j,:)'))^2;
-% %     end
-% %     ew_mn_sum
-%     
-% %     Ew = (sum((t-Phi*mN).^2));  % Single
-%     Ew = mean(sum((T-Phi*mN).^2));    % More time step targets
-%     
-%     betaInv = Ew/(N-sum(gamma));
-%     betaInv = sum(betaInv);
-%     beta = 1/betaInv;
-%     
-%     betas(k)=beta;
-%     
-%     AInv = zeros(M);
-%     for j=1:M
-%         AInv(j,j) = 1/A(j,j);
-%     end
-%     
-%     %     C_old = betaInv*eye(N) + (Phi/A)*Phi';  % Check performance gains on this stuff
-% %     oldC = C;
-% 
-%     C = betaInv*eye(N) + Phi*AInv*Phi';
-%     L=chol(C);
-%     logdetC = 2*sum(log(diag(L)));
-%     
-% %     b=L'\t;       % Single
-%     b=L'\mean(T,2); % Multi 
-%     
-%     % Multiple time steps input
-%     templlh=-0.5*(N*log(2*pi)+logdetC + b'*b);
-%     llh(k)=mean(diag(templlh));
-%     
-%     % One time step input
-% %     llh(i) = -0.5*(N*log(2*pi)+logdetC + b'*b);   %7.85
-%     
-
-
-%%% NEW Approach
     
     PhiGamma = Phi*Gamma;
     
@@ -177,6 +98,7 @@ for k=2:maxIterations
         break;
     end
 end
+% beta = 1/noiseVar;
 llh = llh(k);
 
 end
