@@ -9,7 +9,7 @@ forwardModel = importdata('model/mBrainLeadfield.mat');
 % s = RandStream('mt19937ar','Seed','shuffle');
 % RandStream.setGlobalStream(s);
 
-s = RandStream('mt19937ar','Seed', 'shuffle');
+s = RandStream('mt19937ar','Seed', 10);
 RandStream.setGlobalStream(s);
 
 
@@ -35,12 +35,12 @@ numSamples = size(A,1);     % The number og sensors corresponds to sample size..
 % numSensors = size(A,1);   % The number og sensors corresponds to sample size..
 
 numFuncs = size(A,2);
-numActiveFuncs=2;
+numActiveFuncs=10;
 
 % activeIndexes = unique(int16(unifrnd(1,reducedSize, [1 numActiveFuncs])));
 % activeIndexes = sort(randperm(size(idx,2), numActiveFuncs));
 activeIndexes = 1:numActiveFuncs;
-% activeIndexes = 1:numFuncs/numActiveFuncs:numFuncs;
+% activeIndexes = 1:round(numFuncs/numActiveFuncs):numFuncs;
 
 
 % activeIndexes = 1:32:768;
@@ -51,19 +51,19 @@ model.w = zeros(numFuncs,1);
 model.w(activeIndexes) = normrnd(0,sqrt(1/model.alpha), [1 size(activeIndexes)]);
 % model.w(activeIndexes) = [3 10 -0.345 -11 3.33 9.5 -5.5 0.8 -1.4 6.667];
 
-% model.w=model.w*sqrt(100);
+model.w=model.w*sqrt(10);
 
-x=model.w*sin((1:timeSteps)*0.5);
+% x=model.w*sin((1:timeSteps)*2*randn);
 % x(2,:)=model.w(2)*cos((1:timeSteps)*0.5);
 
-% x=zeros(size(A,2), timeSteps);
-% for i=1:size(A,2)
+x=zeros(size(A,2), timeSteps);
+for i=1:size(A,2)
 %     for t=1:timeSteps
-%         x(i,t)=model.w(i)*sin((t)*0.5*randn)*randn;
+    x(i,:)=model.w(i)*sin((1:timeSteps)*0.5*randn);
 %     end
-% end
+end
 
-trueBeta=200;
+trueBeta=2000;
 noise = normrnd(0, sqrt(1/trueBeta), [size(A,1) timeSteps]);
 
 y = A*x;
@@ -86,15 +86,14 @@ SNRdB = 10*log10(SNR)
 
 %% Reconstruct
 
-
-alphaInit = 0.01*ones(1,size(A,2));   %  rand(1,size(A,2));
+% alphaInit = rand(1,size(A,2));
+alphaInit = 0.01*ones(1,size(A,2));
 betaInit = normrnd(trueBeta,50); % rand;
 
 
 Q = zeros(numFuncs, numFuncs, timeSteps/inputAverageTimeSteps);
 beta = zeros(1, timeSteps/inputAverageTimeSteps);
 llh = zeros(1, timeSteps/inputAverageTimeSteps);
-% mu = zeros(numFuncs, timeSteps/inputAverageTimeSteps);
 
 res=[];
 wres=[];
@@ -122,12 +121,12 @@ wres=[];
 % % end
 
 for t=1:1       % Add something
-    [Gamma, beta, xStar, llh] = MSBL(alphaInit, betaInit, A, targets);
+    [Gamma, beta, xMSBL, llh] = MSBLv2(alphaInit, betaInit, A, targets);
 end
 
-% xStar2 = zeros(numFuncs, steps);
+% xARD = zeros(numFuncs, steps);
 % for t=1:steps
-%     [Gamma, beta, xStar2(:,t), ~] = maximum_evidence_multi(alphaInit, betaInit, A, targets(:,t));
+%     [Gamma2, beta2, xARD(:,t), llh2] = maximum_evidence_multi(alphaInit, betaInit, A, targets(:,t));
 %     t
 % end
 
@@ -145,15 +144,18 @@ end
 figure(71), surf(x);
 title('True source');
 % set(gca, 'ZScale', 'log');
-figure(72), surf(xStar);
+figure(72), surf(xMSBL);
 title('M-SBL estimate');
 
-% figure(73), surf(xStar2);
+figure(73), surf(xMSBL-x);
+title('Error');
+
+% figure(74), surf(xARD);
 % title('ARD estimate');
 
 %% F1-score
 
-nonZeroIdxEst = find(mean(xStar,2) ~= 0);
+nonZeroIdxEst = find(mean(xMSBL,2) ~= 0);
 nonZeroIdxTrue = activeIndexes';%find( ~= 0);
 
 falsePos = numel(find(ismember(nonZeroIdxEst,nonZeroIdxTrue) ==0));

@@ -1,5 +1,5 @@
-function [A, beta, mN, llh] = maximum_evidence_multi(alphas, beta, PhiOrig, t)
-tolerance = 1e-3;
+function [A, beta, m, llh] = maximum_evidence_multi(alphas, beta, PhiOrig, t)
+tolerance = 1e-4;
 maxIterations = 300;
 
 Phi = PhiOrig;
@@ -7,6 +7,7 @@ Phi = PhiOrig;
 llh = zeros(1,maxIterations);
 M = size(Phi,2);
 N = length(t);
+indexMap = eye(M);
 
 % Initial alpha
 A = eye(size(alphas,2));
@@ -17,7 +18,7 @@ betas = zeros(1,maxIterations);
 betas(1)=beta;
 
 zeroIndexes = zeros(1,M);
-% activeSources = ones(1,M);
+activeSources = ones(1,M);
 % C=zeros(N,N);
 for i=2:maxIterations
     SigmaInv = A + beta * (Phi'*Phi); 
@@ -26,38 +27,59 @@ for i=2:maxIterations
     Sigma = SigmaU*SigmaU';  %A^-1 = L^-1'*L^-1 = U^-1 * U^-1'
     
     mN = beta * (Sigma*(Phi'*t));
-    mN(zeroIndexes == 1) = 0;
+%     mN(zeroIndexes == 1) = 0;
 %     mN(~activeSources) = 0;
     
-    gamma = zeros(1,M);
-    for j=1:M
-        gamma(j) = 1-A(j,j)*Sigma(j,j);
-    end
 
+    gamma = zeros(1,size(mN,1));
+    
+%     for j=1:tempM
+%         gamma(j) = 1-A(j,j)*Sigma(j,j);
+%     end
+%     for j=indexes(activeSources==true)
+%         gamma(j) = 1-A(j,j)*Sigma(j,j);
+%     end    
+    upperBound = 1e3;
     for j=1:M
+        idx = find(indexMap(:,j));
+        if isempty(idx)
+            continue;   % Nothing to do here. 
+        end
+        gamma(idx) = 1-A(idx,idx)*Sigma(idx,idx);
+        
         % Limit values to 10^3 and 10^-3
-        A(j,j) = max(1e-6, min(1e3,gamma(j)/(mN(j)^2)));  % A(j,j) = gamma(j)/(mN(j)^2);
+%         A(idx,idx) = gamma(idx)/(mN(idx)^2);
+        A(idx,idx) = max(1e-8, min(upperBound,gamma(idx)/(mN(idx)^2)));  % A(j,j) = gamma(j)/(mN(j)^2);        
+        
         
         % Mark which indexes reach the limit and remove from later equations
-        if A(j,j) >= 1e3
-            zeroIndexes(j) = 1;
-%             activeSources(j) = 0;
-            mN(j) = []; % 0;
-            Phi(:,j) = []; %0;
+        if A(idx,idx) >= upperBound
+            %zeroIndexes(j) = 1;
+%             activeSources(idx) = 0;
+            indexMap(idx,:) = [];
+            mN(idx) = []; % 0;
+            Phi(:,idx) = []; %0;
+            A(:,idx) = [];
+            A(idx,:) = [];
+            gamma(idx) = [];
         end
     end
+    if isempty(mN)
+        disp('Pruned all weights');
+        break;
+    end
+    
     
     Ew = (sum((t-Phi*mN).^2));
     
-    
     betaInv = Ew/(N-sum(gamma));
-%     betaInv = sum(betaInv);
-    beta = 1/betaInv;
+%     beta = 1/betaInv;
+    beta = max(1e-3, min(1/betaInv, 1e3));
     
     betas(i)=beta;
     
-    AInv = zeros(M);
-    for j=1:M
+    AInv = zeros(size(A));
+    for j=1:size(A,1)
         AInv(j,j) = 1/A(j,j);
     end
     
@@ -68,7 +90,7 @@ for i=2:maxIterations
     
     C = betaInv*eye(N) + Phi*AInv*Phi';
     
-    L=chol(C);
+    L=chol(C2);
     logdetC = 2*sum(log(diag(L)));
     
     b=L'\t;
@@ -92,11 +114,11 @@ for i=2:maxIterations
     end
 end
 
-for idx=zeroIndexes'
-    mN = [mN(1:idx) 0 mN(idx+1:end)];
-    [A(:,1:N) B A(:,N+1:end)]
+m = zeros(1,M);
+for j=find(sum(indexMap)==true)
+    m(j) = mN(find(indexMap(:,j)));
 end
 
-llh = llh(i);
+llh = llh(1:i);
 
 end
