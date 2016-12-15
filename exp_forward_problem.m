@@ -9,7 +9,7 @@ forwardModel = importdata('model/mBrainLeadfield.mat');
 % s = RandStream('mt19937ar','Seed','shuffle');
 % RandStream.setGlobalStream(s);
 
-s = RandStream('mt19937ar','Seed', 5);
+s = RandStream('mt19937ar','Seed', 'shuffle');
 RandStream.setGlobalStream(s);
 
 
@@ -35,7 +35,7 @@ numSamples = size(A,1);     % The number og sensors corresponds to sample size..
 % numSensors = size(A,1);   % The number og sensors corresponds to sample size..
 
 numFuncs = size(A,2);
-numActiveFuncs=10;
+numActiveFuncs=2;
 
 % activeIndexes = unique(int16(unifrnd(1,reducedSize, [1 numActiveFuncs])));
 % activeIndexes = sort(randperm(size(idx,2), numActiveFuncs));
@@ -54,6 +54,8 @@ model.w(activeIndexes) = normrnd(0,sqrt(1/model.alpha), [1 size(activeIndexes)])
 % model.w=model.w*sqrt(100);
 
 x=model.w*sin((1:timeSteps)*0.5);
+% x(2,:)=model.w(2)*cos((1:timeSteps)*0.5);
+
 % x=zeros(size(A,2), timeSteps);
 % for i=1:size(A,2)
 %     for t=1:timeSteps
@@ -67,12 +69,12 @@ noise = normrnd(0, sqrt(1/trueBeta), [size(A,1) timeSteps]);
 y = A*x;
 targets = y + noise;
 
-smoothTargets = zeros(size(A,1), timeSteps/inputAverageTimeSteps);
+% smoothTargets = zeros(size(A,1), timeSteps/inputAverageTimeSteps);
 
-k=inputAverageTimeSteps;
-for i=0:timeSteps/inputAverageTimeSteps-1
-    smoothTargets(:,i+1) = mean(targets(:,(i*k)+1:(i+1)*k),2);
-end
+% k=inputAverageTimeSteps;
+% for i=0:timeSteps/inputAverageTimeSteps-1
+%     smoothTargets(:,i+1) = mean(targets(:,(i*k)+1:(i+1)*k),2);
+% end
 
 %% SNR
 
@@ -86,7 +88,7 @@ SNRdB = 10*log10(SNR)
 
 
 alphaInit = 0.01*ones(1,size(A,2));   %  rand(1,size(A,2));
-betaInit = rand; %normrnd(trueBeta,50); % rand;
+betaInit = normrnd(trueBeta,50); % rand;
 
 
 Q = zeros(numFuncs, numFuncs, timeSteps/inputAverageTimeSteps);

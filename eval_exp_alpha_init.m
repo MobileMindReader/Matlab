@@ -44,7 +44,7 @@ numSamples = 22;
 
 figure(8)
 % idx=unique(int16(unifrnd(1,2000, [1 400])));
-for i = 1:1000 %size(alpha,1)
+for i = 1:100 %size(alpha,1)
 %     for j = 1:20
 %         
 %     %     for j=idx % int16(unifrnd(1,2000, [1 400]))

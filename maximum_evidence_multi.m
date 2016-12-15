@@ -1,13 +1,12 @@
-function [A, beta, mN, llh] = maximum_evidence_multi(alphas, beta, Phi, t)
-
+function [A, beta, mN, llh] = maximum_evidence_multi(alphas, beta, PhiOrig, t)
 tolerance = 1e-3;
 maxIterations = 300;
+
+Phi = PhiOrig;
 
 llh = zeros(1,maxIterations);
 M = size(Phi,2);
 N = length(t);
-
-PhiTPhi =  Phi'*Phi;
 
 % Initial alpha
 A = eye(size(alphas,2));
@@ -18,15 +17,17 @@ betas = zeros(1,maxIterations);
 betas(1)=beta;
 
 zeroIndexes = zeros(1,M);
+% activeSources = ones(1,M);
 % C=zeros(N,N);
 for i=2:maxIterations
-    SigmaInv = A + beta * PhiTPhi;
+    SigmaInv = A + beta * (Phi'*Phi); 
     SigmaInvU = chol(SigmaInv);
     SigmaU = inv(SigmaInvU);
     Sigma = SigmaU*SigmaU';  %A^-1 = L^-1'*L^-1 = U^-1 * U^-1'
     
     mN = beta * (Sigma*(Phi'*t));
     mN(zeroIndexes == 1) = 0;
+%     mN(~activeSources) = 0;
     
     gamma = zeros(1,M);
     for j=1:M
@@ -35,25 +36,19 @@ for i=2:maxIterations
 
     for j=1:M
         % Limit values to 10^3 and 10^-3
-
-        
         A(j,j) = max(1e-6, min(1e3,gamma(j)/(mN(j)^2)));  % A(j,j) = gamma(j)/(mN(j)^2);
-        
-%         A(j,j) = max(1e-6, min(1e3,gamma(j)/(sum(mN(j,:))^2)));   % More time step targets
-        
         
         % Mark which indexes reach the limit and remove from later equations
         if A(j,j) >= 1e3
             zeroIndexes(j) = 1;
-            mN(j,:) = 0;
-            Phi(:,j) = 0;
+%             activeSources(j) = 0;
+            mN(j) = []; % 0;
+            Phi(:,j) = []; %0;
         end
     end
     
-
-    
     Ew = (sum((t-Phi*mN).^2));
-%     Ew = mean(sum((t-Phi*mN).^2));    % More time step targets
+    
     
     betaInv = Ew/(N-sum(gamma));
 %     betaInv = sum(betaInv);
@@ -68,6 +63,9 @@ for i=2:maxIterations
     
     %     C_old = betaInv*eye(N) + (Phi/A)*Phi';  % Check performance gains on this stuff
 %     oldC = C;
+    PhiA = Phi*diag(sqrt(diag(AInv)));
+    C2 = betaInv*eye(N) + PhiA*PhiA';
+    
     C = betaInv*eye(N) + Phi*AInv*Phi';
     
     L=chol(C);
@@ -93,6 +91,12 @@ for i=2:maxIterations
         break;
     end
 end
+
+for idx=zeroIndexes'
+    mN = [mN(1:idx) 0 mN(idx+1:end)];
+    [A(:,1:N) B A(:,N+1:end)]
+end
+
 llh = llh(i);
 
 end

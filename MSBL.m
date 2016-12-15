@@ -85,7 +85,9 @@ for k=2:maxIterations
         b=L'\T(:,j);
         logSum = logSum + b'*b;
     end    
-%     logSum2 = LT'*LT;
+    logSum2 = sum(diag(LT'*LT)); % Same as above
+    
+    logSum3 = LT(:)'*LT(:);     % sum(LT.^2);
     
     llh(k) = -0.5*(steps+logdetC + logSum);   %7.85
 
