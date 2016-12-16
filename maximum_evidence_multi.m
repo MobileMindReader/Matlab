@@ -6,10 +6,11 @@ alphaLowerBound = 1e-6;
 
 M = size(Phi,2);
 N = length(t);
-indexMap = eye(M);
 
 % Initial alpha
 A = diag(alphas);
+
+PhiTPhi = Phi'*Phi;
 
 llh = zeros(1,maxIterations);
 
@@ -17,43 +18,80 @@ llh = zeros(1,maxIterations);
 betas = zeros(1,maxIterations);
 betas(1)=beta;
 
+activeSet = 1:M;
+
 % C=zeros(N,N);
 for i=2:maxIterations
-    SigmaInv = A + beta * (Phi'*Phi); 
+    
+%     activeIdx = alphas < alphaUpperBound;
+    
+%     
+    %% Compute diagonal of posterior covariance
+    SigmaInv = diag(alphas) + beta * PhiTPhi;
     SigmaInvU = chol(SigmaInv);
     SigmaU = inv(SigmaInvU);
+    
     Sigma = SigmaU*SigmaU';  %A^-1 = L^-1'*L^-1 = U^-1 * U^-1'
+    diagSigma = sum(SigmaU.^2, 2); % MRA: We only need the diagonal of the covariance during iterations
     
-    mN = beta * (Sigma*(Phi'*t));
+    %% Compute posterior mean
+%     mN = beta * (Sigma*(Phi'*t));
+    mN = beta * (SigmaInvU\(SigmaInvU'\(Phi'*t))); % MRA: We prefer to use cholesky decomp rather than Sigma directly.
+    
+    gamma = 1 - alphas.*diagSigma;
 
-    gamma = zeros(1,size(mN,1));
+%     alphas = max(alphaLowerBound, min(alphaUpperBound, (gamma./(mN.^2))));  % Bis06 (7.87)
+    alphas = gamma./(mN.^2);
     
-    for j=1:M
-        idx = find(indexMap(:,j));
-        if isempty(idx)
-            continue;   % Nothing to do here. 
-        end
-        
-        gamma(idx) = 1-A(idx,idx)*Sigma(idx,idx);       % Bis06 (7.89)
-        
-        % Limit values to alphaUpperBound and alphaLowerBound 
-        % A(idx,idx) = gamma(idx)/(mN(idx)^2);
-        A(idx,idx) = max(alphaLowerBound, min(alphaUpperBound,gamma(idx)/(mN(idx)^2)));  % Bis06 (7.87)
-        
-        % Prune model 
-        if A(idx,idx) >= alphaUpperBound
-            mN(idx) = [];
-            Phi(:,idx) = []; 
-            A(:,idx) = [];
-            A(idx,:) = [];
-            gamma(idx) = [];
-            indexMap(idx,:) = [];
-        end
-    end
-    if isempty(mN)
-        disp('Pruned all weights');
-        break;
-    end
+    
+    
+    %% Determine current active set
+    activeIdx = alphas < alphaUpperBound;
+    
+    
+    
+    %%
+%     gamma2 = zeros(1,M);    
+%     for j=1:M
+% %         idx = find(activeIdx == j);
+%         if activeIdx(j) == 0
+%             continue;   % Nothing to do here. 
+%         end
+%         idx = j;
+%         
+%         gamma2(idx) = 1-A(idx,idx)*Sigma(idx,idx);       % Bis06 (7.89)
+%         
+%         % Limit values to alphaUpperBound and alphaLowerBound 
+%         % A(idx,idx) = gamma(idx)/(mN(idx)^2);
+%         A(idx,idx) = max(alphaLowerBound, min(alphaUpperBound, gamma2(idx)/(mN(idx)^2)));  % Bis06 (7.87)
+%         
+%         % Prune model 
+%         if A(idx,idx) >= alphaUpperBound
+%             mN(idx) = [];
+%             A(idx,:) = [];
+%             A(:,idx) = [];
+%             gamma2(idx) = [];
+%             Phi(:,idx) = []; 
+%             PhiTPhi(idx,:) = []; 
+%             PhiTPhi(:,idx) = []; 
+%         end
+%     end
+%     if isempty(mN)
+%         disp('Pruned all weights');
+%         break;
+%     end
+    
+    %%
+    
+    Phi(:,~activeIdx) = [];
+    PhiTPhi(~activeIdx,:) = [];
+    PhiTPhi(:,~activeIdx) = [];
+    alphas(~activeIdx) = [];
+    
+    activeSet = activeSet(activeIdx);
+    
+    
+    mN(~activeIdx) = [];
     
     Ew = sum((t-Phi*mN).^2);
     
@@ -63,16 +101,14 @@ for i=2:maxIterations
     
     betas(i)=beta;
     
-    AInv = zeros(size(A));
-    for idx=1:size(A,1)
-        AInv(idx,idx) = 1/A(idx,idx);
-    end
     
 %     C_old = betaInv*eye(N) + (Phi/A)*Phi';  % Check performance gains on this stuff
     
-    C = betaInv*eye(N) + Phi*AInv*Phi';
+%     C = betaInv*eye(N) + Phi*AInv*Phi';
     
-    PhiAInv = Phi*diag(sqrt(diag(AInv)));
+%     PhiAInv = Phi*diag(sqrt(1./alphas)); 
+    PhiAInv = Phi*diag(sqrt(1./alphas));
+%     PhiAInv = Phi*diag(sqrt(diag(AInv)));
     C2 = betaInv*eye(N) + PhiAInv*PhiAInv';   % Used in order to avoid numerical instability
     
     L=chol(C2);
@@ -89,9 +125,7 @@ for i=2:maxIterations
 end
 
 m = zeros(1,M);
-for j=find(sum(indexMap)==true)
-    m(j) = mN(find(indexMap(:,j)));
-end
+m(activeSet) = mN;
 
 llh = llh(1:i);
 
