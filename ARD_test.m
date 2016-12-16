@@ -10,7 +10,7 @@ model.alpha=2;
 
 %% Fix seed
 % s = RandStream('mt19937ar','Seed','shuffle');
-s = RandStream('mt19937ar','Seed', 3);
+s = RandStream('mt19937ar','Seed', 'shuffle');
 RandStream.setGlobalStream(s);
 
 %% Experiment parameters
@@ -43,6 +43,7 @@ alpha_init = ones(numFuncs, 1);
 
 t0 = tic;
 [alphas, betas, mn_multi, llh] = maximum_evidence_multi(alpha_init, model.beta, A, targets);
+% [alphas, betas, mn_multi, llh] = ard_mock(alpha_init, model.beta, A, targets);
 t_ard = toc(t0);
 
 err_ard = mean((mn_multi(:) - w_true(:)).^2);
@@ -77,13 +78,15 @@ err_ridge = mean((w_ridge(:) - w_true(:)).^2);
 
 
 %% Output
+
 sprintf('MSE using ARD ERM: %5.4f in %4.3fs\n', err_ard, t_ard)
 sprintf('MSE using ARD MRA: %5.4f in %4.3fs\n', err_ard_mra, t_ard_mra)
 sprintf('MSE using M-SBL: %5.4f in %4.3fs\n', err_msbl, t_msbl)
 sprintf('MSE using Ridge: %5.4f in %4.3fs\n', err_ridge, t_ridge)
 
-hold all;
+hold off;
 plot(w_true, 'g-', 'linewidth', 2)
+hold all;
 plot(mn_multi, 'b-')
 plot(mn_multi_mra, 'y-')
 plot(mn_multi2, 'k-')

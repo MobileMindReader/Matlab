@@ -44,7 +44,7 @@ for k=2:maxIterations
             continue;   % Nothing to do here. 
         end
         
-        gamma(idx) = (1/steps * M(idx,:).^2)/(1 - (1/Gamma(idx,idx))*Sigma(idx,idx));
+        gamma(idx) = sum((1/steps * M(idx,:).^2)/(1 - (1/Gamma(idx,idx))*Sigma(idx,idx)));
         
         Gamma(idx,idx) = max(gammaBoundLower, min(gammaBoundUpper, gamma(idx)));
         

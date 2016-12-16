@@ -27,7 +27,7 @@ model.alpha = 2;
 inputAverageTimeSteps=1;  %20;
 estimationAverageSteps=1;
 
-steps = 40;
+steps = 2;
 timeSteps = steps * inputAverageTimeSteps*estimationAverageSteps;
 
 
@@ -124,11 +124,11 @@ for t=1:1       % Add something
     [Gamma, beta, xMSBL, llh] = MSBLv2(alphaInit, betaInit, A, targets);
 end
 
-% xARD = zeros(numFuncs, steps);
-% for t=1:steps
-%     [Gamma2, beta2, xARD(:,t), llh2] = maximum_evidence_multi(alphaInit, betaInit, A, targets(:,t));
-%     t
-% end
+xARD = zeros(numFuncs, steps);
+for t=1:steps
+    [Gamma2, beta2, xARD(:,t), llh2] = maximum_evidence_multi(alphaInit', betaInit, A, targets(:,t));
+    t
+end
 
 
 % Qmean = mean(Q,3);
@@ -150,8 +150,8 @@ title('M-SBL estimate');
 figure(73), surf(xMSBL-x);
 title('Error');
 
-% figure(74), surf(xARD);
-% title('ARD estimate');
+figure(74), surf(xARD);
+title('ARD estimate');
 
 %% F1-score
 
