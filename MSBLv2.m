@@ -1,4 +1,4 @@
-function [Gamma, beta, M, llh] = MSBLv2(alphas, beta, Phi, T)
+function [A, beta, M, llh] = MSBLv2(alphas, beta, Phi, T)
 
 tolerance = 1e-4;
 maxIterations = 300;
@@ -86,11 +86,17 @@ end
 
 % beta = 1/noiseVar;
 Mtemp = zeros(modelSize, steps);
+A = 1e6*ones(1,modelSize);
 for j=find(sum(indexMap)==true)
     Mtemp(j,:) = M(find(indexMap(:,j)),:);
+    A(j) = gamma(find(indexMap(:,j)));   
 end
 
 M=Mtemp;
+
+% m = zeros(1,M);
+% m(activeSet) = M;
+% A(activeSet) = alphas;
 
 llh = llh(1:k);
 

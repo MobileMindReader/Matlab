@@ -11,7 +11,7 @@ s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
 iterations = 50;
-intraIterations = 50;
+intraIterations = 5;
 
 % Unimodal
 % llh_uni = zeros(iterations, intraIterations);
@@ -27,17 +27,17 @@ w_multi = cell(iterations, intraIterations);
 
 w_true = cell(iterations, intraIterations);
 
-dataTitle = ['exp_sparsity/v2-' datestr(datetime('now')) '-' int2str(run)];
+dataTitle = ['exp_sparsity/N22-v2-' datestr(datetime('now')) '-' int2str(run)];
 
 
-data.numSamples = '100';
+data.numSamples = '22';
 data.numFuncs = '500';
 data.numActiveFuncs = '500-((iter-1)*10';
 data.experiment = 'Sparsity sweep in random forward model';
 % data.description = '500 functions, 20 samples. Iterating over number of active weights (500-((iter-1)*10)';
-data.description = '500 functions (randoms), 20 samples. Iterating over number of active weights (500-((iter-1)*10)';
+data.description = '500 functions (randoms), 22 samples. Iterating over number of active weights (500-((iter-1)*10)';
 
-numSamples = 100;
+numSamples = 22;
 numFuncs = 500;
 
 model.alpha=2;
@@ -77,8 +77,7 @@ for iter=1:iterations
 %%%% Initialize alpha and beta
         beta_init = rand;
         alpha_uni_init = rand;
-        alpha_multi_init = eye(numFuncs);
-        alpha_multi_init(logical(eye(size(alpha_multi_init)))) = rand(1,numFuncs);
+        alpha_multi_init = rand(1,numFuncs);
         
 % %%%% Unimodal alpha      
         [alpha, beta, mn_uni, llh] = maximum_evidence(alpha_uni_init, beta_init, Phi, targetMean);
@@ -88,10 +87,11 @@ for iter=1:iterations
         w_uni{iter, intraIter} = mn_uni;
         
 %%%% Multi-modal alpha
-        [A, beta, mn_multi, llh] = maximum_evidence_multi(alpha_multi_init, beta_init, Phi, targetMean);
+%         [alphas, beta, mn_multi, llh] = ARD(alpha_multi_init, beta_init, Phi, targetMean);
+        [alphas, beta, mn_multi, llh] = MSBLv2(alpha_multi_init, beta_init, Phi, targetMean);
         beta_multi(iter, intraIter) = beta;
-        alpha_multi{iter, intraIter} = diag(A);
-        llh_multi(iter, intraIter) = llh;
+        alpha_multi{iter, intraIter} = alphas;
+        llh_multi(iter, intraIter) = llh(end);
         w_multi{iter, intraIter} = mn_multi;
         
         if mod(intraIter,100) == 0

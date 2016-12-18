@@ -10,14 +10,14 @@ model.alpha=2;
 
 %% Fix seed
 % s = RandStream('mt19937ar','Seed','shuffle');
-s = RandStream('mt19937ar','Seed', 'shuffle');
+s = RandStream('mt19937ar','Seed', 2);
 RandStream.setGlobalStream(s);
 
 %% Experiment parameters
 iterations = 10;
-numSamples = 100;
-numFuncs = 500;
-numActiveFuncs = 32;
+numSamples = 22;
+numFuncs = 768;
+numActiveFuncs = 10;
 
 %% Generate data
 A = randn(numSamples, numFuncs);
@@ -53,9 +53,9 @@ err_ard = mean((mn_multi(:) - w_true(:)).^2);
 alpha_init = ones(numFuncs, 1);
 
 t0 = tic;
-[alphas_mra, betas_mra, mn_multi_mra, llh_mra] = maximum_evidence_multi_mra(alpha_init, model.beta, A, targets);
+% [alphas_mra, betas_mra, mn_multi_mra, llh_mra] = maximum_evidence_multi_mra(alpha_init, model.beta, A, targets);
 t_ard_mra = toc(t0);
-
+mn_multi_mra = zeros(1, numFuncs);
 err_ard_mra = mean((mn_multi_mra(:) - w_true(:)).^2);
 
 %% M-SBL

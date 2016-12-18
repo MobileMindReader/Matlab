@@ -1,4 +1,4 @@
-function [A, beta, m, llh] = maximum_evidence_multi_mra(alphas, beta, Phi, t)
+function [alphas, beta, m, llh] = maximum_evidence_multi_mra(alphas, beta, Phi, t)
 tolerance = 1e-4;
 maxIterations = 300;
 alphaUpperBound = 1e3;

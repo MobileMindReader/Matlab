@@ -11,7 +11,7 @@ for i = 1:length(fileIndex)
         continue; 
 %     elseif fileName(end-3:end) == '.mat'
 %     elseif fileName(1:11) == 'v2-ok-posed'
-    elseif fileName(1:6) == 'v2-run'
+    elseif fileName(1:6) == 'v5-run'
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
@@ -39,6 +39,10 @@ numFuncs = 768;
 numActiveFuncs = 20;
 numSamples = 22;
 
+numSamples = 80;
+numFuncs = 50;
+numActiveFuncs = 2;
+
 
 %%
 
@@ -64,41 +68,53 @@ for i = 1:100 %size(alpha,1)
     
     alphas=alpha{i};
 
-    terminate = 30;
-    if terminate > size(alphas,2)
-        terminate = size(alphas,2);
-    end
+    terminate = size(alphas,2);
+%     if terminate > size(alphas,2)
+%         terminate = size(alphas,2);
+%     end
     
     idx=[1 2];
-    x=alphas(idx(1),1);
-    y=alphas(idx(2),1);
+    x=alphas{1}(idx(1));
+    y=alphas{1}(idx(2));
 %     z=alphas(idx(3),1);
-    plot(x,y,'ob'), hold on;
+    plot(x,y,'bs'), hold on;
 %     
 %     x=alphas(1,end);
 %     y=alphas(2,end);
 %     plot(x,y,'xr'), hold on;
 %     axis([-50 1100 -50 1100]);
     
-    for j=2:terminate
-        x=alphas(idx(1),j);
-        y=alphas(idx(2),j);
+    for j=2:terminate-1
+%         x = [x alphas{j}(idx(1))];
+%         y = [y alphas{j}(idx(2))];
+        x =  alphas{j}(idx(1));
+        y =  alphas{j}(idx(2));
 %         z=alphas(idx(3),j);
 %         if x == 1000 || y == 1000
 %             continue; 
 %         end
-        if x > 10 || y > 10
-            continue;
-        end
-        plot(x,y,'or'), hold on;
-        axis([-10 10 -10 10]);
+%         if x > 10 || y > 10
+%             continue;
+%         end
+%         axis([-2 10 -2 10]);
 %         drawnow
 %         pause;
+        plot(x,y,'r+');
+        axis([0 1 0 0.1]);
+        pause;
     end
+    
+    
+    x=alphas{end}(idx(1));
+    y=alphas{end}(idx(2));
+%     z=alphas(idx(3),1);
+    plot(x,y,'ko'), hold off;
+    
+    pause
 end
-
+% axis('equal');
 hold off;
-% axis('square');
+
 
 
 %%
