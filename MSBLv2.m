@@ -33,6 +33,28 @@ for k=2:maxIterations
     GammaPhiTSigmatInvPhiGamma = B'*B;
     Sigma = Gamma - GammaPhiTSigmatInvPhiGamma;  %    AInv*PhiTCInvPhi*AInv;
 
+%%%%% temp exp
+% % % %     this = inv(A)*Phi'*inv(Sigmat)*T;
+% % % %     temptemptemp = inv(diag(alphas) + beta * Phi'*Phi);
+% % % %     MTemp = beta * (temptemptemp*Phi'*T);
+%     A = diag(alphas);
+%     AInv = inv(A);
+%     b = beta*eye(N);
+%     bInv = (1/beta)*eye(N);
+%     temp1 = Phi'*beta*Phi*(inv(A + (beta*Phi'*Phi)) * beta*AInv*Phi');
+%     temp2 = beta*AInv*Phi'*inv(bInv + (Phi*AInv*Phi')) * (Phi*AInv*Phi');
+    
+%%%%% ARD approach
+%     SigmaInv = diag(alphas) + beta * Phi'*Phi;
+%     SigmaInvU = chol(SigmaInv);
+%     SigmaU = inv(SigmaInvU);
+%     
+%     diagSigma = sum(SigmaU.^2, 2); % MRA: We only need the diagonal of the covariance during iterations
+%     
+%     % Compute posterior mean
+% %     mN = beta * (Sigma*(Phi'*t));
+%     mN = beta * (SigmaInvU\(SigmaInvU'\(Phi'*T))); % MRA: We prefer to use cholesky decomp rather than Sigma directly.
+
 
     LT = L'\T;
     M = B'*LT;
@@ -74,9 +96,12 @@ for k=2:maxIterations
 %         logSum = logSum + b'*b;
 %     end    
 %     logSum2 = sum(diag(LT'*LT)); % Same as above
-    logSum3 = LT(:)'*LT(:);     % sum(LT.^2); (same as above)
+
+%     thisTemp = sum(diag(T'*inv(Sigmat)*T));
+
+    TCInvT = LT(:)'*LT(:);     % sum(LT.^2); (same as above)
     
-    llh(k) = -0.5*(steps*logdetC + logSum3);   %7.85
+    llh(k) = -0.5*(steps*logdetC + TCInvT);   %7.85
 
     if abs(llh(k)-llh(k-1)) < tolerance*abs(llh(k-1));
 %         disp(['Converged at: ' int2str(k)]);        

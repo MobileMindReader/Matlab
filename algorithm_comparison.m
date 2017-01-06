@@ -10,14 +10,14 @@ model.alpha=2;
 
 %% Fix seed
 % s = RandStream('mt19937ar','Seed','shuffle');
-s = RandStream('mt19937ar','Seed', 2);
+s = RandStream('mt19937ar','Seed', 'shuffle');
 RandStream.setGlobalStream(s);
 
 %% Experiment parameters
 iterations = 10;
 numSamples = 22;
 numFuncs = 768;
-numActiveFuncs = 10;
+numActiveFuncs = 22;
 
 %% Generate data
 A = randn(numSamples, numFuncs);
@@ -42,7 +42,7 @@ targets = y + noise;
 alpha_init = ones(numFuncs, 1);
 
 t0 = tic;
-[alphas, betas, mn_multi, llh] = maximum_evidence_multi(alpha_init, model.beta, A, targets);
+[alphas, betas, mn_multi, llh] = ARD(alpha_init, model.beta, A, targets);
 % [alphas, betas, mn_multi, llh] = ard_mock(alpha_init, model.beta, A, targets);
 t_ard = toc(t0);
 

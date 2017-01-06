@@ -9,11 +9,11 @@ forwardModel = importdata('model/mBrainLeadfield.mat');
 % s = RandStream('mt19937ar','Seed','shuffle');
 % RandStream.setGlobalStream(s);
 
-s = RandStream('mt19937ar','Seed', 10);
+s = RandStream('mt19937ar','Seed', 2);
 RandStream.setGlobalStream(s);
 
 
-reducedSize=768;
+reducedSize=168;
 idx=sort(randperm(size(forwardModel,2),reducedSize));
 
 
@@ -27,7 +27,7 @@ model.alpha = 2;
 inputAverageTimeSteps=1;  %20;
 estimationAverageSteps=1;
 
-steps = 2;
+steps = 30;
 timeSteps = steps * inputAverageTimeSteps*estimationAverageSteps;
 
 
@@ -35,12 +35,12 @@ numSamples = size(A,1);     % The number og sensors corresponds to sample size..
 % numSensors = size(A,1);   % The number og sensors corresponds to sample size..
 
 numFuncs = size(A,2);
-numActiveFuncs=10;
+numActiveFuncs=20;
 
 % activeIndexes = unique(int16(unifrnd(1,reducedSize, [1 numActiveFuncs])));
 % activeIndexes = sort(randperm(size(idx,2), numActiveFuncs));
-activeIndexes = 1:numActiveFuncs;
-% activeIndexes = 1:round(numFuncs/numActiveFuncs):numFuncs;
+% activeIndexes = 1:numActiveFuncs;
+activeIndexes = 1:round(numFuncs/numActiveFuncs):numFuncs;
 
 
 % activeIndexes = 1:32:768;
@@ -49,7 +49,6 @@ activeIndexes = 1:numActiveFuncs;
 
 model.w = zeros(numFuncs,1);
 model.w(activeIndexes) = normrnd(0,sqrt(1/model.alpha), [1 size(activeIndexes)]);
-% model.w(activeIndexes) = [3 10 -0.345 -11 3.33 9.5 -5.5 0.8 -1.4 6.667];
 
 model.w=model.w*sqrt(10);
 
@@ -97,61 +96,57 @@ llh = zeros(1, timeSteps/inputAverageTimeSteps);
 
 res=[];
 wres=[];
-% for t = 0:(timeSteps)/inputAverageTimeSteps-1
-% t=0;
-%     for i=(t*estimationAverageSteps)+1:(t+1)*estimationAverageSteps
-%         [Q(:,:,i), beta(i), mu, llh(i)] = MSBL(alphaInit, betaInit, A, smoothTargets);
-%         %     alpha_init = Q(:,:,i);
-%         %     beta_init = beta(i);
-%         Qtemp = diag(Q(:,:,i));
-%         
-%         
-%         if isempty(res)
-%             res = Qtemp;
-%             wres = mu(:,i);
-%         else
-%             res = res.* Qtemp;
-%             res = res./sum(res);
-%             wres=wres.*mu(:,i);
-%         end
-%         %     wres(wres == 0) = 1;
-%         
-%         disp(['Time step: ' int2str(i)]);
-%     end
-% % end
+
 
 for t=1:1       % Add something
-    [Gamma, beta, xMSBL, llh] = MSBLv2(alphaInit, betaInit, A, targets);
+    [Gamma, beta, xMSBL, llh] = MSBL(alphaInit, betaInit, A, targets);
+end
+
+for t=1:1       % Add something
+    [Gamma3, beta3, xMSBL2, llh3] = MSBLv2(alphaInit, betaInit, A, targets);
 end
 
 xARD = zeros(numFuncs, steps);
 for t=1:steps
-    [Gamma2, beta2, xARD(:,t), llh2] = maximum_evidence_multi(alphaInit', betaInit, A, targets(:,t));
+    [Gamma2, beta2, xARD(:,t), llh2] = ARD(alphaInit, betaInit, A, targets(:,t));
     t
 end
 
+xRidge = zeros(numFuncs, steps);
+for t=1:steps
+    xRidge(:,t) = (A'*A + 1e-2*eye(size(A, 2)))\(A'*targets(:,t));
+%     [Gamma2, beta2, xARD(:,t), llh2] = ARD(alphaInit, betaInit, A, targets(:,t));
+    t
+end
+% err_ridge = mean((xRidge(:) - w_true(:)).^2);
 
-% Qmean = mean(Q,3);
-%
 
 % estimatedIndexes=find(diag(Qmean) ~= 1e4);
 % meanmN = mean(mu,2);
 
 %%
 
-
-
 figure(71), surf(x);
 title('True source');
 % set(gca, 'ZScale', 'log');
 figure(72), surf(xMSBL);
-title('M-SBL estimate');
+% title('M-SBL estimate');
+title(sprintf('M-SBL estimate, error: %4.3f', norm(xMSBL-x)));
 
-figure(73), surf(xMSBL-x);
-title('Error');
+figure(77), surf(xMSBL2);
+% title('M-SBL estimate');
+title(sprintf('M-SBL2 estimate, error: %4.3f', norm(xMSBL2-x)));
 
-figure(74), surf(xARD);
-title('ARD estimate');
+% figure(73), surf(xARD);
+% title(sprintf('ARD estimate, error: %4.3f', norm(xARD-x)));
+% 
+% figure(74), surf(xMSBL-x);
+% title('M-SBL Error');
+% 
+% figure(75), surf(xRidge);
+% title(sprintf('Ridge estimate, error: %4.3f', norm(xRidge-x)));
+
+
 
 %% F1-score
 

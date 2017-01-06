@@ -37,6 +37,14 @@ for i=2:maxIterations
     
     gamma = 1 - alphas.*diagSigma;
 
+%     lambda = beta*eig(PhiTPhi);
+%     some = 1 - (alphas(1)/(lambda(1) + alphas(1)));
+    
+%     PhiAInv2 = Phi*diag(sqrt(1./alphas));
+%     C22 = (1/beta)*eye(N) + Phi*inv(diag(alphas))*Phi';   
+%     this = inv(diag(alphas))*Phi'*inv(C22)*t;
+    
+
 %     alphas = max(alphaLowerBound, min(alphaUpperBound, (gamma./(mN.^2))));  % Bis06 (7.87)
     alphas = gamma./(mN.^2);
     
@@ -59,7 +67,7 @@ for i=2:maxIterations
     
     betaInv = Ew/(N-sum(gamma));
     
-    beta = max(1e-6, min(1e12, 1/betaInv));
+    beta = max(1e-6, min(1e8, 1/betaInv));
 %     beta = 1/betaInv;
     
 %     betas(i)=beta;
