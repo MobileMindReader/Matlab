@@ -14,10 +14,6 @@ steps = size(T,2);
 PhiT = Phi';
 PhiTPhi =  PhiT*Phi;
 
-% if size(alphas,2) > size(alphas,1)
-%     alphas = alphas';
-% end
-
 
 % %%% Gamma: equivalent to A^-1
 % A = zeros(modelSize);
@@ -47,7 +43,11 @@ for k=2:maxIterations
     
     %% Compute posterior mean : mN = beta * (Sigma*(Phi'*t))
     M = beta * (SigmaInvU\(SigmaInvU'\(Phi'*T))); % MRA: We prefer to use cholesky decomp rather than Sigma directly.
-    gamma = 1 - alphas'.*diagSigma;
+    
+    if size(alphas,2) > size(alphas,1)
+        alphas = alphas';
+    end
+    gamma = 1 - alphas.*diagSigma;
     
     alphas=[];
     for i=1:modelSize
@@ -70,54 +70,22 @@ for k=2:maxIterations
     M(~activeIdx,:) = [];
     
     activeSet = activeSet(activeIdx);
-    
-
-%     CInv = inv(C);
-%     Sigma2 = AInv - GammaPhiT*CInv*PhiGamma;
-%     m2 = GammaPhiT*CInv*T;
-
-%     M(zeroIndexes == 1,:) = 0;
-    
-% %     Ew = (sum((t-Phi*mN).^2));
-%        %%%|| ?(i,:)? ||_2^2
-%     mu_sum = zeros(modelSize,1);
-%     for i=1:modelSize
-%         for j=1:steps
-% %             mu_sum = mu_sum + (T(i,j)-(mN'*Phi(j,:)'))^2;
-%             mu_sum(i) = mu_sum(i) + M(i,j)^2;
-%         end
-%     end
-%     
-%     gamma = zeros(modelSize,1);
-%     for i=1:modelSize
-%         gamma(i) = (1/steps * mu_sum(i))/(1 - (1/A(i,i))*Sigma(i,i));
-%     end
-%     
-%     %%% Prior update
-%     for i=1:modelSize   %A(i,i) = gamma(i);
-%         A(i,i) = max(1e-6, min(1e6,gamma(i)));    
-%         
-%         if A(i,i) <= 1e-6
-% %             Gamma(i,i) = 0;
-%             zeroIndexes(i) = 1;
-%             M(i,:) = 0;
-%             Phi(:,i) = 0;
-%         end        
-%     end
-    
+        
 
     %% Noise variance update
     %||T - Phi*M||_F^2
 %     frobSquared=trace((T-Phi*M)'*(T-Phi*M));
-%     noiseVar = ((1/steps)*frobSquared)/(N - modelSize + sum(diag(Sigma)./diag(Gamma)));
-%     beta=1/noiseVar;
-    
-%     logSum = 0;
+%     noiseVar = ((1/steps)*frobSquared)/(N - modelSize + sum(diagSigma./gamma));
+%     beta=1/noiseVar;                          %% This will cause problems
+%     beta = max(1e-6, min(1e8, 1/noiseVar));   %% This gives bad results
+
+
+%     TCInvT = 0;
 %     for j=1:steps
 %         b=L'\T(:,j);
-%         logSum = logSum + b'*b;
+%         TCInvT = TCInvT + b'*b;
 %     end    
-%     logSum2 = sum(diag(LT'*LT)); % Same as above
+%     TCInvT_alt = sum(diag(LT'*LT)); % Same as above
     
     LT = L'\T;
     TCInvT = LT(:)'*LT(:);     % sum(LT.^2);

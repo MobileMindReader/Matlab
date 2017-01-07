@@ -9,11 +9,11 @@ forwardModel = importdata('model/mBrainLeadfield.mat');
 % s = RandStream('mt19937ar','Seed','shuffle');
 % RandStream.setGlobalStream(s);
 
-s = RandStream('mt19937ar','Seed', 2);
+s = RandStream('mt19937ar','Seed', 'shuffle');
 RandStream.setGlobalStream(s);
 
 
-reducedSize=168;
+reducedSize=768;
 idx=sort(randperm(size(forwardModel,2),reducedSize));
 
 
@@ -27,7 +27,7 @@ model.alpha = 2;
 inputAverageTimeSteps=1;  %20;
 estimationAverageSteps=1;
 
-steps = 30;
+steps = 1;
 timeSteps = steps * inputAverageTimeSteps*estimationAverageSteps;
 
 
@@ -98,25 +98,25 @@ res=[];
 wres=[];
 
 
-for t=1:1       % Add something
-    [Gamma, beta, xMSBL, llh] = MSBL(alphaInit, betaInit, A, targets);
-end
+% for t=1:1       % Add something
+    [Gamma, beta, xMARD, llh] = MSBL(alphaInit, betaInit, A, targets);
+% end
 
-for t=1:1       % Add something
+% for t=1:1       % Add something
     [Gamma3, beta3, xMSBL2, llh3] = MSBLv2(alphaInit, betaInit, A, targets);
-end
+% end
 
 xARD = zeros(numFuncs, steps);
 for t=1:steps
     [Gamma2, beta2, xARD(:,t), llh2] = ARD(alphaInit, betaInit, A, targets(:,t));
-    t
+%     t
 end
 
 xRidge = zeros(numFuncs, steps);
 for t=1:steps
     xRidge(:,t) = (A'*A + 1e-2*eye(size(A, 2)))\(A'*targets(:,t));
 %     [Gamma2, beta2, xARD(:,t), llh2] = ARD(alphaInit, betaInit, A, targets(:,t));
-    t
+%     t
 end
 % err_ridge = mean((xRidge(:) - w_true(:)).^2);
 
@@ -126,20 +126,20 @@ end
 
 %%
 
-figure(71), surf(x);
+figure(71), plot(x);
 title('True source');
 % set(gca, 'ZScale', 'log');
-figure(72), surf(xMSBL);
+figure(72), plot(xMARD);
 % title('M-SBL estimate');
-title(sprintf('M-SBL estimate, error: %4.3f', norm(xMSBL-x)));
+title(sprintf('M-ARD estimate, error: %4.3f', norm(xMARD-x)));
 
-figure(77), surf(xMSBL2);
+figure(77), plot(xMSBL2);
 % title('M-SBL estimate');
-title(sprintf('M-SBL2 estimate, error: %4.3f', norm(xMSBL2-x)));
+title(sprintf('M-SBL estimate, error: %4.3f', norm(xMSBL2-x)));
 
-% figure(73), surf(xARD);
-% title(sprintf('ARD estimate, error: %4.3f', norm(xARD-x)));
-% 
+figure(73), plot(xARD);
+title(sprintf('ARD estimate, error: %4.3f', norm(xARD-x)));
+
 % figure(74), surf(xMSBL-x);
 % title('M-SBL Error');
 % 
@@ -150,7 +150,7 @@ title(sprintf('M-SBL2 estimate, error: %4.3f', norm(xMSBL2-x)));
 
 %% F1-score
 
-nonZeroIdxEst = find(mean(xMSBL,2) ~= 0);
+nonZeroIdxEst = find(mean(xMARD,2) ~= 0);
 nonZeroIdxTrue = activeIndexes';%find( ~= 0);
 
 falsePos = numel(find(ismember(nonZeroIdxEst,nonZeroIdxTrue) ==0));

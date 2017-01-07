@@ -58,7 +58,16 @@ t_ard_mra = toc(t0);
 mn_multi_mra = zeros(1, numFuncs);
 err_ard_mra = mean((mn_multi_mra(:) - w_true(:)).^2);
 
-%% M-SBL
+%% M-ARD
+alpha_init = ones(numFuncs, 1);
+
+t0 = tic;
+[alphas4, betas4, mn_multi4, llh4] = MSBL(alpha_init, model.beta, A, targets);
+t_mard = toc(t0);
+
+err_mard = mean((mn_multi4(:) - w_true(:)).^2);
+
+%% M-SBL 
 
 alpha_init = ones(numFuncs, 1);
 
@@ -80,7 +89,8 @@ err_ridge = mean((w_ridge(:) - w_true(:)).^2);
 %% Output
 
 sprintf('MSE using ARD ERM: %5.4f in %4.3fs\n', err_ard, t_ard)
-sprintf('MSE using ARD MRA: %5.4f in %4.3fs\n', err_ard_mra, t_ard_mra)
+% sprintf('MSE using ARD MRA: %5.4f in %4.3fs\n', err_ard_mra, t_ard_mra)
+sprintf('MSE using M-ARD: %5.4f in %4.3fs\n', err_mard, t_mard)
 sprintf('MSE using M-SBL: %5.4f in %4.3fs\n', err_msbl, t_msbl)
 sprintf('MSE using Ridge: %5.4f in %4.3fs\n', err_ridge, t_ridge)
 
@@ -88,7 +98,8 @@ hold off;
 plot(w_true, 'g-', 'linewidth', 2)
 hold all;
 plot(mn_multi, 'b-')
-plot(mn_multi_mra, 'y-')
+% plot(mn_multi_mra, 'y-')
+plot(mn_multi4, 'y-')
 plot(mn_multi2, 'k-')
 plot(w_ridge, 'r-')
 
