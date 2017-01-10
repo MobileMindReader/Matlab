@@ -13,14 +13,16 @@ s = RandStream('mt19937ar','Seed','shuffle');
 % s = RandStream('mt19937ar','Seed', 10);
 RandStream.setGlobalStream(s);
 
-iterations = 1000;
+iterations = 10000;
 
 % w_true = cell(iterations, 1);
+run=3;
+saveData=true;
 
 dataTitle = ['exp_alpha_init/v5-run-' int2str(run)];
 
-numSamples = 20;
-numFuncs = 50;
+numSamples = 5;
+numFuncs = 2;
 numActiveFuncs = 2;
 
 forwardModel = importdata('model/mBrainLeadfield.mat');
@@ -32,43 +34,45 @@ forwardMatrix = randn(numSamples, numFuncs);
 
 idx=1:numActiveFuncs;   % round(1:numFuncs/numActiveFuncs:numFuncs);
 
-wTemp = zeros(1,numFuncs);
-wTemp(idx) = normrnd(0,sqrt(1/model.alpha), [1 size(idx)]);
-model.w = wTemp;
-
-factor = sqrt(numFuncs/numActiveFuncs);
-model.w = factor*wTemp;
-w_true = model.w;
-
-data.model = model;
-data.w_true = w_true;
-
-x=model.w'; %*sin((1:timeSteps)*0.5);
-y = forwardMatrix*x;
-
-noise = normrnd(0, sqrt(1/model.beta), [numSamples 1]);
-
-targets = y + noise;    
 
 data.iterations = iterations;
 data.alpha_init = zeros(iterations, numFuncs);
-data.description = 'v3';
+data.description = '2 dimensions';
 data.alpha = cell(iterations, 1);
 data.beta = cell(iterations,1);
 data.llh = cell(iterations,1);
 
 for iter=1:iterations
     
+    wTemp = zeros(1,numFuncs);
+    wTemp(idx) = normrnd(0,sqrt(1/model.alpha), [1 size(idx)]);
+    model.w = wTemp;
+
+    factor = sqrt(numFuncs/numActiveFuncs);
+    model.w = factor*wTemp;
+    w_true = model.w;
+
+%     data.model = model;
+    data.w_true{iter} = w_true;
+
+    x=model.w'; %*sin((1:timeSteps)*0.5);
+    y = forwardMatrix*x;
+
+    noise = normrnd(0, sqrt(1/model.beta), [numSamples 1]);
+
+    targets = y + noise;    
+    
     %%%% Initialize alpha and beta    
     beta_init = model.beta;  % rand;
 %     alpha_init(iter, :) = eye(numFuncs);
 %     alpha_init(logical(eye(size(alpha_init)))) = rand(1,numFuncs);
-%     data.alpha_init(iter,:) = rand(1,numFuncs);
-    data.alpha_init(iter,:) = iter*0.002*ones(1,numFuncs);
+    data.alpha_init(iter,:) = (iter*0.01)*rand(1,numFuncs);
+    data.alpha_init(iter,:) = [0 (iter*0.1*rand)];
+%     data.alpha_init(iter,:) = iter*0.002*ones(1,numFuncs);
     
 %     [A, beta, mn_multi, llh] = maximum_evidence_multi(data.alpha_init(iter,:), beta_init, forwardMatrix, targets);
     [alphas, betas, mn_multi, llh] = ARD_tracking(data.alpha_init(iter,:), beta_init, forwardMatrix, targets);
-%     [alphas2, betas2, mn_multi2, llh2] = MSBL(data.alpha_init(iter,:), beta_init, forwardMatrix, targets);
+%     [alphas, betas, mn_multi, llh] = MSBL(data.alpha_init(iter,:), beta_init, forwardMatrix, targets);
 %     [alphas2, betas2, mn_multi2, llh2] = MSBLv2(data.alpha_init(iter,:), beta_init, forwardMatrix, targets);
     
     
@@ -83,12 +87,13 @@ for iter=1:iterations
     
     data.w{iter} = mn_multi;
 %     data.w2{iter} = mn_multi2;
-    
     data.currentIteration = iter;
     
     if mod(iter, 5) == 0
-        disp(iter);        
-        save(dataTitle, 'data');
+        disp(iter);       
+        if saveData == true
+            save(dataTitle, 'data');
+        end
     end
 end
 

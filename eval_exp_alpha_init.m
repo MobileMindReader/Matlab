@@ -11,7 +11,7 @@ for i = 1:length(fileIndex)
         continue; 
 %     elseif fileName(end-3:end) == '.mat'
 %     elseif fileName(1:11) == 'v2-ok-posed'
-    elseif fileName(1:6) == 'v5-run'
+    elseif fileName(1:8) == 'v5-run-3'
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
@@ -48,7 +48,7 @@ numActiveFuncs = 2;
 
 figure(8)
 % idx=unique(int16(unifrnd(1,2000, [1 400])));
-for i = 1:100 %size(alpha,1)
+for i = 1:1000 %size(alpha,1)
 %     for j = 1:20
 %         
 %     %     for j=idx % int16(unifrnd(1,2000, [1 400]))
@@ -67,7 +67,16 @@ for i = 1:100 %size(alpha,1)
 %     end
     
     alphas=alpha{i};
-
+    
+%     if alphas{end}(1) ~= 1000 && alphas{end}(2) ~= 1000
+%         continue;
+%     end
+        
+    
+    if size(alphas,2) < 10
+        continue;
+    end
+    
     terminate = size(alphas,2);
 %     if terminate > size(alphas,2)
 %         terminate = size(alphas,2);
@@ -77,18 +86,22 @@ for i = 1:100 %size(alpha,1)
     x=alphas{1}(idx(1));
     y=alphas{1}(idx(2));
 %     z=alphas(idx(3),1);
-    plot(x,y,'bs'), hold on;
+
+%     plot(x,y,'bs'), hold on;
+
 %     
 %     x=alphas(1,end);
 %     y=alphas(2,end);
-%     plot(x,y,'xr'), hold on;
+    plot(x,y,'ob'), hold on;
+    x=[]; y=[];
 %     axis([-50 1100 -50 1100]);
     
-    for j=2:terminate-1
-%         x = [x alphas{j}(idx(1))];
-%         y = [y alphas{j}(idx(2))];
-        x =  alphas{j}(idx(1));
-        y =  alphas{j}(idx(2));
+    for j=2:terminate
+        x = [x alphas{j}(idx(1))];
+        y = [y alphas{j}(idx(2))];
+%         x =  alphas{j}(idx(1));
+%         y =  alphas{j}(idx(2));
+
 %         z=alphas(idx(3),j);
 %         if x == 1000 || y == 1000
 %             continue; 
@@ -99,18 +112,19 @@ for i = 1:100 %size(alpha,1)
 %         axis([-2 10 -2 10]);
 %         drawnow
 %         pause;
-        plot(x,y,'r+');
-        axis([0 1 0 0.1]);
-        pause;
+%         pause;
     end
     
+    plot(x,y,'r+');%, hold on;
+%     axis([0 1 0 0.1]);
     
     x=alphas{end}(idx(1));
     y=alphas{end}(idx(2));
 %     z=alphas(idx(3),1);
-    plot(x,y,'ko'), hold off;
+    plot(x,y,'ko'); %, hold off;
     
-    pause
+%     pause
+%     hold off;
 end
 % axis('equal');
 hold off;

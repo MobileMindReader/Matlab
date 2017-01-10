@@ -13,7 +13,7 @@ s = RandStream('mt19937ar','Seed', 'shuffle');
 RandStream.setGlobalStream(s);
 
 
-reducedSize=768;
+reducedSize=50;%768;
 idx=sort(randperm(size(forwardModel,2),reducedSize));
 
 
@@ -27,7 +27,7 @@ model.alpha = 2;
 inputAverageTimeSteps=1;  %20;
 estimationAverageSteps=1;
 
-steps = 1;
+steps = 10;
 timeSteps = steps * inputAverageTimeSteps*estimationAverageSteps;
 
 
@@ -57,16 +57,14 @@ model.w=model.w*sqrt(10);
 
 x=zeros(size(A,2), timeSteps);
 for i=1:size(A,2)
-%     for t=1:timeSteps
     x(i,:)=model.w(i)*sin((1:timeSteps)*0.5*randn);
-%     end
 end
 
 trueBeta=2000;
 noise = normrnd(0, sqrt(1/trueBeta), [size(A,1) timeSteps]);
 
 y = A*x;
-targets = y + noise;
+targets = y;% + noise;
 
 % smoothTargets = zeros(size(A,1), timeSteps/inputAverageTimeSteps);
 
@@ -126,29 +124,45 @@ end
 
 %%
 
-figure(71), plot(x);
+figure(71), surf(x);
 title('True source');
 % set(gca, 'ZScale', 'log');
-figure(72), plot(xMARD);
+figure(72), surf(xMARD);
 % title('M-SBL estimate');
 title(sprintf('M-ARD estimate, error: %4.3f', norm(xMARD-x)));
 
-figure(77), plot(xMSBL2);
+figure(77), surf(xMSBL2);
 % title('M-SBL estimate');
 title(sprintf('M-SBL estimate, error: %4.3f', norm(xMSBL2-x)));
 
-figure(73), plot(xARD);
+figure(73), surf(xARD);
 title(sprintf('ARD estimate, error: %4.3f', norm(xARD-x)));
 
 % figure(74), surf(xMSBL-x);
 % title('M-SBL Error');
 % 
-% figure(75), surf(xRidge);
-% title(sprintf('Ridge estimate, error: %4.3f', norm(xRidge-x)));
+figure(75), surf(xRidge);
+title(sprintf('Ridge estimate, error: %4.3f', norm(xRidge-x)));
 
 
 
 %% F1-score
+
+[values, sortedIndices] = sort(abs(mean(xMARD,2)), 'descend');
+
+maxVar = var(values,values);
+for i = 1:numel(values)
+    explained = var(values(1:i),values(1:i))/maxVar
+    if explained > 0.90
+        break;
+    end
+end
+i
+sortedIndices(1:i)
+% [coeff,score,latent,tsquared,explained,mu] = pca(values(1:10))
+
+
+%%
 
 nonZeroIdxEst = find(mean(xMARD,2) ~= 0);
 nonZeroIdxTrue = activeIndexes';%find( ~= 0);
@@ -160,8 +174,6 @@ precision=truePos/(truePos+falsePos);
 recall=truePos/(truePos+falseNeg);
 
 f1 = 2*(precision*recall)/(precision+recall)
-
-
 
 
 

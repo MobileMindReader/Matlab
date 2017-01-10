@@ -60,13 +60,20 @@ for i=2:maxIterations
     
     activeSet = activeSet(activeIdx);
     
-    alphasTracked{i} = -1*ones(M,1);
+    alphasTracked{i} = alphaUpperBound*ones(M,1);
     alphasTracked{i}(activeSet) = alphas;
+    
+   if isempty(mN)
+%         disp('Pruned all weights');
+        break;
+    end
     
     Ew = sum((t-Phi*mN).^2);
     
-    betaInv = Ew/(N-sum(gamma));
-    beta = 1/betaInv;
+    betaInv = 1/beta;
+%     betaInv = Ew/(N-sum(gamma));
+%     beta = 1/betaInv;
+
 
 %     C_old = betaInv*eye(N) + (Phi/A)*Phi';  % Check performance gains on this stuff
 %     C = betaInv*eye(N) + Phi*AInv*Phi';
