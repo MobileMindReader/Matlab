@@ -9,22 +9,26 @@ model.alpha=2;
 
 %% Fix seed
 % s = RandStream('mt19937ar','Seed','shuffle');
-s = RandStream('mt19937ar','Seed', 'shuffle');
+s = RandStream('mt19937ar','Seed', 2);
 RandStream.setGlobalStream(s);
 
 %% Experiment parameters
-iterations = 1;
+iterations = 5;
 
-for timeStepsIter = 20;%[1 5 10 15 20];
+for timeStepsIter = 40; % [1 5 10 15 20];
 
 timeSteps = timeStepsIter
 numSamples = 22;
-numFuncs = 50;
-numActiveFuncs = 10;
+numFuncs = 168;
+numActiveFuncs = 20;
 
 forwardModel = importdata('model/mBrainLeadfield.mat');
-dataTitle = ['exp_algo_comp/exp-' datestr(datetime('now'))];
-data.description = ['Noisy, L=' int2str(timeSteps) ', N=' int2str(numSamples) ', M=' int2str(numFuncs) ', k=' int2str(numActiveFuncs)];
+
+% dataTitle = ['exp_algo_comp/' datestr(datetime('now')) 'beta_rand'];
+
+data.description = ['Noisy_N=' int2str(numSamples) '_M=' int2str(numFuncs) '_k=' int2str(numActiveFuncs) '_L=' int2str(timeSteps)];
+dataTitle = ['exp_algo_comp/' data.description];
+
 data.L = timeSteps;
 data.N = numSamples;
 data.M = numFuncs;
@@ -63,19 +67,19 @@ for iter=1:iterations
 %         x(i,timeSteps/2+1:timeSteps)=model.w2(i)*cos((timeSteps/2+1:timeSteps)*0.5*randn);
 %     end
     
-    
     y = A*x;
     
     noise = normrnd(0, sqrt(1/model.beta), [numSamples timeSteps]);
     targets = y + noise;
     
     alpha_init = ones(numFuncs, 1);
+    beta_init = model.beta;
     
     %% ARD ERM
     alphas_ard = []; betas_ard=[]; m_ard=[];, llh_ard=[];
     t0 = tic;
     for l=1:timeSteps
-        [alphas_ard(:,l), betas_ard(:,l), m_ard(:,l), llh] = ARD(alpha_init, model.beta, A, targets(:,l));
+        [alphas_ard(:,l), betas_ard(:,l), m_ard(:,l), llh] = ARD(alpha_init, beta_init, A, targets(:,l));
         llh_ard(l) = llh(end);
     end
     t_ard = toc(t0);
@@ -86,7 +90,7 @@ for iter=1:iterations
     %% M-ARD
     
     t0 = tic;
-    [alphas_mard, betas_mard, m_mard, llh_mard] = MSBL(alpha_init, model.beta, A, targets);
+    [alphas_mard, betas_mard, m_mard, llh_mard] = MSBL(alpha_init, beta_init, A, targets);
     t_mard = toc(t0);
     
     err_mard = mean((m_mard(:) - x(:)).^2);
@@ -112,6 +116,9 @@ for iter=1:iterations
 
 end
 end
+
+% plot(llh_mard);
+% disp(err_mard);
 
 % plot(data.err_ard); hold on;
 % plot(data.err_mard);

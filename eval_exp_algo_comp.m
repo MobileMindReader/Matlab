@@ -10,16 +10,19 @@ for i = 1:length(fileIndex)
     fileName = files(fileIndex(i)).name;
     if fileName(1) == '.'       
         continue; 
-    elseif fileName(end-8:end) == '-10db.mat'
+%     elseif fileName(end-8:end) == '-10db.mat'
 %     elseif fileName(1:3) == 'exp'
+    elseif fileName(1:5) == 'Noisy'
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
+
 
 for i=1:numel(fileNames)
     dataFiles{i} = importdata([path fileNames{i}]);
 end
 
+disp('##### Results #####');
 for data=dataFiles
     data = data{:};
     sprintf(data.description)

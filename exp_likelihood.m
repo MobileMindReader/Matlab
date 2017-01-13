@@ -2,7 +2,7 @@
 clear;
 
 % True parameters
-model.beta = (1/0.2.^2);
+model.beta = 1; %(1/0.2.^2);
 model.alpha=2;
 
 s = RandStream('mt19937ar','Seed','shuffle');
@@ -32,49 +32,48 @@ data.alpha = cell(iterations, 1);
 data.beta = cell(iterations,1);
 % data.llh = cell(iterations,1);
 
-for iter=1:iterations
+smoothingIterations = 10;
 
-    for intraIter = 2:iterations
-        
-        for j=1:10
+for j=1:smoothingIterations
+    forwardMatrix = forwardModel(1:iterations,1:iterations);
+
+    numActiveFuncs = 10;
+    idx=1:numActiveFuncs;   % round(1:numFuncs/numActiveFuncs:numFuncs);   
+    model.w = zeros(1,iterations);
+    model.w(idx) = normrnd(0,sqrt(1/model.alpha), [1 size(idx)]);
+    factor = sqrt(iterations/numActiveFuncs);
+    model.w = factor*model.w;
+    
+    for iter=1:iterations
+        for intraIter = 1:iterations
+
+            numSamples = iter;
+            numFuncs = intraIter;
             
-    numSamples = iter;
-    numFuncs = intraIter;
-    numActiveFuncs = 2;
-
-    forwardMatrix = forwardModel(1:numSamples,1:numFuncs);
-    
-    idx=1:numActiveFuncs;   % round(1:numFuncs/numActiveFuncs:numFuncs);
-    
-    wTemp = zeros(1,numFuncs);
-    wTemp(idx) = normrnd(0,sqrt(1/model.alpha), [1 size(idx)]);
-    model.w = wTemp;
-
-    factor = sqrt(numFuncs/numActiveFuncs);
-    model.w = factor*wTemp;
-    w_true = model.w;
-
-%     data.model = model;
-%     data.w_true{iter} = w_true;
-
-    x=model.w'; %*sin((1:timeSteps)*0.5);
-    y = forwardMatrix*x;
-
-    noise = normrnd(0, sqrt(1/model.beta), [numSamples 1]);
-
-    targets = y + noise;    
-    
-    %%%% Initialize alpha and beta    
-    beta_init = model.beta;  % rand;
-
-%     data.alphas(iter,:) = (iter*0.01)*rand(1,numFuncs);
-%     data.alphas(iter,:) = rand(1,numFuncs);
-    alpha = model.alpha;
+%             forwardMatrix = forwardModel(1:numSamples,1:numFuncs);
+%             numActiveFuncs = 10;
+%             idx=1:numActiveFuncs;   % round(1:numFuncs/numActiveFuncs:numFuncs);
+%             model.w = zeros(1,numFuncs);
+%             model.w(idx) = normrnd(0,sqrt(1/model.alpha), [1 size(idx)]);
+%             factor = sqrt(numFuncs/numActiveFuncs);
+%             model.w = factor*model.w;
+            
+            Phi = forwardMatrix(1:numSamples, 1:numFuncs);
+            
+            x = model.w'; %*sin((1:timeSteps)*0.5);
+            y = forwardMatrix(1:numSamples,:)*x;
+            
+            noise = normrnd(0, sqrt(1/model.beta), [numSamples 1]);
+            targets = y + noise;
+            
+            %%%% Initialize alpha and beta
+            beta = model.beta;  % rand;
+            
+            alpha = model.alpha; %rand;
     
     % Full ARD
-%     [alphas, betas, mn_multi, llh] = ARD_tracking(data.alpha_init(iter,:), beta_init, forwardMatrix, targets);
+%     [alphas, betas, mn_multi, llh] = ARD_tracking(data.alpha_init(iter,:), beta, forwardMatrix, targets);
     
-
     % ARD LLH only
 %     Phi = forwardMatrix;
 %     PhiAInv = Phi*diag(sqrt(1./data.alphas(iter,:)));
@@ -86,18 +85,25 @@ for iter=1:iterations
 %     
 %     llh = -0.5*(numSamples*log(2*pi)+logdetC + b'*b);   % Bis06 (7.85)
 
-    [alpha, beta, mn_uni, llh] = maximum_evidence(alpha, beta_init, forwardMatrix, targets);
+%             [alpha, beta, mn_uni, llh] = maximum_evidence(alpha, beta_init, Phi, targets);
 
+            A = alpha*eye(numFuncs) + beta * (Phi'*Phi);
+            AU = chol(A);
+            AInvU = inv(AU);
+            AInv = AInvU*AInvU';  %A^-1 = L^-1'*L^-1 = U^-1 * U^-1'
+            mN = beta * (AInv*(Phi'*targets));
+            Ew = (sum((targets-Phi*mN).^2));
+            Em = beta/2 * Ew + alpha/2*(mN'*mN);
+            L = chol(A);
+            logDetA = 2*sum(log(diag(L)));
+            llh = 0.5*(numFuncs*log(alpha) + numSamples*log(beta) - 2*Em - logDetA - numSamples*log(2*pi));   % 3.86
 
-    data.llh(iter, intraIter,j) = llh(end);
-    
+            data.llh(iter, intraIter,j) = llh(end);
+            
+            if mod(intraIter+(iter-1)*64, 1000) == 0
+                disp((intraIter+(iter-1)*64)*j);
+            end
 
-    
-    if mod(log(((iter-1)*2^6)+intraIter*j-2), 2) == 0
-        disp(((iter-1)*2^6)+intraIter-2);       
-    end
-
-    
 %     if mod(iter, 20) == 0
 %         if saveData == true
 %             save(dataTitle, 'data');
@@ -126,16 +132,86 @@ end
 %%
 
 meanllh = mean(data.llh,3);
-meanllh(:,1) = [];
-surf(meanllh)
+% meanllh(:,1) = [];
+figure(1);
+surf(meanllh(:,10:end))
 xlabel('M');
 ylabel('N');
 zlabel('Log likelihood');
+title('ln p(t;alpha,beta, N = 10)');
+
+ %%
+xtick=[0:10:70];
+% xticklabel=strsplit(8+xtick/100);
+% xticklabel=8+xtick/100;
+xticklabel={'0' '10' '20' '30' '40' '50' '60' '70'};
+figure(3)
+start=1;
+ylim=300;
+
+subplot(2,2,1), plot(meanllh(10,start:end));
+xlabel('M');
+ylabel('N');
+zlabel('Log likelihood');
+title('ln p(t;alpha,beta, N = 10)');
+set(gca, 'XTick', xtick, 'XTickLabel', xticklabel);
+set(gca,'fontsize',12);
+set(gca, 'ylim', [-ylim 0]);
+
+subplot(2,2,2), plot(meanllh(20,start:end));
+xlabel('M');
+ylabel('N');
+zlabel('Log likelihood');
+title('ln p(t;alpha,beta, N = 20)');
+set(gca, 'XTick', xtick, 'XTickLabel', xticklabel);
+set(gca,'fontsize',12);
+set(gca, 'ylim', [-ylim 0]);
+subplot(2,2,3), plot(meanllh(40,start:end));
+xlabel('M');
+ylabel('N');
+zlabel('Log likelihood');
+title('ln p(t;alpha,beta, N = 40)');
+set(gca, 'XTick', xtick, 'XTickLabel', xticklabel);
+set(gca,'fontsize',12);
+set(gca, 'ylim', [-ylim 0]);
+subplot(2,2,4), plot(meanllh(60,start:end));
+xlabel('M');
+ylabel('N');
+zlabel('Log likelihood');
+title('ln p(t;alpha,beta, N = 60)');
+set(gca, 'XTick', xtick, 'XTickLabel', xticklabel);
+set(gca, 'ylim', [-ylim 0]);
+set(gca,'fontsize',12);
+% set(erb1(1),'Linewidth',2)
 
 %%
 
+figure(2), surf(meanllh(:,10:end))
+xtick=[0:10:70];
+% xticklabel=strsplit(8+xtick/100);
+% xticklabel=8+xtick/100;
+xticklabel={'10' '20' '30' '40' '50' '60' '70'};
+set(gca, 'XTick', xtick, 'XTickLabel', xticklabel);
+xlabel('M');
+ylabel('N');
+zlabel('Log likelihood');
+title('ln p(t;alpha,beta)');
+set(gca,'fontsize',12);
+% set(erb1(1),'Linewidth',2)
 
-% plot3(data.llh,'k.')
+%%
+% 
+% d=2;
+% n=round(iterations^(1/d))^2;
+% % llh_reshaped = reshape(mean(data.llh,3),n,n);
+% 
+% errors = std(data.llh,0,3)./sqrt(smoothingIterations); 
+% 
+% x1=reshape(repmat((1:64),64,1),n,n);
+% x2=reshape(repmat((1:64)',64,1),n,n);
+% 
+% plot3_errorbars_surf(x1,x2,meanllh,errors);
+% % plot3(x1,x2,meanllh,'k.');
 % xlabel('M');
 % ylabel('N');
 % zlabel('Log likelihood');
