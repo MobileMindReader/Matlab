@@ -1,6 +1,5 @@
-function [A, beta, M, llh] = MSBL(alphas, beta, Phi, T)
+function [A, beta, M, llh] = MARD(alphas, beta, Phi, T)
 % ARD style M-SBL
-
 tolerance = 1e-4;
 maxIterations = 300;
 alphaLowerBound = 1e-6;
@@ -26,40 +25,29 @@ zeroIndexes = zeros(1,modelSize);
 % C=zeros(N,N);
 for k=2:maxIterations
     %% Compute diagonal of posterior covariance
-    A = diag(alphas);
+%     A = diag(alphas);
     
-    SigmaInv = A + beta * PhiTPhi;
+    SigmaInv = diag(alphas) + beta * PhiTPhi;
     SigmaInvU = chol(SigmaInv);
     SigmaU = inv(SigmaInvU);
 
 %     Sigma = SigmaU*SigmaU';  %A^-1 = L^-1'*L^-1 = U^-1 * U^-1'
     diagSigma = sum(SigmaU.^2, 2); % MRA: We only need the diagonal of the covariance during iterations
     
-    
-    %%% Consider rewriting this to use above variables 
-    C = (1/beta)*eye(N) + Phi*A*Phi';
-    L=chol(C);
-    logdetC = 2*sum(log(diag(L)));
-    
     %% Compute posterior mean : mN = beta * (Sigma*(Phi'*t))
     M = beta * (SigmaInvU\(SigmaInvU'\(Phi'*T))); % MRA: We prefer to use cholesky decomp rather than Sigma directly.
+    M2 = M.^2;
+    Mi2Normalized = sum(M2, 2)/steps;
     
+    % Make sure alpha has correct dimensions
     if size(alphas,2) > size(alphas,1)
         alphas = alphas';
     end
-    gamma = 1 - alphas.*diagSigma;
     
-    alphas=[];
-    for i=1:modelSize
-        idx = find(activeSet == i);
-        if isempty(idx)
-            continue;   % Nothing to do here. 
-        end
-        alphas(idx) = gamma(idx)/(1/steps*sum(M(idx,:).^2));
-%         alphas(idx) = gamma(idx)./(M(idx,:).^2);
-%         alphas = gamma./(M(idx,:).^2);
-    end
-
+    gamma = 1 - alphas.*diagSigma;    
+    
+    alphas = gamma./(Mi2Normalized);
+    
     %% Determine current active set
     activeIdx = alphas < alphaUpperBound;
     
@@ -87,6 +75,17 @@ for k=2:maxIterations
 %     end    
 %     TCInvT_alt = sum(diag(LT'*LT)); % Same as above
     
+
+    
+    %%% What is this????
+%     PhiAInv = Phi*diag(sqrt(1./alphas));
+%     C = (1/beta)*eye(N) + PhiAInv*PhiAInv';   % Used in order to avoid numerical instability
+    
+
+    C = (1/beta)*eye(N) + Phi*diag(alphas)*Phi';
+    L=chol(C);
+    logdetC = 2*sum(log(diag(L)));
+
     LT = L'\T;
     TCInvT = LT(:)'*LT(:);     % sum(LT.^2);
     
@@ -97,7 +96,6 @@ for k=2:maxIterations
 %         mN = beta * (SigmaInv\(Phi'*t));
 %         disp('Converged at');
 %         k
-        
         break;
     end
 end
@@ -108,15 +106,6 @@ Mtemp(activeSet,:) = M;
 A(activeSet) = alphas;
 
 M=Mtemp;
-
-% Mtemp = zeros(modelSize, steps);
-% A = 1e6*ones(1,modelSize);
-% for j=find(sum(indexMap)==true)
-%     Mtemp(j,:) = M(find(indexMap(:,j)),:);
-%     A(j) = gamma(find(indexMap(:,j)));   
-% end
-% 
-% M=Mtemp;
 
 % beta = 1/noiseVar;
 llh = llh(1:k);

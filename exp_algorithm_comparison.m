@@ -15,11 +15,11 @@ RandStream.setGlobalStream(s);
 %% Experiment parameters
 iterations = 5;
 
-for timeStepsIter = 40; % [1 5 10 15 20];
+for timeStepsIter = 10; % [1 5 10 15 20];
 
 timeSteps = timeStepsIter
 numSamples = 22;
-numFuncs = 168;
+numFuncs = 768;
 numActiveFuncs = 20;
 
 forwardModel = importdata('model/mBrainLeadfield.mat');
@@ -90,7 +90,7 @@ for iter=1:iterations
     %% M-ARD
     
     t0 = tic;
-    [alphas_mard, betas_mard, m_mard, llh_mard] = MSBL(alpha_init, beta_init, A, targets);
+    [alphas_mard, betas_mard, m_mard, llh_mard] = MARD(alpha_init, beta_init, A, targets);
     t_mard = toc(t0);
     
     err_mard = mean((m_mard(:) - x(:)).^2);
@@ -127,10 +127,10 @@ end
 % 
 % %% Output
 % 
-% sprintf('MSE using ARD ERM: %5.4f in %4.3fs\n', mean(data.err_ard), mean(data.time_ard))
-% % sprintf('MSE using ARD MRA: %5.4f in %4.3fs\n', err_ard_mra, t_ard_mra)
-% sprintf('MSE using M-ARD: %5.4f in %4.3fs\n', mean(data.err_mard), mean(data.time_mard))
-% sprintf('MSE using Ridge: %5.4f in %4.3fs\n', mean(data.err_ridge), mean(data.time_ridge))
+sprintf('MSE using ARD ERM: %5.4f in %4.3fs\n', mean(data.err_ard), mean(data.time_ard))
+% sprintf('MSE using ARD MRA: %5.4f in %4.3fs\n', err_ard_mra, t_ard_mra)
+sprintf('MSE using M-ARD: %5.4f in %4.3fs\n', mean(data.err_mard), mean(data.time_mard))
+sprintf('MSE using Ridge: %5.4f in %4.3fs\n', mean(data.err_ridge), mean(data.time_ridge))
 % % 
 
 % hold off;

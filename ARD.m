@@ -1,4 +1,5 @@
 function [A, beta, m, llh] = ARD(alphas, beta, Phi, t)
+
 tolerance = 1e-4;
 maxIterations = 300;
 alphaUpperBound = 1e3;
