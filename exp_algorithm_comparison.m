@@ -9,17 +9,20 @@ model.alpha=2;
 
 %% Fix seed
 % s = RandStream('mt19937ar','Seed','shuffle');
-s = RandStream('mt19937ar','Seed', 2);
+s = RandStream('mt19937ar','Seed', 'shuffle');
 RandStream.setGlobalStream(s);
 
 %% Experiment parameters
-iterations = 5;
+iterations = 1;
 
-for timeStepsIter = 10; % [1 5 10 15 20];
+for timeStepsIter = 20; % [1 5 10 15 20];
 
+    fragments = 5;
+    fragmentSize = ceil(timeStepsIter/fragments);
+    
 timeSteps = timeStepsIter
 numSamples = 22;
-numFuncs = 768;
+numFuncs = 200;
 numActiveFuncs = 20;
 
 forwardModel = importdata('model/mBrainLeadfield.mat');
@@ -43,29 +46,21 @@ for iter=1:iterations
 %     A = forwardModel(:, sort(randperm(size(forwardModel,2),numFuncs)));
     A = randn(numSamples, numFuncs);
     
-    idx=sort(randperm(size(A,2),numActiveFuncs));   % round(1:numFuncs/numActiveFuncs:numFuncs);
-    idx2=sort(randperm(size(A,2),numActiveFuncs));
-    
-    model.w = zeros(numFuncs,1);
-    model.w(idx) = normrnd(0,sqrt(1/model.alpha), [1 size(idx)]);
-    
-    model.w2 = zeros(numFuncs,1);
-    model.w2(idx2) = normrnd(0,sqrt(1/model.alpha), [1 size(idx2)]);
-    
-    factor = sqrt(numFuncs/numActiveFuncs)*sqrt(10);
-    model.w = factor*model.w;
-    model.w2 = factor*model.w2;
+    model.w = zeros(numFuncs,fragments);
+    for j=1:fragments
+        idx=sort(randperm(size(A,2),numActiveFuncs));   % round(1:numFuncs/numActiveFuncs:numFuncs);        
+        factor = sqrt(numFuncs/numActiveFuncs)*sqrt(10);
+
+        model.w(idx,j) = factor*normrnd(0,sqrt(1/model.alpha), [1 size(idx)]);
+    end
     
     x=zeros(size(A,2), timeSteps);
-    for i=1:size(A,2)
-        x(i,:)=model.w(i)*sin((1:timeSteps)*0.5*randn);
+    for j=0:fragments-1
+        range = (1+j*fragmentSize):((j+1)*fragmentSize);
+        for i=1:size(A,2)
+            x(i,range)=model.w(i,(j+1))*sin(range*0.5*randn);
+        end
     end
-%     for i=1:size(A,2)
-%         x(i,1:timeSteps/2)=model.w(i)*sin((1:timeSteps/2)*0.5*randn);
-%     end
-%     for i=1:size(A,2)
-%         x(i,timeSteps/2+1:timeSteps)=model.w2(i)*cos((timeSteps/2+1:timeSteps)*0.5*randn);
-%     end
     
     y = A*x;
     
@@ -116,6 +111,9 @@ for iter=1:iterations
 
 end
 end
+
+figure(1), surf(x); view(0,90);
+figure(2), surf(m_mard); view(0,90);
 
 % plot(llh_mard);
 % disp(err_mard);
