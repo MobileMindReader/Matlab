@@ -32,7 +32,7 @@ data.alpha = cell(iterations, 1);
 data.beta = cell(iterations,1);
 % data.llh = cell(iterations,1);
 
-smoothingIterations = 10;
+smoothingIterations = 100;
 
 for j=1:smoothingIterations
     forwardMatrix = forwardModel(1:iterations,1:iterations);
@@ -45,7 +45,7 @@ for j=1:smoothingIterations
     model.w = factor*model.w;
     
     for iter=1:iterations
-        for intraIter = 1:iterations
+        for intraIter = 1:60 %iterations
 
             numSamples = iter;
             numFuncs = intraIter;
@@ -98,7 +98,7 @@ for j=1:smoothingIterations
             logDetA = 2*sum(log(diag(L)));
             llh = 0.5*(numFuncs*log(alpha) + numSamples*log(beta) - 2*Em - logDetA - numSamples*log(2*pi));   % 3.86
 
-            data.llh(iter, intraIter,j) = llh(end);
+            data.llh(iter, intraIter,j) = llh(end)/numSamples;
             
             if mod(intraIter+(iter-1)*64, 1000) == 0
                 disp((intraIter+(iter-1)*64)*j);
@@ -130,74 +130,84 @@ end
 % end
 
 %%
-
+% 
 meanllh = mean(data.llh,3);
-% meanllh(:,1) = [];
-figure(1);
-surf(meanllh(:,10:end))
-xlabel('M');
-ylabel('N');
-zlabel('Log likelihood');
-title('ln p(t;alpha,beta, N = 10)');
+% % meanllh(:,1) = [];
+% figure(1);
+% surf(meanllh(:,10:end))
+% xlabel('M');
+% ylabel('N');
+% zlabel('Log likelihood');
+% title('ln p(t;alpha,beta, N = 10)');
 
  %%
-xtick=[0:10:70];
+xtick=[0:10:60];
 % xticklabel=strsplit(8+xtick/100);
 % xticklabel=8+xtick/100;
 xticklabel={'0' '10' '20' '30' '40' '50' '60' '70'};
 figure(3)
 start=1;
-ylim=300;
+ylim=5;
 
-subplot(2,2,1), plot(meanllh(10,start:end));
-xlabel('M');
-ylabel('N');
-zlabel('Log likelihood');
-title('ln p(t;alpha,beta, N = 10)');
-set(gca, 'XTick', xtick, 'XTickLabel', xticklabel);
-set(gca,'fontsize',12);
-set(gca, 'ylim', [-ylim 0]);
+% subplot(2,2,1), 
+plot(meanllh(5,start:end)); hold on;
 
-subplot(2,2,2), plot(meanllh(20,start:end));
+plot(meanllh(10,start:end));
+% xlabel('M');
+% ylabel('Log likelihood');
+% title('ln p(t ; alpha, beta, N = 10)');
+% set(gca, 'XTick', xtick, 'XTickLabel', xticklabel);
+% set(gca,'fontsize',12);
+% set(gca, 'ylim', [-ylim 0]);
+
+% subplot(2,2,2),
+plot(meanllh(20,start:end));
+% xlabel('M');
+% ylabel('Log likelihood');
+% title('ln p(t ; alpha, beta, N = 20)');
+% set(gca, 'XTick', xtick, 'XTickLabel', xticklabel);
+% set(gca,'fontsize',12);
+% set(gca, 'ylim', [-ylim 0]);
+
+% subplot(2,2,3), 
+plot(meanllh(40,start:end));
+% xlabel('M');
+% ylabel('Log likelihood');
+% title('ln p(t ; alpha, beta, N = 40)');
+% set(gca, 'XTick', xtick, 'XTickLabel', xticklabel);
+% set(gca,'fontsize',12);
+% set(gca, 'ylim', [-ylim 0]);
+
+% subplot(2,2,4), 
+plot(meanllh(60,start:end)); hold off;
 xlabel('M');
-ylabel('N');
-zlabel('Log likelihood');
-title('ln p(t;alpha,beta, N = 20)');
+ylabel('Log likelihood');
+% title('ln p(t ; alpha, beta, N = 60)');
+
 set(gca, 'XTick', xtick, 'XTickLabel', xticklabel);
-set(gca,'fontsize',12);
-set(gca, 'ylim', [-ylim 0]);
-subplot(2,2,3), plot(meanllh(40,start:end));
-xlabel('M');
-ylabel('N');
-zlabel('Log likelihood');
-title('ln p(t;alpha,beta, N = 40)');
-set(gca, 'XTick', xtick, 'XTickLabel', xticklabel);
-set(gca,'fontsize',12);
-set(gca, 'ylim', [-ylim 0]);
-subplot(2,2,4), plot(meanllh(60,start:end));
-xlabel('M');
-ylabel('N');
-zlabel('Log likelihood');
-title('ln p(t;alpha,beta, N = 60)');
-set(gca, 'XTick', xtick, 'XTickLabel', xticklabel);
-set(gca, 'ylim', [-ylim 0]);
+set(gca, 'ylim', [-ylim -1]);
 set(gca,'fontsize',12);
 % set(erb1(1),'Linewidth',2)
+
+title('ln p(t ; alpha, beta)');
+legend('N = 5','N = 10', 'N = 20', 'N = 40', 'N = 60');
+
 
 %%
 
-figure(2), surf(meanllh(:,10:end))
-xtick=[0:10:70];
-% xticklabel=strsplit(8+xtick/100);
-% xticklabel=8+xtick/100;
-xticklabel={'10' '20' '30' '40' '50' '60' '70'};
-set(gca, 'XTick', xtick, 'XTickLabel', xticklabel);
-xlabel('M');
-ylabel('N');
-zlabel('Log likelihood');
-title('ln p(t;alpha,beta)');
-set(gca,'fontsize',12);
-% set(erb1(1),'Linewidth',2)
+% 
+% figure(2), surf(meanllh(:,10:end))
+% xtick=[0:10:70];
+% % xticklabel=strsplit(8+xtick/100);
+% % xticklabel=8+xtick/100;
+% xticklabel={'10' '20' '30' '40' '50' '60' '70'};
+% set(gca, 'XTick', xtick, 'XTickLabel', xticklabel);
+% xlabel('M');
+% ylabel('N');
+% zlabel('Log likelihood');
+% title('ln p(t;alpha,beta)');
+% set(gca,'fontsize',12);
+% % set(erb1(1),'Linewidth',2)
 
 %%
 % 

@@ -31,7 +31,9 @@ for k=2:maxIterations
     SigmaInvU = chol(SigmaInv);
     SigmaU = inv(SigmaInvU);
 
+ 
 %     Sigma = SigmaU*SigmaU';  %A^-1 = L^-1'*L^-1 = U^-1 * U^-1'
+
     diagSigma = sum(SigmaU.^2, 2); % MRA: We only need the diagonal of the covariance during iterations
     
     %% Compute posterior mean : mN = beta * (Sigma*(Phi'*t))
@@ -56,17 +58,21 @@ for k=2:maxIterations
     PhiTPhi(:,~activeIdx) = [];
     alphas(~activeIdx) = [];
     M(~activeIdx,:) = [];
+    diagSigma(~activeIdx) = [];
     
     activeSet = activeSet(activeIdx);
-        
+    
+    if isempty(M)
+        disp('Pruned all weights');
+        break;
+    end   
 
     %% Noise variance update
     %||T - Phi*M||_F^2
 %     frobSquared=trace((T-Phi*M)'*(T-Phi*M));
-%     noiseVar = ((1/steps)*frobSquared)/(N - modelSize + sum(diagSigma./gamma));
+%     noiseVar = ((1/steps)*frobSquared)/(N - modelSize + sum(alphas.*diagSigma));
 %     beta=1/noiseVar;                          %% This will cause problems
-%     beta = max(1e-6, min(1e8, 1/noiseVar));   %% This gives bad results
-
+%     beta = max(1e-10, min(1e10, 1/noiseVar));   %% This gives bad results
 
 %     TCInvT = 0;
 %     for j=1:steps
@@ -75,17 +81,14 @@ for k=2:maxIterations
 %     end    
 %     TCInvT_alt = sum(diag(LT'*LT)); % Same as above
     
-
-    
     %%% What is this????
-%     PhiAInv = Phi*diag(sqrt(1./alphas));
-%     C = (1/beta)*eye(N) + PhiAInv*PhiAInv';   % Used in order to avoid numerical instability
+    PhiAInv = Phi*diag(sqrt(1./alphas));
+    C = (1/beta)*eye(N) + PhiAInv*PhiAInv';   % Used in order to avoid numerical instability
     
-
-    C = (1/beta)*eye(N) + Phi*diag(alphas)*Phi';
+%     C = (1/beta)*eye(N) + Phi*diag(1./alphas)*Phi';
+    
     L=chol(C);
     logdetC = 2*sum(log(diag(L)));
-
     LT = L'\T;
     TCInvT = LT(:)'*LT(:);     % sum(LT.^2);
     
@@ -98,8 +101,9 @@ for k=2:maxIterations
 %         k
         break;
     end
+     
+    
 end
-
 Mtemp = zeros(modelSize, steps);
 A = 1e6*ones(1,modelSize);
 Mtemp(activeSet,:) = M;

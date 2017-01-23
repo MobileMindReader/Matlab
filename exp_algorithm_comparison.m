@@ -15,10 +15,10 @@ RandStream.setGlobalStream(s);
 %% Experiment parameters
 iterations = 1;
 
-for timeStepsIter = 20; % [1 5 10 15 20];
+for timeStepsIter = 10; % [1 5 10 15 20];
 
-    fragments = 5;
-    fragmentSize = ceil(timeStepsIter/fragments);
+    fragments = 1;
+    fragmentSize = ceil(timeStepsIter/fragments)
     
 timeSteps = timeStepsIter
 numSamples = 22;
@@ -45,6 +45,7 @@ for iter=1:iterations
     
 %     A = forwardModel(:, sort(randperm(size(forwardModel,2),numFuncs)));
     A = randn(numSamples, numFuncs);
+    alphas = zeros(1, numFuncs);
     
     model.w = zeros(numFuncs,fragments);
     for j=1:fragments
@@ -52,6 +53,7 @@ for iter=1:iterations
         factor = sqrt(numFuncs/numActiveFuncs)*sqrt(10);
 
         model.w(idx,j) = factor*normrnd(0,sqrt(1/model.alpha), [1 size(idx)]);
+        alphas(idx) = model.alpha;
     end
     
     x=zeros(size(A,2), timeSteps);
@@ -69,6 +71,7 @@ for iter=1:iterations
     
     alpha_init = ones(numFuncs, 1);
     beta_init = model.beta;
+    
     
     %% ARD ERM
     alphas_ard = []; betas_ard=[]; m_ard=[];, llh_ard=[];
@@ -113,7 +116,12 @@ end
 end
 
 figure(1), surf(x); view(0,90);
+title('True');
 figure(2), surf(m_mard); view(0,90);
+title('M-MARD');
+% figure(3), surf(m_ard); view(0,90);
+% title('ARD');
+
 
 % plot(llh_mard);
 % disp(err_mard);

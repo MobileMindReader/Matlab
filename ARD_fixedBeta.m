@@ -1,4 +1,4 @@
-function [A, beta, m, llh] = ARD(alphas, beta, Phi, t)
+function [A, beta, m, llh] = ARD_fixedBeta(alphas, beta, Phi, t)
 % [A, beta, m, llh] = ARD(alphas, beta, Phi, t)
 
 tolerance = 1e-4;
@@ -74,7 +74,7 @@ for i=2:maxIterations
     
     betaInv = Ew/(N-sum(gamma));
 %     beta = max(1e-6, min(1e8, 1/betaInv));
-    beta = 1/betaInv;
+% %     beta = 1/betaInv;
     
 
 %     C_old = betaInv*eye(N) + (Phi/A)*Phi';  % Check performance gains on this stuff    

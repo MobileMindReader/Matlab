@@ -178,13 +178,13 @@ end
 idxGuess=unique(idxGuess);
 
 % alphaValues(idxGuess) = 0.01;
-alpha_init(logical(eye(size(alpha_init)))) = alphaValues;
+alpha_init = alphaValues;
 
 % alpha_init = rand(1,length(functions)+1)*; %normrnd(model.alpha, 0.2);
 % alpha_init=A;
 beta_init = rand;
 
-[A, beta, mn, llh] = maximum_evidence_multi(alpha_init, beta_init, Phi, targets);
+[A, beta, mn, llh] = ARD(alpha_init, beta_init, Phi, targets);
 % [alpha_shared, beta_shared, mn_shared, llh_shared] = maximum_evidence(rand(1,1), beta_init, Phi, targets);
 llh
 % beta = beta(beta > 0);
