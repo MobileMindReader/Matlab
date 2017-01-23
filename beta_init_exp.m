@@ -1,5 +1,4 @@
 %% Initializing
-clear;
 
 % True parameters
 model.noiseMean = 0;
@@ -7,33 +6,35 @@ model.sigma = 0.2; % Noise std deviation
 model.beta = (1/model.sigma.^2);
 model.dimension = 1;
 
-s = RandStream('mt19937ar','Seed', 10);
+s = RandStream('mt19937ar','Seed', 'shuffle');
 % s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
-iterations = 2;
-intraIterations = 20;
+
+iterations = 500;
+intraIterations = 100;
+
+
+numFuncs = funcs;
+% numActiveFuncs = numActiveFuncs;% floor(numFuncs/4);
+timeSteps=1;
+
+data.description = ['Beta sweep: 1:100, alpha inits same for a full beta sweep.'];
+
+data.titleDescription = ['N=' int2str(N) '_M=' int2str(numFuncs) '_k=' int2str(numActiveFuncs) '_L=' int2str(timeSteps)];
+dataTitle = ['beta_init/' data.titleDescription '-run-' run];
 
 data.beta = zeros(iterations, intraIterations);
-% values=[0.001 0.1 1 10 100 1000 10000];
 
 for iter=1:iterations
     
-    alpha_inits = rand(1, 100);
+    alpha_inits = rand(1, funcs);
     
     for intraIter=1:intraIterations
         
-        N = 100;
-        numFuncs = 100;
-        
-        numActiveFuncs = 20;% floor(numFuncs/4);
         model.alpha = 2;% zeros(1,numFuncs); %0.2*ones(1,numFuncs); % 2?
         
         Phi = randn(N, numFuncs);
-        
-        timeSteps=1;
-%         model.w = zeros(1, numFuncs);
-%         model.w = normrnd(0,sqrt(1/model.alpha), [timeSteps numFuncs]);
         
         model.w = zeros(timeSteps, numFuncs);
         model.w(1:numActiveFuncs) = normrnd(0,sqrt(1/model.alpha), [1 numActiveFuncs]);
@@ -60,58 +61,45 @@ for iter=1:iterations
         targets_test = y_test + normrnd(0, sqrt(1/model.beta), [N timeSteps]);
         
         %% SNR
-        
         rmsX = sqrt(mean(y.^2));
         rmsNoise = sqrt(mean(noise.^2));
         SNR = (rmsX/rmsNoise)^2;
-        
         data.SNRdB(iter, intraIter) = 10*log10(SNR);
         
-        
-        beta_init = intraIter*0.1; % values(intraIter);
-        
-%         alphas(1:numActiveFuncs) = model.alpha;
-        %%
-        
+        data.beta_init(iter,intraIter) = intraIter; % values(intraIter);
+       
+        %% 
         [A, beta, w_mard, llh] = MARD(alpha_inits, beta_init, Phi, targets);
         
         m_ridge1 = (Phi'*Phi + 1e-2*eye(size(Phi, 2)))\(Phi'*targets);
-%         m_ridge = (Phi'*Phi)\(Phi'*targets);
-%         data.A{iter, intraIter} = A;
+        
         data.beta(iter, intraIter) = beta;
         data.w{iter, intraIter} = w_mard;
         
-        
         data.w_true_norm(iter, intraIter) = norm(data.w_true{iter, intraIter});
         data.w_mard_norm(iter, intraIter) = norm(w_mard);
-        
         
         data.error(iter, intraIter) = mean((w_mard(:) - data.x(:)).^2);
         
         Sigma = inv(diag(A)+(beta*(Phi'*Phi)));
         w_mard_test = beta*Sigma*Phi'*targets_test;
-        
+        data.w_test{iter, intraIter} = w_mard_test;
         data.error_test(iter, intraIter) = mean((w_mard_test(:) - data.x_test(:)).^2);
-
         
         data.error_ridge1(iter, intraIter) = mean((m_ridge1(:) - x(:)).^2);
         % Do ridge test error
-        
 
     end
-        if mod(iter, 5) == 0
-             disp(iter);
-        end    
+    save(data, dataTitle);
     
+    if mod(iter, 5) == 0
+        disp(iter);
+    end
 end
 
 
 
 %%
-
-% ticks = 0:10:iterations;
-% tickLabels = strsplit(int2str(ticks*10));
-
 
 figure(1);
 subplot(2,1,1);
