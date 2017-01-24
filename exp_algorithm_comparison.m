@@ -13,7 +13,7 @@ s = RandStream('mt19937ar','Seed', randi(100*run)*run);
 RandStream.setGlobalStream(s);
 
 %% Experiment parameters
-iterations = 50;
+iterations = 2;
 
 for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60];
     
@@ -99,18 +99,17 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60];
         t_ard = toc(t0);
         
         
-        SigmaU_ard = zeros(numFuncs, numFuncs, timeSteps);
+        SigmaInvU_ard = zeros(numFuncs, numFuncs, timeSteps);
         for l=1:timeSteps
             activeIdx = alphas_ard(:,l) < 1e3;
             alphas_ard(~activeIdx) = 1e20;
             SigmaInv = diag(alphas_ard(:,l)) + betas_ard(end,l) * (A'*A);
-            SigmaInvU = chol(SigmaInv);
-            SigmaU_ard(:,:,l) = inv(SigmaInvU);
+            SigmaInvU_ard(:,:,l) = chol(SigmaInv);
         end
         
         t0 = tic;
         for l=1:timeSteps            
-            m_ard_test(:,l) = betas_ard(end,l)*(SigmaInvU(:,:,l)\(SigmaInvU(:,:,l)'\(A'*targets_test(:,l)))); %Sigma*A'*targets_test(:,l); 
+            m_ard_test(:,l) = betas_ard(end,l)*(SigmaInvU_ard(:,:,l)\(SigmaInvU_ard(:,:,l)'\(A'*targets_test(:,l)))); %Sigma*A'*targets_test(:,l); 
         end
         t_ard_test = toc(t0);
         
@@ -137,7 +136,7 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60];
         alphas_mard(~activeIdx) = 1e20;
         SigmaInv = diag(alphas_mard) + betas_mard(end) * (A'*A);
         SigmaInvU = chol(SigmaInv);
-        SigmaU = inv(SigmaInvU);
+%         SigmaU = inv(SigmaInvU);
         
         t0 = tic;
         m_mard_test = betas_mard(end) * (SigmaInvU\(SigmaInvU'\(A'*targets_test)));
