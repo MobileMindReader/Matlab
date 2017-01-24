@@ -47,11 +47,11 @@ for iter=1:iterations
             x_test(i,:) = model.w(i)*xInput(timeSteps+1:timeSteps*2);
         end
         
-        data.w_true{iter, intraIter} = x;
-        data.w_trueTest{iter, intraIter} = x_test;
+%         data.w_true{iter, intraIter} = x;
+%         data.w_trueTest{iter, intraIter} = x_test;
         
-        data.x = x;
-        data.x_test = x_test;
+%         data.x = x;
+%         data.x_test = x_test;
         
         y = Phi*x;
         y_test = Phi*x_test;
@@ -75,24 +75,25 @@ for iter=1:iterations
         m_ridge1 = (Phi'*Phi + 1e-2*eye(size(Phi, 2)))\(Phi'*targets);
         
         data.beta(iter, intraIter) = beta;
-        data.w{iter, intraIter} = w_mard;
-        data.llh{iter,intraIter} = llh;
+%         data.w{iter, intraIter} = w_mard;
+%         data.llh{iter,intraIter} = llh;
+        data.convergence(iter, intraIter) = numel(llh);
         
-        data.w_true_norm(iter, intraIter) = norm(data.w_true{iter, intraIter});
+        data.w_true_norm(iter, intraIter) = norm(x);
         data.w_mard_norm(iter, intraIter) = norm(w_mard);
         
-        data.error(iter, intraIter) = mean((w_mard(:) - data.x(:)).^2);
+        data.error(iter, intraIter) = mean((w_mard(:) - x(:)).^2);
         
         Sigma = inv(diag(A)+(beta*(Phi'*Phi)));
         w_mard_test = beta*Sigma*Phi'*targets_test;
-        data.w_test{iter, intraIter} = w_mard_test;
-        data.error_test(iter, intraIter) = mean((w_mard_test(:) - data.x_test(:)).^2);
+%         data.w_test{iter, intraIter} = w_mard_test;
+        data.error_test(iter, intraIter) = mean((w_mard_test(:) - x_test(:)).^2);
         
         data.error_ridge1(iter, intraIter) = mean((m_ridge1(:) - x(:)).^2);
         % Do ridge test error
 
     end
-    save(dataTitle, 'data');
+%     save(dataTitle, 'data');
     
     if mod(iter, 5) == 0
         disp(iter);

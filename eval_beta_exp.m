@@ -48,14 +48,15 @@ colorList = [   [0.301,  0.745,  0.933];
 
 
 
-for i=0:10:numel(fileNames)
+for i=0:10:numel(fileNames)-1
     expIdx = ceil((i+1)/10);
     
     experiments{expIdx}.beta = [];
     experiments{expIdx}.error = [];
     experiments{expIdx}.testError = [];
     experiments{expIdx}.SNR = [];
-    experiments{expIdx}.llh = [];
+    experiments{expIdx}.convergence = [];
+    
     for j=1:10
         data1 = dataFiles{(j)+(i)};
         
@@ -66,7 +67,14 @@ for i=0:10:numel(fileNames)
         experiments{expIdx}.testError = [experiments{expIdx}.testError; data1.error_test];
         experiments{expIdx}.SNR = [experiments{expIdx}.SNR; data1.SNRdB];
         experiments{expIdx}.color = colorList(expIdx,:);
-        experiments{expIdx}.llh = [experiments{expIdx}; numel(data1.llh)];
+            
+        convergence = zeros(100,100);
+        for k=1:size(data1.llh,1)
+            for l=1:size(data1.llh,2)
+                 convergence(k,l) = size(data1.llh{k,l},2);
+            end
+        end
+        experiments{expIdx}.convergence = [experiments{expIdx}.convergence; convergence];
     end  
 %     data1 = dataFiles{i};
 %     data2 = dataFiles{i+1};
@@ -84,7 +92,7 @@ experiments{5}.beta = [];
 experiments{5}.error = [];
 experiments{5}.testError = [];
 experiments{5}.SNR = [];
-
+experiments{5}.convergence = [];
 for i=1:10
     data1 = realSizeFiles{i};
     
@@ -95,6 +103,14 @@ for i=1:10
     experiments{5}.testError = [experiments{5}.testError; data1.error_test];
     experiments{5}.SNR = [experiments{5}.SNR; data1.SNRdB];
     experiments{5}.color = colorList(5,:);
+    
+    convergence = zeros(100,100);
+    for k=1:size(data1.llh,1)
+        for l=1:size(data1.llh,2)
+            convergence(k,l) = size(data1.llh{k,l},2);
+        end
+    end
+    experiments{5}.convergence = [experiments{5}.convergence; convergence];
 end
 
 
@@ -153,9 +169,9 @@ hold off;
 figure(4);
 for exp = experiments
     exp = exp{:};
-    plot(mean(exp.llh,1), 'Color', exp.color); hold on;
+    plot(mean(exp.convergence,1), 'Color', exp.color); hold on;
 end
-title('llh');
+title('Convergence at');
 set(gca,'fontsize',12);
 set(gca, 'YScale', 'log');
 legend('N100,M100,k20', 'N100,M20,k20','N20,M100,k20','N20,M768,k32');
