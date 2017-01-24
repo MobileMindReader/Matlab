@@ -47,26 +47,35 @@ colorList = [   [0.301,  0.745,  0.933];
                 [0.466,  0.674,  0.188]];
 
 
-for i=1:2:numel(fileNames)
-    data1 = dataFiles{i};
-    data2 = dataFiles{i+1};
+
+for i=0:10:numel(fileNames)-1
+    expIdx = ceil((i+1)/10);
     
-    expIdx = ceil(i/2);
-    experiments{expIdx}.description = data1.description;
-    experiments{expIdx}.title = data1.titleDescription;
-    experiments{expIdx}.beta = [data1.beta; data2.beta];
-    experiments{expIdx}.error = [data1.error; data2.error];
-    experiments{expIdx}.testError = [data1.error_test; data2.error_test];
-    experiments{expIdx}.SNR = [data1.SNRdB; data2.SNRdB];
-    experiments{expIdx}.color = colorList(expIdx,:);
-    experiments{expIdx}.llh = [data1.llh; data2.llh];
+    experiments{expIdx}.beta = [];
+    experiments{expIdx}.error = [];
+    experiments{expIdx}.testError = [];
+    experiments{expIdx}.SNR = [];
+    experiments{expIdx}.convergence = [];
+    
+    for j=1:10
+        data1 = dataFiles{(j)+(i)};
+        
+        experiments{expIdx}.description = data1.description;
+        experiments{expIdx}.title = data1.titleDescription;
+        experiments{expIdx}.beta = [experiments{expIdx}.beta; data1.beta];
+        experiments{expIdx}.error = [experiments{expIdx}.error; data1.error];
+        experiments{expIdx}.testError = [experiments{expIdx}.testError; data1.error_test];
+        experiments{expIdx}.SNR = [experiments{expIdx}.SNR; data1.SNRdB];
+        experiments{expIdx}.color = colorList(expIdx,:);
+        experiments{expIdx}.convergence = [experiments{expIdx}.convergence; data1.convergence];
+    end  
 end
 
 experiments{5}.beta = [];
 experiments{5}.error = [];
 experiments{5}.testError = [];
 experiments{5}.SNR = [];
-
+experiments{5}.convergence = [];
 for i=1:10
     data1 = realSizeFiles{i};
     
@@ -77,6 +86,7 @@ for i=1:10
     experiments{5}.testError = [experiments{5}.testError; data1.error_test];
     experiments{5}.SNR = [experiments{5}.SNR; data1.SNRdB];
     experiments{5}.color = colorList(5,:);
+    experiments{5}.convergence = [experiments{5}.convergence; data1.convergence];
 end
 
 
@@ -85,7 +95,6 @@ experiments(1)=[];
 iterations = 1000;
 intraIterations = 100;
 model.beta = 25;
-
 %%
 
 figure(1);
@@ -116,6 +125,19 @@ ylabel('MSE');
 legend('N100,M100,k20,Train', 'N100,M100,k20,Test', 'N100,M20,k20,Train','N100,M20,k20,Test','N20,M100,k20,Train','N20,M100,k20,Test', 'N20,M768,k32,Train', 'N20,M768,k32,Test');
 % legend('N100,M100,k100,Train', 'N100,M100,k100,Test', 'N100,M100,k20,Train', 'N100,M100,k20,Test', 'N100,M20,k20,Train','N100,M20,k20,Test','N20,M100,k20,Train','N20,M100,k20,Test');
 figure(2),hold off;
+
+%%
+
+figure(4);
+for exp = experiments
+    exp = exp{:};
+    plot(mean(exp.convergence,1), 'Color', exp.color); hold on;
+end
+title('Iterations before converging');
+set(gca,'fontsize',12);
+set(gca, 'YScale', 'log');
+legend('N100,M100,k20', 'N100,M20,k20','N20,M100,k20','N20,M768,k32');
+hold off;
 
 %%
 

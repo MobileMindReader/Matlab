@@ -62,7 +62,7 @@ err_ard_mra = mean((mn_multi_mra(:) - w_true(:)).^2);
 alpha_init = ones(numFuncs, 1);
 
 t0 = tic;
-[alphas4, betas4, mn_multi4, llh4] = MSBL(alpha_init, model.beta, A, targets);
+[alphas4, betas4, mn_multi4, llh4] = MARD(alpha_init, model.beta, A, targets);
 t_mard = toc(t0);
 
 err_mard = mean((mn_multi4(:) - w_true(:)).^2);

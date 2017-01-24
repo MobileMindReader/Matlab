@@ -8,12 +8,12 @@ model.beta = (1/model.sigma.^2);
 model.alpha=2;
 
 %% Fix seed
-% s = RandStream('mt19937ar','Seed','shuffle');
-s = RandStream('mt19937ar','Seed', randi(100*run)*run);
+s = RandStream('mt19937ar','Seed','shuffle');
+% s = RandStream('mt19937ar','Seed', randi(100*run)*run);
 RandStream.setGlobalStream(s);
 
 %% Experiment parameters
-iterations = 60;
+iterations = 50;
 
 for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60];
     
@@ -25,8 +25,7 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60];
     numFuncs = 768;
     numActiveFuncs = 32;
     
-    forwardModel = importdata('model/mBrainLeadfield.mat');
-    
+%     forwardModel = importdata('model/mBrainLeadfield.mat');
     % dataTitle = ['exp_algo_comp/' datestr(datetime('now')) 'beta_rand'];
     
     data.description = ['Noisy_N=' int2str(numSamples) '_M=' int2str(numFuncs) '_k=' int2str(numActiveFuncs) '_L=' int2str(timeSteps)];
@@ -52,7 +51,7 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60];
         model.w = zeros(numFuncs,fragments);
         for j=1:fragments
             idx=sort(randperm(size(A,2),numActiveFuncs));   % round(1:numFuncs/numActiveFuncs:numFuncs);
-            factor = 1; % sqrt(numFuncs/numActiveFuncs)*sqrt(10);
+            factor = 1*sqrt(numFuncs/numActiveFuncs)*sqrt(10);
             
             model.w(idx,j) = factor*normrnd(0,sqrt(1/model.alpha), [1 size(idx)]);
             alphas(idx) = model.alpha;
@@ -82,6 +81,16 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60];
         rmsNoise = sqrt(mean(noise.^2));
         SNR = (rmsX/rmsNoise)^2;
         SNRdB = 10*log10(SNR);
+        data.SNR(iter) = SNRdB;
+        
+        rmsXTest = sqrt(mean(y_test.^2));
+        rmsNoiseTest = sqrt(mean(noise_test.^2));
+        SNRTest = (rmsXTest/rmsNoiseTest)^2;
+        SNRdBTest = 10*log10(SNRTest);
+        data.SNRTest(iter) = SNRdBTest;        
+        
+        data.w_true_norm(iter) = norm(x);
+        data.w_true_test_norm(iter) = norm(x_test);
         
         alpha_init = 0.1*ones(numFuncs, 1);
         beta_init = abs(normrnd(25,20));
@@ -89,7 +98,7 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60];
         
         %% ARD ERM
         ard_convergence = 0;
-        alphas_ard = []; betas_ard=[]; m_ard=[];, llh_ard=[];
+        alphas_ard = []; betas_ard=[]; m_ard=[]; llh_ard=[]; m_ard_test = [];
         t0 = tic;
         for l=1:timeSteps
             [alphas_ard(:,l), betas_ard(:,l), m_ard(:,l), llh] = ARD(alpha_init, beta_init, A, targets(:,l));
@@ -113,11 +122,13 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60];
         end
         t_ard_test = toc(t0);
         
-        data.ard_convergence = ard_convergence;
+        data.ard_norm(iter) = norm(m_ard);
+        data.ard_convergence(iter) = ard_convergence;
         err_ard = mean((m_ard(:) - x(:)).^2);
         data.err_ard(iter) = err_ard;
         data.time_ard(iter) = t_ard;
         
+        data.ard_test_norm(iter) = norm(m_ard_test);
         data.err_ard_test(iter) = mean((m_ard_test(:) - x_test(:)).^2);
         data.time_ard_test(iter) = t_ard_test;
         %% M-ARD
@@ -126,10 +137,11 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60];
         [alphas_mard, betas_mard, m_mard, llh_mard] = MARD(alpha_init, beta_init, A, targets);
         t_mard = toc(t0);
         
+        data.mard_norm(iter) = norm(m_mard);
         err_mard = mean((m_mard(:) - x(:)).^2);
         data.err_mard(iter) = err_mard;
         data.time_mard(iter) = t_mard;
-        data.mard_convergence = numel(llh_mard);
+        data.mard_convergence(iter) = numel(llh_mard);
         
         % M-ARD test
         activeIdx = alphas_mard < 1e6;
@@ -142,6 +154,7 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60];
         m_mard_test = betas_mard(end) * (SigmaInvU\(SigmaInvU'\(A'*targets_test)));
         data.time_mard_test(iter) = toc(t0);
         
+        data.mard_test_norm(iter) = norm(m_mard_test);
         data.err_mard_test(iter) = mean((m_mard_test(:) - x_test(:)).^2);
         %% Ridge for baseline
         m_ridge = [];
@@ -159,8 +172,7 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60];
             disp(sprintf('Iter:%i', iter));
         end
         
-            save(dataTitle, 'data');
-        
+        save(dataTitle, 'data');
     end
 end
 
@@ -181,13 +193,13 @@ end
 % plot(data.err_ridge); hold off;
 % legend('ARD', 'M-ARD', 'Ridge');
 %
-% %% Output
+%% Output
+
+sprintf('MSE using ARD ERM: %5.4f in %4.3fs\n', mean(data.err_ard), mean(data.time_ard))
+% sprintf('MSE using ARD MRA: %5.4f in %4.3fs\n', err_ard_mra, t_ard_mra)
+sprintf('MSE using M-ARD: %5.4f in %4.3fs\n', mean(data.err_mard), mean(data.time_mard))
+sprintf('MSE using Ridge: %5.4f in %4.3fs\n', mean(data.err_ridge), mean(data.time_ridge))
 %
-% sprintf('MSE using ARD ERM: %5.4f in %4.3fs\n', mean(data.err_ard), mean(data.time_ard))
-% % sprintf('MSE using ARD MRA: %5.4f in %4.3fs\n', err_ard_mra, t_ard_mra)
-% sprintf('MSE using M-ARD: %5.4f in %4.3fs\n', mean(data.err_mard), mean(data.time_mard))
-% sprintf('MSE using Ridge: %5.4f in %4.3fs\n', mean(data.err_ridge), mean(data.time_ridge))
-% %
 
 
 % hold off;

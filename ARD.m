@@ -71,7 +71,6 @@ for i=2:maxIterations
     end
     
 %     Ew = sum((t-Phi*mN).^2);
-    
 %     betaInv = Ew/(N-sum(gamma));
 %     beta = 1/betaInv;
 %     beta = max(1e-6, min(1e8, beta));
