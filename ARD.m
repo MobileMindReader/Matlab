@@ -15,7 +15,7 @@ end
 
 
 PhiTPhi = Phi'*Phi;
-
+betaInv = 1/beta;
 llh = zeros(1,maxIterations);
 
 % Temp for svaing beta progress
@@ -72,9 +72,10 @@ for i=2:maxIterations
     
     Ew = sum((t-Phi*mN).^2);
     
-    betaInv = Ew/(N-sum(gamma));
-%     beta = max(1e-6, min(1e8, 1/betaInv));
-    beta = 1/betaInv;
+%     betaInv = Ew/(N-sum(gamma));
+%     beta = 1/betaInv;
+%     beta = max(1e-6, min(1e8, beta));
+
     
 
 %     C_old = betaInv*eye(N) + (Phi/A)*Phi';  % Check performance gains on this stuff    

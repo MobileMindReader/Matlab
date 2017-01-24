@@ -1,7 +1,7 @@
 %%
 clear
 %%
-path=('beta_init2/');
+path=('beta_init_multi/');
 files = dir(path);
 fileIndex = find(~[files.isdir]);
 fileNames={}; dataFiles = {};
