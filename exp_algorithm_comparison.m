@@ -9,7 +9,7 @@ model.alpha=2;
 
 %% Fix seed
 % s = RandStream('mt19937ar','Seed','shuffle');
-s = RandStream('mt19937ar','Seed', 'shuffle');
+s = RandStream('mt19937ar','Seed', randi(100*run)*run);
 RandStream.setGlobalStream(s);
 
 %% Experiment parameters

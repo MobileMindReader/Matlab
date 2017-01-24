@@ -6,7 +6,7 @@ model.sigma = 0.2; % Noise std deviation
 model.beta = (1/model.sigma.^2);
 model.dimension = 1;
 
-s = RandStream('mt19937ar','Seed', randi(100)*run);
+s = RandStream('mt19937ar','Seed', randi(100*run)*run);
 % s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 

@@ -171,7 +171,7 @@ for exp = experiments
     exp = exp{:};
     plot(mean(exp.convergence,1), 'Color', exp.color); hold on;
 end
-title('Convergence at');
+title('Iterations before converging');
 set(gca,'fontsize',12);
 set(gca, 'YScale', 'log');
 legend('N100,M100,k20', 'N100,M20,k20','N20,M100,k20','N20,M768,k32');
