@@ -70,7 +70,7 @@ for i=2:maxIterations
         break;
     end
     
-    Ew = sum((t-Phi*mN).^2);
+%     Ew = sum((t-Phi*mN).^2);
     
 %     betaInv = Ew/(N-sum(gamma));
 %     beta = 1/betaInv;
