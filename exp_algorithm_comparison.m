@@ -119,7 +119,7 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60];
         data.err_ard(iter) = err_ard;
         data.time_ard(iter) = t_ard;
         
-        data.err_ard_test(iter) = mean((m_mard_test(:) - x_test(:)).^2);
+        data.err_ard_test(iter) = mean((m_ard_test(:) - x_test(:)).^2);
         data.time_ard_test(iter) = t_ard_test;
         %% M-ARD
         
