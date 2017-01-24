@@ -103,7 +103,7 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60];
         for l=1:timeSteps
             activeIdx = alphas_ard(:,l) < 1e3;
             alphas_ard(~activeIdx) = 1e20;
-            SigmaInv = diag(alphas_ard) + betas_ard(end,l) * (A'*A);
+            SigmaInv = diag(alphas_ard(:,l)) + betas_ard(end,l) * (A'*A);
             SigmaInvU = chol(SigmaInv);
             SigmaU_ard(:,:,l) = inv(SigmaInvU);
         end
