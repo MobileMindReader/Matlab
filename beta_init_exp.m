@@ -6,12 +6,12 @@ model.sigma = 0.2; % Noise std deviation
 model.beta = (1/model.sigma.^2);
 model.dimension = 1;
 
-s = RandStream('mt19937ar','Seed', 'shuffle');
+s = RandStream('mt19937ar','Seed', randi(100)*run);
 % s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
 
-iterations = 500;
+iterations = 100;
 intraIterations = 100;
 
 
@@ -20,15 +20,15 @@ numFuncs = funcs;
 timeSteps=1;
 
 data.description = ['Beta sweep: 1:100, alpha inits same for a full beta sweep.'];
-
+data.exp = sprintf('%i%i%i', N, numFuncs,numActiveFuncs);
 data.titleDescription = ['N=' int2str(N) '_M=' int2str(numFuncs) '_k=' int2str(numActiveFuncs) '_L=' int2str(timeSteps)];
-dataTitle = ['beta_init/' data.titleDescription '-run-' run];
+dataTitle = ['beta_init2/' data.titleDescription '-run-' int2str(run)];
 
 data.beta = zeros(iterations, intraIterations);
 
 for iter=1:iterations
     
-    alpha_inits = rand(1, funcs);
+    alpha_inits = rand(1, numFuncs);
     
     for intraIter=1:intraIterations
         
@@ -66,7 +66,8 @@ for iter=1:iterations
         SNR = (rmsX/rmsNoise)^2;
         data.SNRdB(iter, intraIter) = 10*log10(SNR);
         
-        data.beta_init(iter,intraIter) = intraIter; % values(intraIter);
+        beta_init = intraIter;
+        data.beta_init(iter,intraIter) = beta_init; % values(intraIter);
        
         %% 
         [A, beta, w_mard, llh] = MARD(alpha_inits, beta_init, Phi, targets);
@@ -75,6 +76,7 @@ for iter=1:iterations
         
         data.beta(iter, intraIter) = beta;
         data.w{iter, intraIter} = w_mard;
+        data.llh{iter,intraIter} = llh;
         
         data.w_true_norm(iter, intraIter) = norm(data.w_true{iter, intraIter});
         data.w_mard_norm(iter, intraIter) = norm(w_mard);
@@ -90,60 +92,9 @@ for iter=1:iterations
         % Do ridge test error
 
     end
-    save(data, dataTitle);
+%     save(dataTitle, 'data');
     
     if mod(iter, 5) == 0
         disp(iter);
     end
 end
-
-
-
-%%
-
-figure(1);
-subplot(2,1,1);
-plot(mean(data.beta,1)), hold on;
-plot(ones(intraIterations,1)*model.beta, 'k');
-hold off;
-set(gca, 'YScale', 'log');
-% set(gca,'XTick',ticks, 'XTickLabel',tickLabels);
-set(gca,'fontsize',12);
-xlabel('Number of basis functions');
-title('\beta_{EA} as a function of number of basis functions. N = 100.');
-ylabel('\beta_{EA}');
-% xlim([1 38]);
-legend('M-ARD', 'True');
-% legend('Evidence approximation', 'True', 'Dense model, fixed \beta', 'Sparse model, fixed \beta', 'True', 'location', 'NorthEast');
-% legend('lambda = 0.01', 'lambda = 0.1', 'lambda = 1', 'lambda = 10', 'lambda = 100', 'True', 'location', 'NorthWest');
-
-figure(1);
-subplot(2,1,2);
-plot(mean(data.w_mard_norm,1)); hold on;
-plot(mean(data.w_true_norm,1), 'k'); hold off;
-% plot norm of w
-
-set(gca, 'YScale', 'log');
-% set(gca,'XTick',ticks, 'XTickLabel',tickLabels);
-set(gca,'fontsize',12);
-xlabel('Number of basis functions');
-ylabel('\mid\midw_{EA}\mid\mid');
-% xlim([1 38]);
-title('\mid\midw_{EA}\mid\mid as a function of number of basis functions. N = 100.');
-% legend('lambda = 0.01', 'lambda = 0.1', 'lambda = 1', 'lambda = 10', 'lambda = 100', 'True', 'location', 'NorthWest');
-%
-
-figure(2);
-% subplot(3,1,3);
-plot((mean(data.error,1))); hold on;
-plot(mean(data.error_test,1)); 
-% plot((mean(data.error,2)./normalizer)); hold on;
-% plot(mean(data.error_test,2)./normalizer); 
-
-% plot(mean(data.error_ridge1,1)); 
-hold off;
-legend('Train', 'Test', 'Ridge');
-% legend('Dense model', 'Sparse model', 'Dense model, fixed \beta', 'Sparse model, fixed \beta', 'location', 'NorthWest');
-set(gca, 'YScale', 'log');
-% set(gca,'XTick',ticks, 'XTickLabel',tickLabels);
-set(gca,'fontsize',12);
