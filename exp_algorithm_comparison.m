@@ -13,10 +13,10 @@ s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
 %% Experiment parameters
-iterations = 5;
+iterations = 20;
 
 
-for timeStepsIter = 40;% [1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80];
+for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80];
     
     fragments = 1;
     fragmentSize = ceil(timeStepsIter/fragments);
@@ -142,7 +142,7 @@ for timeStepsIter = 40;% [1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80];
             disp(sprintf('Iter:%i', iter));
         end
         
-%         save(dataTitle, 'data');
+        save(dataTitle, 'data');
     end
 end
 
