@@ -124,9 +124,19 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60];
         
         data.ard_norm(iter) = norm(m_ard);
         data.ard_convergence(iter) = ard_convergence;
-        err_ard = mean((m_ard(:) - x(:)).^2);
-        data.err_ard(iter) = err_ard;
+        
+%         err_ard = mean((m_ard(:) - x(:)).^2);
+        
+        err_ard_accum = 0;
+        for l=1:timeSteps
+            err_ard_accum = err_ard_accum + mean((m_ard(:,l) - x(:,l)).^2);
+        end
+       
+        data.err_ard(iter) = err_ard_accum;
         data.time_ard(iter) = t_ard;
+        
+%         norm_ard = err_ard./norm(x)
+%         norm_ard/timeSteps
         
 %         data.ard_test_norm(iter) = norm(m_ard_test);
 %         data.err_ard_test(iter) = mean((m_ard_test(:) - x_test(:)).^2);
@@ -138,9 +148,16 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60];
         t_mard = toc(t0);
         
         data.mard_norm(iter) = norm(m_mard);
-        err_mard = mean((m_mard(:) - x(:)).^2);
-        data.err_mard(iter) = err_mard;
+%         err_mard = mean((m_mard(:) - x(:)).^2);
+        
         data.time_mard(iter) = t_mard;
+        
+        err_mard_accum = 0;
+        for l=1:timeSteps
+            err_mard_accum = err_mard_accum + mean((m_mard(:,l) - x(:,l)).^2);
+        end
+
+        data.err_mard(iter) = err_mard_accum;
         data.mard_convergence(iter) = numel(llh_mard);
         
 %         % M-ARD test
@@ -153,6 +170,7 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60];
 %         data.time_mard_test(iter) = toc(t0);
 %         data.mard_test_norm(iter) = norm(m_mard_test);
 %         data.err_mard_test(iter) = mean((m_mard_test(:) - x_test(:)).^2);
+
         
         %% Ridge for baseline
         m_ridge = [];
@@ -161,8 +179,12 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60];
             m_ridge(:,l) = (A'*A + 1e-2*eye(size(A, 2)))\(A'*targets(:,l));
         end
         t_ridge = toc(t0);
-        err_ridge = mean((m_ridge(:) - x(:)).^2);
-        data.err_ridge(iter) = err_ridge;
+%         err_ridge = mean((m_ridge(:) - x(:)).^2);
+        err_ridge_accum = 0;
+        for l=1:timeSteps
+            err_ridgne_accum = err_ridge_accum + mean((m_ridge(:,l) - x(:,l)).^2);
+        end
+        data.err_ridge(iter) = err_ridge_accum;
         data.time_ridge(iter) = t_ridge;
         
         %% save data
@@ -193,11 +215,11 @@ end
 %
 %% Output
 
-sprintf('MSE using ARD ERM: %5.4f in %4.3fs\n', mean(data.err_ard), mean(data.time_ard))
-% sprintf('MSE using ARD MRA: %5.4f in %4.3fs\n', err_ard_mra, t_ard_mra)
-sprintf('MSE using M-ARD: %5.4f in %4.3fs\n', mean(data.err_mard), mean(data.time_mard))
-sprintf('MSE using Ridge: %5.4f in %4.3fs\n', mean(data.err_ridge), mean(data.time_ridge))
-%
+% sprintf('MSE using ARD ERM: %5.4f in %4.3fs\n', mean(data.err_ard), mean(data.time_ard))
+% % sprintf('MSE using ARD MRA: %5.4f in %4.3fs\n', err_ard_mra, t_ard_mra)
+% sprintf('MSE using M-ARD: %5.4f in %4.3fs\n', mean(data.err_mard), mean(data.time_mard))
+% sprintf('MSE using Ridge: %5.4f in %4.3fs\n', mean(data.err_ridge), mean(data.time_ridge))
+% %
 
 
 % hold off;

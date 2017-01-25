@@ -2,7 +2,7 @@
 clear;
 
 % Load data files
-path=('exp_algo_comp/');
+path=('exp_algo_comp/45db/');
 files = dir(path);
 fileIndex = find(~[files.isdir]);
 fileNames={}; dataFiles = {};
@@ -162,7 +162,6 @@ range(1) = 1;
 % ticks = range;
 tickLabels = strsplit(int2str(range'));
 
-
 plot(mean(normErrorArd,2)./range); hold on;
 % plot(mean(allExp.ard_test_err,2));
 plot(mean(normErrorMArd,2)./range);
@@ -210,12 +209,12 @@ plot(mean(allExp.SNR_test,2)); hold off;
 
 
 %%
-disp('##### Results #####');
-for data=dataFiles
-    data = data{:};
-    sprintf(data.description)
-    
-    disp(sprintf('MSE using ARD  : %5.4f in %4.3fs\n', mean(data.err_ard), mean(data.time_ard)));
-    disp(sprintf('MSE using M-ARD: %5.4f in %4.3fs\n', mean(data.err_mard), mean(data.time_mard)));
-    disp(sprintf('MSE using Ridge: %5.4f in %4.3fs\n', mean(data.err_ridge), mean(data.time_ridge)));
-end
+% disp('##### Results #####');
+% for data=dataFiles
+%     data = data{:};
+%     sprintf(data.description)
+%     
+%     disp(sprintf('MSE using ARD  : %5.4f in %4.3fs\n', mean(data.err_ard), mean(data.time_ard)));
+%     disp(sprintf('MSE using M-ARD: %5.4f in %4.3fs\n', mean(data.err_mard), mean(data.time_mard)));
+%     disp(sprintf('MSE using Ridge: %5.4f in %4.3fs\n', mean(data.err_ridge), mean(data.time_ridge)));
+% end
