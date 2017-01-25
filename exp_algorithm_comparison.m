@@ -15,6 +15,7 @@ RandStream.setGlobalStream(s);
 %% Experiment parameters
 iterations = 20;
 
+
 for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80];
     
     fragments = 1;
@@ -70,8 +71,8 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80];
         noise = normrnd(0, sqrt(1/model.beta), [numSamples timeSteps]);
         targets = y + noise;
         
-        data.SNR(iter) = 10*log(var(y)/var(noise));
-            
+        data.SNR(iter) = 10*log10(var(y)/var(noise));
+        
         data.w_true_norm(iter) = norm(x);
         
         alpha_init = 0.1*ones(numFuncs, 1);

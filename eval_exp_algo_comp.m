@@ -24,7 +24,7 @@ end
 
 %%
 
-exp = {{},{},{},{},{},{},{},{},{},{},{},{},{}};
+exp = {{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}};
 
 for i=1:numel(exp)
     
@@ -73,6 +73,14 @@ for file=dataFiles
             currentExp = 12;
         case 60
             currentExp = 13;
+        case 65
+            currentExp = 14;
+        case 70
+            currentExp = 15;
+        case 75
+            currentExp = 16;
+        case 80
+            currentExp = 17;            
     end
     
     exp{currentExp}.ard_err = [exp{currentExp}.ard_err data.err_ard];
@@ -106,7 +114,7 @@ allExp.ard_convergence = [];
 allExp.mard_convergence = [];
 allExp.SNR = [];
 
-for i=1:13
+for i=1:numel(exp)
     allExp.ard_err = [allExp.ard_err; exp{i}.ard_err];
     allExp.mard_err = [allExp.mard_err; exp{i}.mard_err];
 
@@ -123,7 +131,7 @@ for i=1:13
 end
 %%
 % Normalize
-range = [0:5:60]';
+range = [0:5:80]';
 range(1) = 1;
 
 normErrorArd = allExp.ard_err;%./allExp.true_norm;
@@ -144,7 +152,7 @@ plot(meanMARDErr);
 % plot(mean(allExp.mard_test_err,2));
 
 title('MSE of parameters normalized by norm and number of responses');
-set(gca,'XTick',[1:13], 'XTickLabel',tickLabels);
+set(gca,'XTick',[1:numel(exp)], 'XTickLabel',tickLabels);
 set(gca, 'YScale', 'log');
 xlabel('Number of simultaneous responses (L)')
 ylabel('(MSE / \mid\mid w_{true} \mid\mid ) / L');
@@ -162,7 +170,7 @@ plot(mean(allExp.mard_time,2));
 % plot(mean(allExp.mard_test_time,2));
 
 title('Time');
-legend('ARD train', 'M-ARD train', 'M-ARD test');
+legend('ARD train', 'M-ARD');
 hold off;
 
 %%

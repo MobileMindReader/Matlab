@@ -62,7 +62,7 @@ for iter=1:iterations
 %         targets_test = y_test + normrnd(0, sqrt(1/model.beta), [N timeSteps]);
         
         %% SNR
-        data.SNR(iter) = 10*log(var(y)/var(noise));
+        data.SNR(iter) = 10*log10(var(y)/var(noise));
         
         beta_init = betaRange(intraIter);
         data.beta_init(iter,intraIter) = beta_init; % values(intraIter);
