@@ -10,88 +10,63 @@ for i = 1:length(fileIndex)
     fileName = files(fileIndex(i)).name;
     if fileName(1) == '.'       
         continue; 
-    elseif fileName(8:10) == '768'
-        realSizeFileName{end+1} = files(fileIndex(i)).name;
     elseif fileName(end-3:end) == '.mat'
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
-
-for i=1:numel(realSizeFileName)
-    realSizeFiles{i} = importdata([path realSizeFileName{i}]);
-end
-
 for i=1:numel(fileNames)
     dataFiles{i} = importdata([path fileNames{i}]);
+    
 end
 
-
-%N100, M100, k20
-%N100, M100, k100
-%N100, M20, k20
-%N20, M100, k20
 %%
 %N20, M768, k32
 
-N100M100k20 = {};
-N100M100k100 ={};
-N100M20k20 = {};
-N20M100k20 = {};
-N10M768K32 = {};
-
-experiments = [N100M100k100 N100M100k20 N100M20k20 N20M100k20 N10M768K32];
 colorList = [   [0.301,  0.745,  0.933]; 
                 [0.000,  0.447,  0.741]; 
                 [0.850,  0.325,  0.098]; 
                 [0.929,  0.694,  0.125]; 
                 [0.466,  0.674,  0.188]];
 
+experiments = {{},{},{},{},{}};
 
-for i=0:10:numel(fileNames)-1
-    expIdx = ceil((i+1)/10);
-    
+for expIdx=1:numel(experiments)
     experiments{expIdx}.beta = [];
     experiments{expIdx}.error = [];
     experiments{expIdx}.testError = [];
     experiments{expIdx}.SNR = [];
     experiments{expIdx}.convergence = [];
-    experiments{expIdx}.norm = [];
+    experiments{expIdx}.norm = [];    
     
-    for j=1:10
-        data1 = dataFiles{(j)+(i)};
-        
-        experiments{expIdx}.description = data1.description;
-        experiments{expIdx}.title = data1.titleDescription;
-        experiments{expIdx}.beta = [experiments{expIdx}.beta; data1.beta];
-        experiments{expIdx}.error = [experiments{expIdx}.error; data1.error];
-        experiments{expIdx}.testError = [experiments{expIdx}.testError; data1.error_test];
-        experiments{expIdx}.SNR = [experiments{expIdx}.SNR; data1.SNRdB];
-        experiments{expIdx}.color = colorList(expIdx,:);
-        experiments{expIdx}.convergence = [experiments{expIdx}.convergence; data1.convergence];
-        experiments{expIdx}.norm = [experiments{expIdx}.norm; data1.w_true_norm];
-    end  
 end
-
-experiments{5}.beta = [];
-experiments{5}.error = [];
-experiments{5}.testError = [];
-experiments{5}.SNR = [];
-experiments{5}.convergence = [];
-experiments{5}.norm = [];
-for i=1:10
-    data1 = realSizeFiles{i};
+            
+for file=dataFiles
+    data1 = file{:};
+    expIdx = 0;
+    switch data1.exp
+        case '100100100'
+%             continue
+            expIdx = 1;
+        case '10010020'
+            expIdx = 2;
+        case '1002020'
+            expIdx = 3;
+        case '2010020'
+            expIdx = 4;
+        case '2076832'
+            expIdx = 5;
+    end
     
-    experiments{5}.description = data1.description;
-    experiments{5}.title = data1.titleDescription;
-    experiments{5}.beta = [experiments{5}.beta; data1.beta];
-    experiments{5}.error = [experiments{5}.error; data1.error];
-    experiments{5}.testError = [experiments{5}.testError; data1.error_test];
-    experiments{5}.SNR = [experiments{5}.SNR; data1.SNRdB];
-    experiments{5}.color = colorList(5,:);
-    experiments{5}.convergence = [experiments{5}.convergence; data1.convergence];
-    experiments{5}.norm = [experiments{5}.norm; data1.w_true_norm];
+    experiments{expIdx}.description = data1.description;
+    experiments{expIdx}.title = data1.titleDescription;
+    experiments{expIdx}.beta = [experiments{expIdx}.beta; data1.beta];
+    experiments{expIdx}.error = [experiments{expIdx}.error; data1.error];
+    experiments{expIdx}.testError = [experiments{expIdx}.testError; data1.error_test];
+    experiments{expIdx}.SNR = [experiments{expIdx}.SNR; data1.SNRdB];
+    experiments{expIdx}.color = colorList(expIdx,:);
+    experiments{expIdx}.convergence = [experiments{expIdx}.convergence; data1.convergence];
+    experiments{expIdx}.norm = [experiments{expIdx}.norm; data1.w_true_norm];
 end
-
 
 experiments(1)=[];
 
@@ -121,7 +96,7 @@ for exp = experiments
 %     plot(mean(exp.testError,1), 'Color', exp.color);
     exp.title;
 end
-title('MSE of parameters as a function of chosen \beta. Train and test.');
+title('MSE of parameters as a function of chosen \beta.');
 set(gca,'fontsize',12);
 set(gca, 'YScale', 'log');
 xlabel('\beta');

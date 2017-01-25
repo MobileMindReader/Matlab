@@ -49,7 +49,7 @@ for iter=1:iterations
         end
         
         data.w_true{iter, intraIter} = x;
-        data.w_trueTest{iter, intraIter} = x_test;
+%         data.w_trueTest{iter, intraIter} = x_test;
         
         data.x = x;
 %         data.x_test = x_test;
