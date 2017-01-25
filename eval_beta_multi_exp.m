@@ -56,6 +56,7 @@ for i=0:10:numel(fileNames)-1
     experiments{expIdx}.testError = [];
     experiments{expIdx}.SNR = [];
     experiments{expIdx}.convergence = [];
+    experiments{expIdx}.norm = [];
     
     for j=1:10
         data1 = dataFiles{(j)+(i)};
@@ -68,6 +69,7 @@ for i=0:10:numel(fileNames)-1
         experiments{expIdx}.SNR = [experiments{expIdx}.SNR; data1.SNRdB];
         experiments{expIdx}.color = colorList(expIdx,:);
         experiments{expIdx}.convergence = [experiments{expIdx}.convergence; data1.convergence];
+        experiments{expIdx}.norm = [experiments{expIdx}.norm; data1.w_true_norm];
     end  
 end
 
@@ -76,6 +78,7 @@ experiments{5}.error = [];
 experiments{5}.testError = [];
 experiments{5}.SNR = [];
 experiments{5}.convergence = [];
+experiments{5}.norm = [];
 for i=1:10
     data1 = realSizeFiles{i};
     
@@ -87,6 +90,7 @@ for i=1:10
     experiments{5}.SNR = [experiments{5}.SNR; data1.SNRdB];
     experiments{5}.color = colorList(5,:);
     experiments{5}.convergence = [experiments{5}.convergence; data1.convergence];
+    experiments{5}.norm = [experiments{expIdx}.norm; data1.w_true_norm];
 end
 
 
@@ -110,11 +114,12 @@ hold off;
 %%
 % ticks=1:100;
 % tickLabels = strsplit(int2str(ticks*10));
+% experiments{4}.norm(1001:1100,:) = [];
 figure(2);
 for exp = experiments
     exp = exp{:};
-    plot(mean(exp.error,1), '--', 'Color', exp.color); hold on;
-    plot(mean(exp.testError,1), 'Color', exp.color);
+    plot(mean((exp.error./(exp.norm.^2)),1), 'Color', exp.color); hold on;
+%     plot(mean(exp.testError,1), 'Color', exp.color);
     exp.title;
 end
 title('MSE of parameters as a function of chosen \beta. Train and test.');

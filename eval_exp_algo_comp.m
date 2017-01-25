@@ -17,7 +17,6 @@ for i = 1:length(fileIndex)
     end
 end
 
-
 for i=1:numel(fileNames)
     dataFiles{i} = importdata([path fileNames{i}]);
 end
@@ -152,20 +151,30 @@ for i=1:13
 end
 %%
 
+% Normalize
+normErrorArd = allExp.ard_err./allExp.true_norm;
+normErrorMArd = allExp.mard_err./allExp.true_norm;
 
 figure(1)
+range = [0:5:60]';
+range(1) = 1;
+% range = ones(13,1);
+% ticks = range;
+tickLabels = strsplit(int2str(range'));
 
-% for i=1:13
-plot(mean(allExp.ard_err,2)); hold on;
-plot(mean(allExp.ard_test_err,2));
-plot(mean(allExp.mard_err,2));
-plot(mean(allExp.mard_test_err,2));
-%     plot(exp{i}.ard_test_err, '-d');
-%     plot(exp{i}.ard_err, '-og');
-%     plot(exp{i}.ard_test_err, '-+r');
-% end
-title('Error');
-legend('ARD train', 'ARD test','M-ARD train', 'M-ARD test');
+
+plot(mean(normErrorArd,2)./range); hold on;
+% plot(mean(allExp.ard_test_err,2));
+plot(mean(normErrorMArd,2)./range);
+% plot(mean(allExp.mard_test_err,2));
+
+title('MSE of parameters normalized by norm and number of responses');
+set(gca,'XTick',[1:13], 'XTickLabel',tickLabels);
+set(gca, 'YScale', 'log');
+xlabel('Number of simultaneous responses (L)')
+ylabel('(MSE / \mid\mid w_{true} \mid\mid ) / L');
+set(gca,'fontsize',12);
+legend('ARD error', 'M-ARD error');
 hold off;
 
 
@@ -173,12 +182,12 @@ hold off;
 figure(2)
 
 plot(mean(allExp.ard_time,2)); hold on;
-plot(mean(allExp.ard_test_time,2));
+% plot(mean(allExp.ard_test_time,2));
 plot(mean(allExp.mard_time,2));
-plot(mean(allExp.mard_test_time,2));
+% plot(mean(allExp.mard_test_time,2));
 
 title('Time');
-legend('ARD train', 'ARD test','M-ARD train', 'M-ARD test');
+legend('ARD train', 'M-ARD train', 'M-ARD test');
 hold off;
 
 %%
@@ -195,8 +204,12 @@ figure(4)
 plot(mean(allExp.SNR,2)); hold on;
 plot(mean(allExp.SNR_test,2)); hold off;
 
-%%
 
+
+
+
+
+%%
 disp('##### Results #####');
 for data=dataFiles
     data = data{:};
