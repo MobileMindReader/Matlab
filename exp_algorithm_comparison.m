@@ -13,7 +13,7 @@ s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
 %% Experiment parameters
-iterations = 1;
+iterations = 5;
 
 
 for timeStepsIter = 40;% [1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80];
@@ -115,6 +115,15 @@ for timeStepsIter = 40;% [1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80];
         data.mard_convergence(iter) = numel(llh_mard);
        
         
+        %% MFOCUSS
+        lambda = 0.001;
+        t0 = tic;
+        [X_focuss, gamma_ind_focuss, gamma_est_focuss, count_focuss] = MFOCUSS(A, targets, lambda);
+        t_mfocuss = toc(t0);
+        
+        data.err_mfocuss(iter) = sum((X_focuss(:)-x(:)).^2)/sum(x(:).^2); %err_mard_accum;
+        data.time_mfocuss(iter) = t_mfocuss;
+        data.mfocuss_norm(iter) = norm(X_focuss);
         
         %% Ridge for baseline
         m_ridge = [];

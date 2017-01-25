@@ -28,7 +28,7 @@ for iter=1:iterations
     model.sigma = 0.1*iter;
     model.beta = (1/model.sigma.^2);
     
-    data.description = ['sigma=' int2str(model.sigma) '_N=' int2str(numSamples) '_M=' int2str(numFuncs) '_k=' int2str(numActiveFuncs) '_L=' int2str(timeSteps)];
+    data.description = ['sigma=' num2str(model.sigma) '_N=' int2str(numSamples) '_M=' int2str(numFuncs) '_k=' int2str(numActiveFuncs) '_L=' int2str(timeSteps)];
     dataTitle = ['exp_foward/' data.description '-run-' int2str(run)];
     
     data.L = timeSteps;
