@@ -3,7 +3,8 @@ clear;
 
 % Load data files
 % path=('exp_algo_comp/45db/');
-path=('exp_algo_comp2/');
+% path=('exp_algo_comp2/');
+path=('exp_algo_comp2/sigma1/');
 files = dir(path);
 fileIndex = find(~[files.isdir]);
 fileNames={}; dataFiles = {};
@@ -30,13 +31,14 @@ for i=1:numel(exp)
     
     exp{i}.ard_err = [];
     exp{i}.mard_err = [];
-
+    exp{i}.ridge_err = [];
     exp{i}.true_norm = [];
     exp{i}.ard_norm = [];
     exp{i}.mard_norm = [];
     
     exp{i}.ard_time = [];
     exp{i}.mard_time = [];
+    exp{i}.ridge_time = [];
     exp{i}.ard_convergence = [];
     exp{i}.mard_convergence = [];
     exp{i}.SNR = [];
@@ -85,9 +87,12 @@ for file=dataFiles
     
     exp{currentExp}.ard_err = [exp{currentExp}.ard_err data.err_ard];
     exp{currentExp}.mard_err = [exp{currentExp}.mard_err data.err_mard];
-
+    exp{currentExp}.ridge_err = [exp{currentExp}.ridge_err   data.err_ridge];
+    
     exp{currentExp}.ard_time = [exp{currentExp}.ard_time data.time_ard];
     exp{currentExp}.mard_time = [exp{currentExp}.mard_time data.time_mard];
+    exp{currentExp}.ridge_time = [exp{currentExp}.ridge_time data.time_ridge];
+    
     exp{currentExp}.ard_convergence = [exp{currentExp}.ard_convergence data.ard_convergence];
     exp{currentExp}.mard_convergence = [exp{currentExp}.mard_convergence data.mard_convergence];
     
@@ -102,6 +107,7 @@ allExp = {};
 
 allExp.ard_err = [];
 allExp.mard_err = [];
+allExp.ridge_err = [];
 
 allExp.true_norm = [];
 
@@ -110,6 +116,7 @@ allExp.mard_norm = [];
 
 allExp.ard_time = [];
 allExp.mard_time = [];
+allExp.ridge_time = [];
 allExp.ard_convergence = [];
 allExp.mard_convergence = [];
 allExp.SNR = [];
@@ -117,9 +124,12 @@ allExp.SNR = [];
 for i=1:numel(exp)
     allExp.ard_err = [allExp.ard_err; exp{i}.ard_err];
     allExp.mard_err = [allExp.mard_err; exp{i}.mard_err];
+    allExp.ridge_err = [allExp.ridge_err; exp{i}.ridge_err];
 
     allExp.ard_time = [allExp.ard_time; exp{i}.ard_time];
     allExp.mard_time = [allExp.mard_time; exp{i}.mard_time];
+    allExp.ridge_time = [allExp.ridge_time; exp{i}.ridge_time];
+    
     allExp.ard_convergence = [allExp.ard_convergence; exp{i}.ard_convergence];
     allExp.mard_convergence = [allExp.mard_convergence; exp{i}.mard_convergence];
     
@@ -139,6 +149,7 @@ normErrorMArd = allExp.mard_err;%./allExp.true_norm;
 
 meanARDErr = mean(normErrorArd,2);%./range;
 meanMARDErr = mean(normErrorMArd,2);%./range;
+meanRidgeErr = mean(allExp.ridge_err,2);
 
 figure(1)
 
@@ -149,11 +160,12 @@ tickLabels = strsplit(int2str(range'));
 plot(meanARDErr); hold on;
 % plot(mean(allExp.ard_test_err,2));
 plot(meanMARDErr);
+plot(meanRidgeErr);
 % plot(mean(allExp.mard_test_err,2));
 
 title('MSE of parameters normalized by norm and number of responses');
 set(gca,'XTick',[1:numel(exp)], 'XTickLabel',tickLabels);
-set(gca, 'YScale', 'log');
+% set(gca, 'YScale', 'log');
 xlabel('Number of simultaneous responses (L)')
 ylabel('(MSE / \mid\mid w_{true} \mid\mid ) / L');
 set(gca,'fontsize',12);
@@ -167,6 +179,7 @@ figure(2)
 plot(mean(allExp.ard_time,2)); hold on;
 % plot(mean(allExp.ard_test_time,2));
 plot(mean(allExp.mard_time,2));
+plot(mean(allExp.ridge_time,2));
 % plot(mean(allExp.mard_test_time,2));
 
 title('Time');

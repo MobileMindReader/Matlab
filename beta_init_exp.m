@@ -2,7 +2,7 @@
 
 % True parameters
 model.noiseMean = 0;
-model.sigma = 1; % Noise std deviation
+model.sigma = 0.2; % Noise std deviation
 model.beta = (1/model.sigma.^2);
 model.dimension = 1;
 
@@ -48,12 +48,14 @@ for iter=1:iterations
 %             x_test(i,:) = model.w(i)*xInput(timeSteps+1:timeSteps*2);
         end
         
-        data.w_true{iter, intraIter} = x;
+%         data.w_true{iter, intraIter} = x;
 %         data.w_trueTest{iter, intraIter} = x_test;
         
         data.x = x;
 %         data.x_test = x_test;
         
+%         3*var(noise) = 10*log10(var(Phi*(x*factor)))
+
         y = Phi*x;
 %         y_test = Phi*x_test;
        
@@ -73,10 +75,10 @@ for iter=1:iterations
         m_ridge1 = (Phi'*Phi + 1e-2*eye(size(Phi, 2)))\(Phi'*targets);
         
         data.beta(iter, intraIter) = beta;
-        data.w{iter, intraIter} = w_mard;
+%         data.w{iter, intraIter} = w_mard;
         data.llh{iter,intraIter} = llh;
         
-        data.w_true_norm(iter, intraIter) = norm(data.w_true{iter, intraIter});
+        data.w_true_norm(iter, intraIter) = norm(x);
         data.w_mard_norm(iter, intraIter) = norm(w_mard);
         
 %         data.error(iter, intraIter) = mean((w_mard(:) - data.x(:)).^2);
@@ -91,7 +93,7 @@ for iter=1:iterations
         % Do ridge test error
 
     end
-    save(dataTitle, 'data');
+%     save(dataTitle, 'data');
     
     if mod(iter, 5) == 0
         disp(iter);

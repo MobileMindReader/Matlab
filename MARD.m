@@ -58,7 +58,7 @@ for k=2:maxIterations
     PhiTPhi(:,~activeIdx) = [];
     alphas(~activeIdx) = [];
     M(~activeIdx,:) = [];
-    diagSigma(~activeIdx) = [];
+
     
     activeSet = activeSet(activeIdx);
     
@@ -69,6 +69,7 @@ for k=2:maxIterations
 
     %% Noise variance update
     %||T - Phi*M||_F^2
+%     diagSigma(~activeIdx) = [];    
 %     frobSquared=trace((T-Phi*M)'*(T-Phi*M));
 %     noiseVar = ((1/steps)*frobSquared)/(N - modelSize + sum(alphas.*diagSigma));
 %     beta=1/noiseVar;                          %% This will cause problems
