@@ -3,7 +3,7 @@
 
 %% True parameters
 model.noiseMean = 0;
-model.sigma = 0.2; % Noise std deviation
+model.sigma = 1; % Noise std deviation
 model.beta = (1/model.sigma.^2);
 model.alpha=2;
 

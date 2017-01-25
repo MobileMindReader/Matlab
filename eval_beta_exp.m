@@ -1,6 +1,6 @@
 %%
 clear
-%%
+
 path=('beta_init2/');
 files = dir(path);
 fileIndex = find(~[files.isdir]);
@@ -88,7 +88,7 @@ figure(1);
 for exp = experiments
     exp = exp{:};
     plot(mean(exp.beta,1)), hold on;
-    plot(ones(intraIterations,1)*model.beta, 'k');
+    plot(ones(size(experiments{1}.beta,2),1)*model.beta, 'k');
 end
 set(gca,'fontsize',12);
 set(gca, 'YScale', 'log');
