@@ -127,12 +127,12 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60];
         
 %         err_ard = mean((m_ard(:) - x(:)).^2);
         
-        err_ard_accum = 0;
-        for l=1:timeSteps
-            err_ard_accum = err_ard_accum + mean((m_ard(:,l) - x(:,l)).^2);
-        end
+%         err_ard_accum = 0;
+%         for l=1:timeSteps
+%             err_ard_accum = err_ard_accum + mean((m_ard(:,l) - x(:,l)).^2);
+%         end
        
-        data.err_ard(iter) = err_ard_accum;
+        data.err_ard(iter) = sum((m_ard(:)-x(:)).^2)/sum(x(:).^2); %err_ard_accum;
         data.time_ard(iter) = t_ard;
         
 %         norm_ard = err_ard./norm(x)
@@ -148,17 +148,24 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60];
         t_mard = toc(t0);
         
         data.mard_norm(iter) = norm(m_mard);
-%         err_mard = mean((m_mard(:) - x(:)).^2);
+        err_mard_old = mean((m_mard(:) - x(:)).^2);
         
         data.time_mard(iter) = t_mard;
         
-        err_mard_accum = 0;
-        for l=1:timeSteps
-            err_mard_accum = err_mard_accum + mean((m_mard(:,l) - x(:,l)).^2);
-        end
-
-        data.err_mard(iter) = err_mard_accum;
+%         err_mard_accum = 0;
+%         for l=1:timeSteps
+%             err_mard_accum = err_mard_accum + mean((m_mard(:,l) - x(:,l)).^2);
+%         end
+        
+%         norm_err_mard = 0;
+%         for l=1:timeSteps
+%             norm_err_mard = norm_err_mard + (sum((m_mard(:,l) - x(:,l)).^2) / sum(x(:,l).^2)); % mean((m_mard(:,l) - x(:,l)).^2);
+%         end
+%         temp = norm_err_mard/timeSteps;
+        
+        data.err_mard(iter) = sum((m_mard(:)-x(:)).^2)/sum(x(:).^2); %err_mard_accum;
         data.mard_convergence(iter) = numel(llh_mard);
+       
         
 %         % M-ARD test
 %         activeIdx = alphas_mard < 1e6;
@@ -192,7 +199,7 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60];
             disp(sprintf('Iter:%i', iter));
         end
         
-        save(dataTitle, 'data');
+%         save(dataTitle, 'data');
     end
 end
 
