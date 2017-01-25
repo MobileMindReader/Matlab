@@ -6,13 +6,13 @@ model.noiseMean = 0;
 model.alpha=2;
 
 %% Fix seed
-s = RandStream('mt19937ar','Seed','shuffle');
-% s = RandStream('mt19937ar','Seed', randi(100*run)*run);
+% s = RandStream('mt19937ar','Seed','shuffle');
+s = RandStream('mt19937ar','Seed', (rand*100*run)/run);
 RandStream.setGlobalStream(s);
 forwardModel = importdata('model/mBrainLeadfield.mat');
 
 %% Experiment parameters
-iterations = 10;
+iterations = 20;
 intraIterations = 100;
 
 for iter=1:iterations
@@ -25,11 +25,14 @@ for iter=1:iterations
     numFuncs = 768;
     numActiveFuncs = 32;
     
-    model.sigma = 0.1*iter;
+    disp(0.1*iter);
+    model.sigma = 0.05*iter;
     model.beta = (1/model.sigma.^2);
     
-    data.description = ['sigma10=' int2str(model.sigma*10) '_N=' int2str(numSamples) '_M=' int2str(numFuncs) '_k=' int2str(numActiveFuncs) '_L=' int2str(timeSteps)];
+    data.description = ['sigmax20=' int2str(model.sigma*20) '_N=' int2str(numSamples) '_M=' int2str(numFuncs) '_k=' int2str(numActiveFuncs) '_L=' int2str(timeSteps)];
     dataTitle = ['exp_forward/' data.description '-run-' int2str(run)];
+    
+    data.expIter = iter;
     
     data.L = timeSteps;
     data.N = numSamples;
@@ -50,7 +53,7 @@ for iter=1:iterations
         model.w = zeros(numFuncs,fragments);
         for j=1:fragments
             idx=sort(randperm(size(A,2),numActiveFuncs));   % round(1:numFuncs/numActiveFuncs:numFuncs);
-            factor = 1; %*sqrt(numFuncs/numActiveFuncs)*sqrt(10);
+            factor = 1*sqrt(numFuncs/numActiveFuncs)*sqrt(10);
             
             model.w(idx,j) = factor*normrnd(0,sqrt(1/model.alpha), [1 size(idx)]);
             alphas(idx) = model.alpha;
@@ -100,6 +103,17 @@ for iter=1:iterations
         data.time_mard(intraIter) = t_mard;
         data.err_mard(intraIter) = sum((m_mard(:)-x(:)).^2)/sum(x(:).^2); %err_mard_accum;
         data.mard_convergence(intraIter) = numel(llh_mard);
+        
+        %% MFOCUSS
+        lambda = 0.001;
+        t0 = tic;
+        [X_focuss, gamma_ind_focuss, gamma_est_focuss, count_focuss] = MFOCUSS(A, targets, lambda);
+        t_mfocuss = toc(t0);
+        
+        data.err_mfocuss(intraIter) = sum((X_focuss(:)-x(:)).^2)/sum(x(:).^2); %err_mard_accum;
+        data.time_mfocuss(intraIter) = t_mfocuss;
+        data.mfocuss_norm(intraIter) = norm(X_focuss);        
+        
         
 %         %% Ridge for baseline
 %         m_ridge = [];
