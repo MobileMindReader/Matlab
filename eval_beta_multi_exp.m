@@ -33,7 +33,6 @@ experiments = {{},{},{},{},{}};
 for expIdx=1:numel(experiments)
     experiments{expIdx}.beta = [];
     experiments{expIdx}.error = [];
-    experiments{expIdx}.testError = [];
     experiments{expIdx}.SNR = [];
     experiments{expIdx}.convergence = [];
     experiments{expIdx}.norm = [];    
@@ -61,8 +60,7 @@ for file=dataFiles
     experiments{expIdx}.title = data1.titleDescription;
     experiments{expIdx}.beta = [experiments{expIdx}.beta; data1.beta];
     experiments{expIdx}.error = [experiments{expIdx}.error; data1.error];
-    experiments{expIdx}.testError = [experiments{expIdx}.testError; data1.error_test];
-    experiments{expIdx}.SNR = [experiments{expIdx}.SNR; data1.SNRdB];
+    experiments{expIdx}.SNR = [experiments{expIdx}.SNR; data1.SNR];
     experiments{expIdx}.color = colorList(expIdx,:);
     experiments{expIdx}.convergence = [experiments{expIdx}.convergence; data1.convergence];
     experiments{expIdx}.norm = [experiments{expIdx}.norm; data1.w_true_norm];
@@ -71,7 +69,6 @@ end
 experiments(1)=[];
 
 iterations = 1000;
-intraIterations = 100;
 model.beta = 25;
 %%
 
@@ -86,18 +83,19 @@ set(gca, 'YScale', 'log');
 hold off;
 
 %%
-% ticks=1:100;
-% tickLabels = strsplit(int2str(ticks*10));
+ticks=1:size(experiments{1}.beta,2);
+tickLabels = {'1e-4','1e-3','1e-2','1e-1','1e0','1e1','1e2','1e3','1e4'};
 % experiments{4}.norm(1001:1100,:) = [];
 figure(2);
 for exp = experiments
     exp = exp{:};
-    plot(mean((exp.error./(exp.norm.^2)),1), 'Color', exp.color); hold on;
+    plot(mean(exp.error,1), 'Color', exp.color); hold on;
 %     plot(mean(exp.testError,1), 'Color', exp.color);
     exp.title;
 end
-title('MSE of parameters as a function of chosen \beta.');
+title('TNMSE of parameters as a function of chosen \beta, L = 40.');
 set(gca,'fontsize',12);
+set(gca,'XTickLabel',tickLabels);
 set(gca, 'YScale', 'log');
 xlabel('\beta');
 ylabel('MSE');
