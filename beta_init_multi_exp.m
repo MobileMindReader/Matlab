@@ -17,7 +17,7 @@ intraIterations = 100;
 
 numFuncs = funcs;
 % numActiveFuncs = numActiveFuncs;% floor(numFuncs/4);
-timeSteps=20;
+timeSteps=40;
 
 data.description = ['Beta sweep: 1:100, alpha inits same for a full beta sweep.'];
 data.exp = sprintf('%i%i%i', N, numFuncs,numActiveFuncs);

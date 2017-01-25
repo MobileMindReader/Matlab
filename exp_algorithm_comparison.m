@@ -13,9 +13,9 @@ s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
 %% Experiment parameters
-iterations = 50;
+iterations = 20;
 
-for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60];
+for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80];
     
     fragments = 1;
     fragmentSize = ceil(timeStepsIter/fragments);
@@ -58,47 +58,28 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60];
         end
         
         x=zeros(size(A,2), timeSteps);
-        x_test=zeros(size(A,2), timeSteps);
         for j=0:fragments-1
-%             range = (1+j*fragmentSize):((j+1)*fragmentSize);
+            range = (1+j*fragmentSize):((j+1)*fragmentSize);
             for i=1:size(A,2)
-%                 x(i,range)=model.w(i,(j+1))*sin(range*0.5*randn);
-                xInput = sin(0.5*randn*(1:timeSteps*2));
-                x(i,:)=model.w(i)*xInput(1:timeSteps);
-                x_test(i,:) = model.w(i)*xInput(timeSteps+1:timeSteps*2);
+                x(i,range)=model.w(i,(j+1))*sin(range*0.5*randn);                
             end
         end
         
         y = A*x;
-        y_test = A*x_test;
         
         noise = normrnd(0, sqrt(1/model.beta), [numSamples timeSteps]);
-        noise_test = normrnd(0, sqrt(1/model.beta), [numSamples timeSteps]);
         targets = y + noise;
-        targets_test = y_test + noise_test;
         
-        rmsX = var((y));
-        rmsNoise = var((noise));
-        SNR = (rmsX/rmsNoise);
-        SNRdB = 10*log10(SNR);
-        data.SNR(iter) = SNRdB;
-        
-        rmsXTest = var((y_test));
-        rmsNoiseTest = var((noise_test));
-        SNRTest = (rmsXTest/rmsNoiseTest);
-        SNRdBTest = 10*log10(SNRTest);
-        data.SNRTest(iter) = SNRdBTest;        
-        
+        data.SNR(iter) = 10*log(var(y)/var(noise));
+            
         data.w_true_norm(iter) = norm(x);
-        data.w_true_test_norm(iter) = norm(x_test);
         
         alpha_init = 0.1*ones(numFuncs, 1);
         beta_init = abs(normrnd(25,20));
         
-        
         %% ARD ERM
         ard_convergence = 0;
-        alphas_ard = []; betas_ard=[]; m_ard=[]; llh_ard=[]; m_ard_test = [];
+        alphas_ard = []; betas_ard=[]; m_ard=[]; llh_ard=[];
         t0 = tic;
         for l=1:timeSteps
             [alphas_ard(:,l), betas_ard(:,l), m_ard(:,l), llh] = ARD(alpha_init, beta_init, A, targets(:,l));
@@ -107,40 +88,17 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60];
         end
         t_ard = toc(t0);
         
-        
-%         SigmaInvU_ard = zeros(numFuncs, numFuncs, timeSteps);
-%         for l=1:timeSteps
-%             activeIdx = alphas_ard(:,l) < 1e3;
-%             alphas_ard(~activeIdx) = 1e20;
-%             SigmaInv = diag(alphas_ard(:,l)) + betas_ard(end,l) * (A'*A);
-%             SigmaInvU_ard(:,:,l) = chol(SigmaInv);
-%         end
-        
-%         t0 = tic;
-%         for l=1:timeSteps            
-%             m_ard_test(:,l) = betas_ard(end,l)*(SigmaInvU_ard(:,:,l)\(SigmaInvU_ard(:,:,l)'\(A'*targets_test(:,l)))); %Sigma*A'*targets_test(:,l); 
-%         end
-%         t_ard_test = toc(t0);
-        
         data.ard_norm(iter) = norm(m_ard);
         data.ard_convergence(iter) = ard_convergence;
         
 %         err_ard = mean((m_ard(:) - x(:)).^2);
         
-%         err_ard_accum = 0;
-%         for l=1:timeSteps
-%             err_ard_accum = err_ard_accum + mean((m_ard(:,l) - x(:,l)).^2);
-%         end
-       
         data.err_ard(iter) = sum((m_ard(:)-x(:)).^2)/sum(x(:).^2); %err_ard_accum;
         data.time_ard(iter) = t_ard;
         
 %         norm_ard = err_ard./norm(x)
 %         norm_ard/timeSteps
         
-%         data.ard_test_norm(iter) = norm(m_ard_test);
-%         data.err_ard_test(iter) = mean((m_ard_test(:) - x_test(:)).^2);
-%         data.time_ard_test(iter) = t_ard_test;
         %% M-ARD
         
         t0 = tic;
@@ -148,36 +106,14 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60];
         t_mard = toc(t0);
         
         data.mard_norm(iter) = norm(m_mard);
-        err_mard_old = mean((m_mard(:) - x(:)).^2);
+%         err_mard_old = mean((m_mard(:) - x(:)).^2);
         
         data.time_mard(iter) = t_mard;
-        
-%         err_mard_accum = 0;
-%         for l=1:timeSteps
-%             err_mard_accum = err_mard_accum + mean((m_mard(:,l) - x(:,l)).^2);
-%         end
-        
-%         norm_err_mard = 0;
-%         for l=1:timeSteps
-%             norm_err_mard = norm_err_mard + (sum((m_mard(:,l) - x(:,l)).^2) / sum(x(:,l).^2)); % mean((m_mard(:,l) - x(:,l)).^2);
-%         end
-%         temp = norm_err_mard/timeSteps;
         
         data.err_mard(iter) = sum((m_mard(:)-x(:)).^2)/sum(x(:).^2); %err_mard_accum;
         data.mard_convergence(iter) = numel(llh_mard);
        
         
-%         % M-ARD test
-%         activeIdx = alphas_mard < 1e6;
-%         alphas_mard(~activeIdx) = 1e20;
-%         SigmaInv = diag(alphas_mard) + betas_mard(end) * (A'*A);
-%         SigmaInvU = chol(SigmaInv);        
-%         t0 = tic;
-%         m_mard_test = betas_mard(end) * (SigmaInvU\(SigmaInvU'\(A'*targets_test)));
-%         data.time_mard_test(iter) = toc(t0);
-%         data.mard_test_norm(iter) = norm(m_mard_test);
-%         data.err_mard_test(iter) = mean((m_mard_test(:) - x_test(:)).^2);
-
         
         %% Ridge for baseline
         m_ridge = [];
@@ -187,11 +123,8 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60];
         end
         t_ridge = toc(t0);
 %         err_ridge = mean((m_ridge(:) - x(:)).^2);
-        err_ridge_accum = 0;
-        for l=1:timeSteps
-            err_ridgne_accum = err_ridge_accum + mean((m_ridge(:,l) - x(:,l)).^2);
-        end
-        data.err_ridge(iter) = err_ridge_accum;
+
+        data.err_ridge(iter) = sum((m_ridge(:)-x(:)).^2)/sum(x(:).^2); 
         data.time_ridge(iter) = t_ridge;
         
         %% save data
