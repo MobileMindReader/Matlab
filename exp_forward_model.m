@@ -53,7 +53,7 @@ for iter=1:iterations
         model.w = zeros(numFuncs,fragments);
         for j=1:fragments
             idx=sort(randperm(size(A,2),numActiveFuncs));   % round(1:numFuncs/numActiveFuncs:numFuncs);
-            factor = 1*sqrt(numFuncs/numActiveFuncs)*sqrt(10);
+            factor = 1;%*sqrt(numFuncs/numActiveFuncs)*sqrt(10);
             
             model.w(idx,j) = factor*normrnd(0,sqrt(1/model.alpha), [1 size(idx)]);
             alphas(idx) = model.alpha;
