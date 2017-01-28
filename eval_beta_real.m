@@ -50,7 +50,8 @@ for file=dataFiles
         case 0.8
             expIdx = 4;
     end
-    
+    experiments{expIdx}.sigma_true = data1.sigma_true;
+    experiments{expIdx}.beta_true = data1.true_beta;
     experiments{expIdx}.description = data1.description;
     experiments{expIdx}.title = data1.titleDescription;
     experiments{expIdx}.beta = [experiments{expIdx}.beta; data1.beta];
@@ -85,7 +86,7 @@ figure(2);
 for exp = experiments
     exp = exp{:};
     plot(mean(exp.error,1), 'Color', exp.color); hold on;
-    exp.title;
+    exp.beta_true;
 end
 title('TNMSE of parameters as a function of chosen \beta, L = 40.');
 set(gca,'fontsize',12);
@@ -93,7 +94,7 @@ set(gca,'XTickLabel',tickLabels);
 set(gca, 'YScale', 'log');
 xlabel('\beta');
 ylabel('MSE');
-legend('N100,M100,k20', 'N100,M20,k20','N20,M100,k20','N20,M768,k32');
+legend('True \beta = 25', 'True \beta = 6.25', 'True \beta = 2.78', 'True \beta = 1.56', 'location','NorthWest');
 % legend('N100,M100,k100,Train', 'N100,M100,k100,Test', 'N100,M100,k20,Train', 'N100,M100,k20,Test', 'N100,M20,k20,Train','N100,M20,k20,Test','N20,M100,k20,Train','N20,M100,k20,Test');
 figure(2),hold off;
 
@@ -119,7 +120,7 @@ for exp = experiments
 end
 title('SNR');
 set(gca,'fontsize',12);
-set(gca, 'YScale', 'log');
+% set(gca, 'YScale', 'log');
 legend('N100,M100,k20', 'N100,M20,k20','N20,M100,k20','N20,M768,k32');
 hold off;
 
