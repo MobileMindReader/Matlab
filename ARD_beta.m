@@ -47,8 +47,8 @@ for i=2:maxIterations
 %     this = inv(diag(alphas))*Phi'*inv(C22)*t;
     
 
-%     alphas = max(alphaLowerBound, min(alphaUpperBound, (gamma./(mN.^2))));  % Bis06 (7.87)
-    alphas = gamma./(mN.^2);
+    alphas = max(alphaLowerBound, min(alphaUpperBound, (gamma./(mN.^2))));  % Bis06 (7.87)
+%     alphas = gamma./(mN.^2);
     
     
     %% Determine current active set
