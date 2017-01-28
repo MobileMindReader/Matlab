@@ -27,7 +27,7 @@ w_multi = cell(iterations, intraIterations);
 
 w_true = cell(iterations, intraIterations);
 
-dataTitle = ['exp_modes_dense/v3-' datestr(datetime('now')) '-' int2str(run)];
+dataTitle = ['exp_modes_dense/v3-' int2str(run)];
 
 model.alpha=2;
 
@@ -62,58 +62,59 @@ for iter=1:numel(sampleRange)
         
         targets = y + noise;
         
-        rmsX = sqrt(mean(y.^2));
-        rmsNoise = sqrt(mean(noise.^2));
-        SNR = (rmsX / rmsNoise)^ 2;
-        data.SNRdB(iter, intraIter) = 10*log10(SNR);
-
+        data.SNRdB(iter, intraIter) = 10*log10(var(y)/var(noise));
         
 %%%% Initialize alpha and beta
-        beta_init = rand;
-        alpha_uni_init = rand;
+        data.beta_init = rand;
+        data.alpha_uni_init = rand;
 %         alpha_multi_init = eye(numFuncs);
 %         alpha_multi_init(logical(eye(size(alpha_multi_init)))) = rand(1,numFuncs);
-        alpha_multi_init = rand(1,numFuncs);
+        data.alpha_multi_init = rand(1,numFuncs);
         
 %%%% Unimodal alpha      
-        [alpha, beta, mn_uni, llh] = maximum_evidence(alpha_uni_init, beta_init, forwardMatrix, targets);
-        beta_uni(iter, intraIter) = beta;
-        alpha_uni(iter, intraIter) = alpha;
-        llh_uni(iter, intraIter) = llh;
-        w_uni{iter, intraIter} = mn_uni;
+        [alpha, beta, mn_uni, llh] = maximum_evidence(data.alpha_uni_init, data.beta_init, forwardMatrix, targets);
+        data.beta_uni(iter, intraIter) = beta;
+        data.alpha_uni(iter, intraIter) = alpha;
+        data.llh_uni(iter, intraIter) = llh(end);
+        data.w_uni_norm(iter, intraIter) = norm(mn_uni);
+        data.w_uni_error(iter, intraIter) = sum((mn_uni(:) - x(:)).^2) / sum(x(:).^2);
         
 %%%% Multi-modal alpha
-        [A, beta, mn_multi, llh] = ARD_beta(alpha_multi_init, beta_init, forwardMatrix, targets);
-        beta_multi(iter, intraIter) = beta;
-        alpha_multi{iter, intraIter} = diag(A);
-        llh_multi(iter, intraIter) = llh(end);
-        w_multi{iter, intraIter} = mn_multi;
+        [A, beta, mn_multi, llh] = ARD_beta(data.alpha_multi_init, data.beta_init, forwardMatrix, targets);
+        data.beta_multi(iter, intraIter) = beta;
+        data.alpha_multi{iter, intraIter} = diag(A);
+        data.llh_multi(iter, intraIter) = llh(end);
+        data.w_multi_norm(iter, intraIter) = norm(mn_multi);
+        data.w_multi_error(iter, intraIter) = sum((mn_multi(:) - x(:)).^2) / sum(x(:).^2);
         
         if mod(intraIter,50) == 0
             [iter intraIter]
         end
-    end
-%     if mod(iter, 5) == 0
-        % Save data often
+        data.model = model;
+        
         data.currentIteration = iter;
         data.currentIntraIteration = intraIter;
         data.iterations = iterations;
         data.intraIterations = intraIterations;
-        data.model = model;
-        
-        data.w_true = w_true;
-        
-        data.alpha_uni = alpha_uni;
-        data.beta_uni = beta_uni;
-        data.llh_uni = llh_uni;
-        data.w_uni = w_uni;
-        
-        data.alpha_multi = alpha_multi;
-        data.beta_multi = beta_multi;
-        data.llh_multi = llh_multi;
-        data.w_multi = w_multi;
-        
+         
+%         data.w_true_norm = norm(w_true);
+%         
+%         data.alpha_uni = alpha_uni;
+%         data.beta_uni = beta_uni;
+%         data.llh_uni = llh_uni(end);
+%         data.w_uni_norm = norm(w_uni);
+%           
+%         data.alpha_multi = alpha_multi;
+%         data.beta_multi = beta_multi;
+%         data.llh_multi = llh_multi;
+%         data.w_multi = w_multi;
+
         save(dataTitle, 'data');
+    end
+%     if mod(iter, 5) == 0
+        % Save data often
+
+
 %     end
 end
 

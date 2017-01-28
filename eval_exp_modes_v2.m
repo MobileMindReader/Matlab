@@ -25,14 +25,9 @@ fileIndex = find(~[files.isdir]);
 fileNames={}; dataFilesSparse = {};
 for i = 1:length(fileIndex)
     fileName = files(fileIndex(i)).name;
-%     if fileName(1:14) == '06-Dec-2016 20'
-%         fileNames{end+1} = files(fileIndex(i)).name;
-%     elseif fileName(1:2) == '07'
-%         fileNames{end+1} = files(fileIndex(i)).name;
-%     end
     if fileName(1) == '.'
         continue;
-    elseif fileName(1:2) == 'v2'
+    elseif fileName(1:2) == 'v3'
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
@@ -79,16 +74,16 @@ for data=dataFilesSparse
         w_sparse_separate = [w_sparse_separate data.w_multi];
         SNR_sparse = [SNR_sparse data.SNRdB];
     elseif data.numSamples == '10*iter'
-        w_sparse_true2 = [w_sparse_true2 data.w_true];
-        a_sparse_shared2 = [a_sparse_shared2 data.alpha_uni];
-        b_sparse_shared2 = [b_sparse_shared2 data.beta_uni];
-        llh_sparse_shared2 = [llh_sparse_shared2 data.llh_uni];
-        w_sparse_shared2 = [w_sparse_shared2 data.w_uni];
-        a_sparse_separate2 = [a_sparse_separate2 data.alpha_multi];
-        b_sparse_separate2 = [b_sparse_separate2 data.beta_multi];
-        llh_sparse_separate2 = [llh_sparse_separate2 data.llh_multi];
-        w_sparse_separate2 = [w_sparse_separate2 data.w_multi];
-        SNR_sparse2 = [SNR_sparse2 data.SNRdB];
+%         w_sparse_true2 = [w_sparse_true2 data.w_true];
+%         a_sparse_shared2 = [a_sparse_shared2 data.alpha_uni];
+%         b_sparse_shared2 = [b_sparse_shared2 data.beta_uni];
+%         llh_sparse_shared2 = [llh_sparse_shared2 data.llh_uni];
+%         w_sparse_shared2 = [w_sparse_shared2 data.w_uni];
+%         a_sparse_separate2 = [a_sparse_separate2 data.alpha_multi];
+%         b_sparse_separate2 = [b_sparse_separate2 data.beta_multi];
+%         llh_sparse_separate2 = [llh_sparse_separate2 data.llh_multi];
+%         w_sparse_separate2 = [w_sparse_separate2 data.w_multi];
+%         SNR_sparse2 = [SNR_sparse2 data.SNRdB];
     end
 end
 
@@ -142,16 +137,16 @@ for data=dataFilesDense
         w_dense_separate = [w_dense_separate data.w_multi];
         SNR_dense = [SNR_dense data.SNRdB];
     elseif data.numSamples == '10*iter'
-        w_dense_true2 = [w_dense_true2 data.w_true];
-        a_dense_shared2 = [a_dense_shared2 data.alpha_uni];
-        b_dense_shared2 = [b_dense_shared2 data.beta_uni];
-        llh_dense_shared2 = [llh_dense_shared2 data.llh_uni];
-        w_dense_shared2 = [w_dense_shared2 data.w_uni];
-        a_dense_separate2 = [a_dense_separate2 data.alpha_multi];
-        b_dense_separate2 = [b_dense_separate2 data.beta_multi];
-        llh_dense_separate2 = [llh_dense_separate2 data.llh_multi];
-        w_dense_separate2 = [w_dense_separate2 data.w_multi];
-        SNR_dense2 = [SNR_dense2 data.SNRdB];
+%         w_dense_true2 = [w_dense_true2 data.w_true];
+%         a_dense_shared2 = [a_dense_shared2 data.alpha_uni];
+%         b_dense_shared2 = [b_dense_shared2 data.beta_uni];
+%         llh_dense_shared2 = [llh_dense_shared2 data.llh_uni];
+%         w_dense_shared2 = [w_dense_shared2 data.w_uni];
+%         a_dense_separate2 = [a_dense_separate2 data.alpha_multi];
+%         b_dense_separate2 = [b_dense_separate2 data.beta_multi];
+%         llh_dense_separate2 = [llh_dense_separate2 data.llh_multi];
+%         w_dense_separate2 = [w_dense_separate2 data.w_multi];
+%         SNR_dense2 = [SNR_dense2 data.SNRdB];
     end
 end
 
@@ -199,6 +194,7 @@ w_mse_rand_sparse_shared = zeros(M, iterations);
 w_mse_rand_dense_separate = zeros(M, iterations);
 w_mse_rand_dense_shared = zeros(M, iterations);
 
+
 % Calculate MSE 
 for i=1:iterations
     for j=1:numExperiments
@@ -206,7 +202,8 @@ for i=1:iterations
         mag_sparse = mean(w_sparse_true{i,j}.^2); % sqrt(mean(w_sparse_true{i,j}.^2));
         mag_dense = mean(w_dense_true{i,j}.^2); %sqrt(mean(w_dense_true{i,j}.^2));
         
-        w_mse_sparse_separate(:,i) = w_mse_sparse_separate(:,i) + ((w_sparse_separate{i,j}-w_sparse_true{i,j}).^2)/mag_sparse;
+%         something = sum((w_sparse_separate{i,j} - w_sparse_true{i,j}).^2) / sum(w_sparse_true{i,j}.^2);
+        w_mse_sparse_separate(:,i) = w_mse_sparse_separate(:,i) + ((w_sparse_separate{i,j}'-w_sparse_true{i,j}).^2)/mag_sparse;
         w_mse_sparse_shared(:,i) = w_mse_sparse_shared(:,i) + (w_sparse_shared{i,j}-w_sparse_true{i,j}).^2/mag_sparse;
         w_mse_dense_separate(:,i) = w_mse_dense_separate(:,i) + (w_dense_separate{i,j}-w_dense_true{i,j}).^2/mag_dense;
         w_mse_dense_shared(:,i) = w_mse_dense_shared(:,i) + (w_dense_shared{i,j}-w_dense_true{i,j}).^2/mag_dense;
