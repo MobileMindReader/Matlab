@@ -48,15 +48,15 @@ w_sparse_true = [];
 
 SNR_sparse = [];
 
-a_sparse_shared2 = [];
-b_sparse_shared2 = [];
-a_sparse_separate2 = [];
-b_sparse_separate2 = [];
-llh_sparse_shared2=[];
-llh_sparse_separate2=[];
-w_sparse_separate2 = [];
-w_sparse_shared2 = [];    
-w_sparse_true2 = [];
+% a_sparse_shared2 = [];
+% b_sparse_shared2 = [];
+% a_sparse_separate2 = [];
+% b_sparse_separate2 = [];
+% llh_sparse_shared2=[];
+% llh_sparse_separate2=[];
+% w_sparse_separate2 = [];
+% w_sparse_shared2 = [];    
+% w_sparse_true2 = [];
 
 SNR_sparse2 = [];
 
@@ -87,16 +87,16 @@ for data=dataFilesSparse
     end
 end
 
-w_sparse_true = [w_sparse_true2; w_sparse_true];
-a_sparse_shared = [a_sparse_shared2; a_sparse_shared];
-b_sparse_shared = [b_sparse_shared2; b_sparse_shared];
-llh_sparse_shared = [llh_sparse_shared2; llh_sparse_shared];
-w_sparse_shared = [w_sparse_shared2; w_sparse_shared];
-a_sparse_separate = [a_sparse_separate2; a_sparse_separate];
-b_sparse_separate = [b_sparse_separate2; b_sparse_separate];
-llh_sparse_separate = [llh_sparse_separate2; llh_sparse_separate];
-w_sparse_separate = [w_sparse_separate2; w_sparse_separate];
-SNR_sparse = [SNR_sparse2;SNR_sparse];
+% w_sparse_true = [w_sparse_true2; w_sparse_true];
+% a_sparse_shared = [a_sparse_shared2; a_sparse_shared];
+% b_sparse_shared = [b_sparse_shared2; b_sparse_shared];
+% llh_sparse_shared = [llh_sparse_shared2; llh_sparse_shared];
+% w_sparse_shared = [w_sparse_shared2; w_sparse_shared];
+% a_sparse_separate = [a_sparse_separate2; a_sparse_separate];
+% b_sparse_separate = [b_sparse_separate2; b_sparse_separate];
+% llh_sparse_separate = [llh_sparse_separate2; llh_sparse_separate];
+% w_sparse_separate = [w_sparse_separate2; w_sparse_separate];
+% SNR_sparse = [SNR_sparse2;SNR_sparse];
 
 % Load data into variables - shared alpha model
 
@@ -111,16 +111,16 @@ w_dense_shared = [];
 w_dense_true = [];
 SNR_dense = [];
 
-a_dense_shared2 = [];
-b_dense_shared2 = [];
-a_dense_separate2 = [];
-b_dense_separate2 = [];
-llh_dense_shared2=[];
-llh_dense_separate2=[];
-w_dense_separate2 = [];
-w_dense_shared2 = [];    
-w_dense_true2 = [];
-SNR_dense2 = [];
+% a_dense_shared2 = [];
+% b_dense_shared2 = [];
+% a_dense_separate2 = [];
+% b_dense_separate2 = [];
+% llh_dense_shared2=[];
+% llh_dense_separate2=[];
+% w_dense_separate2 = [];
+% w_dense_shared2 = [];    
+% w_dense_true2 = [];
+% SNR_dense2 = [];
 
 
 for data=dataFilesDense
@@ -150,16 +150,16 @@ for data=dataFilesDense
     end
 end
 
-w_dense_true = [w_dense_true2; w_dense_true];
-a_dense_shared = [a_dense_shared2; a_dense_shared];
-b_dense_shared = [b_dense_shared2; b_dense_shared];
-llh_dense_shared = [llh_dense_shared2; llh_dense_shared];
-w_dense_shared = [w_dense_shared2; w_dense_shared];
-a_dense_separate = [a_dense_separate2; a_dense_separate];
-b_dense_separate = [b_dense_separate2; b_dense_separate];
-llh_dense_separate = [llh_dense_separate2; llh_dense_separate];
-w_dense_separate = [w_dense_separate2; w_dense_separate];
-SNR_dense = [SNR_dense2; SNR_dense];
+% w_dense_true = [w_dense_true2; w_dense_true];
+% a_dense_shared = [a_dense_shared2; a_dense_shared];
+% b_dense_shared = [b_dense_shared2; b_dense_shared];
+% llh_dense_shared = [llh_dense_shared2; llh_dense_shared];
+% w_dense_shared = [w_dense_shared2; w_dense_shared];
+% a_dense_separate = [a_dense_separate2; a_dense_separate];
+% b_dense_separate = [b_dense_separate2; b_dense_separate];
+% llh_dense_separate = [llh_dense_separate2; llh_dense_separate];
+% w_dense_separate = [w_dense_separate2; w_dense_separate];
+% SNR_dense = [SNR_dense2; SNR_dense];
         
 
 dataSeparateAlphas=dataFilesDense{1};
@@ -232,7 +232,6 @@ for i=1:iterations
     w_mse_rand_dense_shared(:,i) = w_mse_rand_dense_shared(:,i)/numExperiments;
 end
 
-disp('Mean or sum, or for each?');
 
 figure(1)
 subplot(2,1,1), plot(mean(w_mse_dense_shared,1)), hold on;
