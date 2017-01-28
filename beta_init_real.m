@@ -32,7 +32,7 @@ N = size(forwardModel,1);
 
 data.description = ['Beta sweep: 1e-4:1e4, alpha inits same for a full beta sweep.'];
 data.exp = sprintf('%i%i%i', N, numFuncs,numActiveFuncs);
-data.titleDescription = ['N=' int2str(N) '_M=' int2str(numFuncs) '_k=' int2str(numActiveFuncs) '_L=' int2str(timeSteps)];
+data.titleDescription = ['sigmax10=' int2str(sigmaIn*10) '_N=' int2str(N) '_M=' int2str(numFuncs) '_k=' int2str(numActiveFuncs) '_L=' int2str(timeSteps)];
 dataTitle = ['beta_init_real/' data.titleDescription '-run-' int2str(run)];
 
 data.true_beta = model.beta;
