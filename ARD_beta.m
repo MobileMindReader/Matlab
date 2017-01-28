@@ -57,13 +57,13 @@ for i=2:maxIterations
     
     %%
     
-    Phi(:,~activeIdx) = [];
-    PhiTPhi(~activeIdx,:) = [];
-    PhiTPhi(:,~activeIdx) = [];
-    alphas(~activeIdx) = [];
-    mN(~activeIdx) = [];
-    
-    activeSet = activeSet(activeIdx);
+%     Phi(:,~activeIdx) = [];
+%     PhiTPhi(~activeIdx,:) = [];
+%     PhiTPhi(:,~activeIdx) = [];
+%     alphas(~activeIdx) = [];
+%     mN(~activeIdx) = [];
+%     
+%     activeSet = activeSet(activeIdx);
         
     if isempty(mN)
         disp('Pruned all weights');
