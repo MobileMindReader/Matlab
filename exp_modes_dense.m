@@ -10,7 +10,8 @@ model.dimension = 1;
 s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
-
+sampleRange = [10:10:100 150:50:1000];
+iterations = numel(sampleRange);
 intraIterations = 50;
 
 % Unimodal
@@ -39,8 +40,7 @@ data.numActiveFuncs = '500';
 data.experiment = 'Dense model';
 data.description = '500 functions, all weights drawn from one alpha. Iterating over N (50xiter). About the same SNR for all cases.';
 
-sampleRange = [10:10:100 150:50:1000];
-iterations = numel(sampleRange);
+
 for iter=1:iterations
     for intraIter=1:intraIterations 
         

@@ -10,6 +10,9 @@ model.dimension = 1;
 s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
+sampleRange = [10:10:100 150:50:1000];
+iterations = numel(sampleRange);
+
 intraIterations = 50;
 
 % Unimodal
@@ -38,8 +41,7 @@ data.description = '500 functions, 20 weights drawn from one alpha, rest is zero
 
 model.alpha=2;
 
-sampleRange = [10:10:100 150:50:1000];
-iterations = numel(sampleRange);
+
 
 for iter=1:iterations
     for intraIter=1:intraIterations 
