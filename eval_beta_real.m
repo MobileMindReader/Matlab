@@ -22,66 +22,88 @@ end
 %%
 %N20, M768, k32
 
-colorList = [   [0.301,  0.745,  0.933]; 
-                [0.000,  0.447,  0.741]; 
+colorList = [   [0.000,  0.447,  0.741]; 
                 [0.850,  0.325,  0.098]; 
                 [0.929,  0.694,  0.125]; 
                 [0.466,  0.674,  0.188]];
 
+experiments = {{},{},{},{}};
 
-experiment.beta = [];
-experiment.error = [];
-experiment.SNR = [];
-experiment.convergence = [];
-experiment.norm = [];
+for expIdx=1:numel(experiments)
+    experiments{expIdx}.beta = [];
+    experiments{expIdx}.error = [];
+    experiments{expIdx}.SNR = [];
+    experiments{expIdx}.convergence = [];
+    experiments{expIdx}.norm = [];    
+end
             
 for file=dataFiles
     data1 = file{:};
+    expIdx = 0;
+    switch data1.sigma_true
+        case 0.2
+            expIdx = 1;
+        case 0.4
+            expIdx = 2;
+        case 0.6
+            expIdx = 3;
+        case 0.8
+            expIdx = 4;
+    end
     
-    experiment.description = data1.description;
-    experiment.title = data1.titleDescription;
-    experiment.beta = [experiment.beta; data1.beta];
-    experiment.error = [experiment.error; data1.error];
-    experiment.SNR = [experiment.SNR; data1.SNR];
-    experiment.color = colorList(2,:);
-    experiment.convergence = [experiment.convergence; data1.convergence];
-    experiment.norm = [experiment.norm; data1.w_true_norm];
+    experiments{expIdx}.description = data1.description;
+    experiments{expIdx}.title = data1.titleDescription;
+    experiments{expIdx}.beta = [experiments{expIdx}.beta; data1.beta];
+    experiments{expIdx}.error = [experiments{expIdx}.error; data1.error];
+    experiments{expIdx}.SNR = [experiments{expIdx}.SNR; data1.SNR];
+    experiments{expIdx}.color = colorList(expIdx,:);
+    experiments{expIdx}.convergence = [experiments{expIdx}.convergence; data1.convergence];
+    experiments{expIdx}.norm = [experiments{expIdx}.norm; data1.w_true_norm];
 end
+
+% experiments(1)=[];
 
 iterations = 500;
 % model.beta = 25;
 %%
 
 figure(1);
-
-plot(mean(experiment.beta,1)), hold on;
-% plot(ones(intraIterations,1)*model.beta, 'k');
+for exp = experiments
+    exp = exp{:};
+    plot(mean(exp.beta,1)), hold on;
+    plot(ones(intraIterations,1)*model.beta, 'k');
+end
 set(gca,'fontsize',12);
 set(gca, 'YScale', 'log');
 hold off;
 
 %%
-ticks=1:size(experiment.beta,2);
+ticks=1:size(experiments{1}.beta,2);
 tickLabels = {'1e-4','1e-3','1e-2','1e-1','1e0','1e1','1e2','1e3','1e4'};
 % experiments{4}.norm(1001:1100,:) = [];
 figure(2);
-plot(mean(experiment.error,1), 'Color', experiment.color); 
+for exp = experiments
+    exp = exp{:};
+    plot(mean(exp.error,1), 'Color', exp.color); hold on;
+    exp.title;
+end
 title('TNMSE of parameters as a function of chosen \beta, L = 40.');
 set(gca,'fontsize',12);
 set(gca,'XTickLabel',tickLabels);
 set(gca, 'YScale', 'log');
 xlabel('\beta');
 ylabel('MSE');
-legend('Error');
+legend('N100,M100,k20', 'N100,M20,k20','N20,M100,k20','N20,M768,k32');
 % legend('N100,M100,k100,Train', 'N100,M100,k100,Test', 'N100,M100,k20,Train', 'N100,M100,k20,Test', 'N100,M20,k20,Train','N100,M20,k20,Test','N20,M100,k20,Train','N20,M100,k20,Test');
 figure(2),hold off;
 
 %%
 
 figure(4);
-
-plot(mean(experiment.convergence,1), 'Color', experiment.color); hold on;
-
+for exp = experiments
+    exp = exp{:};
+    plot(mean(exp.convergence,1), 'Color', exp.color); hold on;
+end
 title('Iterations before converging');
 set(gca,'fontsize',12);
 set(gca, 'YScale', 'log');
