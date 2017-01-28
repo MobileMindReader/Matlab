@@ -246,7 +246,7 @@ set(gca,'fontsize',12);
 title('Dense model (500/500 non-zero parameters)');
 xlabel('Number of samples');
 ylabel('Relative MSE for all weights'); %, averaged over ' int2str(numExperiments) ' runs'
-legend('Shared prior estimation', 'Separate priors estimation');
+legend('EA', 'ARD');
 
 
 subplot(2,1,2), plot(mean(w_mse_sparse_shared,1)), hold on;
@@ -256,7 +256,7 @@ set(gca,'fontsize',12);
 title('Sparse model (20/500 non-zero parameters)');
 xlabel('Number of samples');
 ylabel('Relative MSE for all weights'); 
-legend('Shared prior estimation', 'Separate priors estimation');
+legend('EA', 'ARD');
 
 %%
 

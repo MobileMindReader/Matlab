@@ -185,7 +185,7 @@ xlabel('Number of samples');
 ylabel('Relative MSE for all weights'); 
 legend('Shared prior estimation', 'Separate priors estimation');
 
-print(figure(1), 'figures/sample_sweep_weight_relative_mse','-dpdf')
+% print(figure(1), 'figures/sample_sweep_weight_relative_mse','-dpdf')
 % std(w_true{1,1})^2*numFuncs;
 %%
 

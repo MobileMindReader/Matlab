@@ -73,9 +73,8 @@ for i=2:maxIterations
 %     Ew = sum((t-Phi*mN).^2);
 %     betaInv = Ew/(N-sum(gamma));
 %     beta = 1/betaInv;
-%     beta = max(1e-6, min(1e8, beta));
+%     beta = max(1e-10, min(1e10, beta));
 
-    
 
 %     C_old = betaInv*eye(N) + (Phi/A)*Phi';  % Check performance gains on this stuff    
 %     C = betaInv*eye(N) + Phi*AInv*Phi';

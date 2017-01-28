@@ -11,7 +11,7 @@ s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
 iterations = 20;
-intraIterations = 100;
+intraIterations = 50;
 
 % Unimodal
 llh_uni = zeros(iterations, intraIterations);
@@ -39,10 +39,13 @@ data.numActiveFuncs = '500';
 data.experiment = 'Dense model';
 data.description = '500 functions, all weights drawn from one alpha. Iterating over N (50xiter). About the same SNR for all cases.';
 
-for iter=1:iterations
+sampleRange = [10:10:100 150:50:1000];
+
+for iter=1:numel(sampleRange)
     for intraIter=1:intraIterations 
         
-        numSamples = 40*iter;
+        numSamples = sampleRange(iter);
+%         numSamples = 40*iter;
         numFuncs = 500; %iter;
         
         forwardMatrix = randn(numSamples, numFuncs);
@@ -80,17 +83,16 @@ for iter=1:iterations
         w_uni{iter, intraIter} = mn_uni;
         
 %%%% Multi-modal alpha
-        [A, beta, mn_multi, llh] = maximum_evidence_multi(alpha_multi_init, beta_init, forwardMatrix, targets);
+        [A, beta, mn_multi, llh] = ARD_beta(alpha_multi_init, beta_init, forwardMatrix, targets);
         beta_multi(iter, intraIter) = beta;
         alpha_multi{iter, intraIter} = diag(A);
-        llh_multi(iter, intraIter) = llh;
+        llh_multi(iter, intraIter) = llh(end);
         w_multi{iter, intraIter} = mn_multi;
         
-        if mod(intraIter,100) == 0
+        if mod(intraIter,50) == 0
             [iter intraIter]
         end
     end
-
 %     if mod(iter, 5) == 0
         % Save data often
         data.currentIteration = iter;
