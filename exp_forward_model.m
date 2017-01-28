@@ -12,12 +12,12 @@ RandStream.setGlobalStream(s);
 forwardModel = importdata('model/mBrainLeadfield.mat');
 
 %% Experiment parameters
-iterations = 20;
-intraIterations = 100;
+iterations = 1;
+intraIterations = 1;
 
 for iter=1:iterations
     
-    timeSteps = 40;
+    timeSteps = 80;
     fragments = 1;
     fragmentSize = ceil(timeSteps/fragments);
     
@@ -25,8 +25,9 @@ for iter=1:iterations
     numFuncs = 768;
     numActiveFuncs = 32;
     
-    disp(0.1*iter);
-    model.sigma = 0.05*iter;
+%     disp(0.1*iter);
+%     model.sigma = 0.05*iter;
+    model.sigma = 0.6;
     model.beta = (1/model.sigma.^2);
     
     data.description = ['sigmax20=' int2str(model.sigma*20) '_N=' int2str(numSamples) '_M=' int2str(numFuncs) '_k=' int2str(numActiveFuncs) '_L=' int2str(timeSteps)];
@@ -73,7 +74,7 @@ for iter=1:iterations
         targets = y + noise;
         
         data.SNR(intraIter) = 10*log10(var(y)/var(noise));
-        
+        data.SNR
         data.w_true_norm(intraIter) = norm(x);
         
         alpha_init = 0.1*ones(numFuncs, 1);
