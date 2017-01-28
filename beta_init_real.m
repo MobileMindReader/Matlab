@@ -2,7 +2,12 @@
 
 % True parameters
 model.noiseMean = 0;
-model.sigma = 0.6; % Noise std deviation
+
+% model.sigma = 0.6; % Noise std deviation
+
+data.sigma_true = sigmaIn;
+
+model.sigma = sigmaIn;
 model.beta = (1/model.sigma.^2);
 model.alpha = 2;% zeros(1,numFuncs); %0.2*ones(1,numFuncs); % 2?
 
