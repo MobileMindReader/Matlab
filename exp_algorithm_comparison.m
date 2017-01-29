@@ -3,7 +3,7 @@
 
 %% True parameters
 model.noiseMean = 0;
-model.sigma = 0.0; % Noise std deviation
+model.sigma = sigmaIn; % Noise std deviation
 model.beta = (1/model.sigma.^2);
 model.alpha=2;
 
@@ -16,7 +16,7 @@ RandStream.setGlobalStream(s);
 %% Experiment parameters
 iterations = 20;
 
-for timeStepsIter = 80; %[1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80];
+for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80];
     
     fragments = 1;
     fragmentSize = ceil(timeStepsIter/fragments);
@@ -28,8 +28,12 @@ for timeStepsIter = 80; %[1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80];
     
 %     forwardModel = importdata('model/mBrainLeadfield.mat');
     % dataTitle = ['exp_algo_comp/' datestr(datetime('now')) 'beta_rand'];
-    
-    data.description = ['Noiseless_N=' int2str(numSamples) '_M=' int2str(numFuncs) '_k=' int2str(numActiveFuncs) '_L=' int2str(timeSteps)];
+    data.description = '';
+    if model.sigma == 0.0
+        data.description = ['Noiseless_N=' int2str(numSamples) '_M=' int2str(numFuncs) '_k=' int2str(numActiveFuncs) '_L=' int2str(timeSteps)];
+    else 
+        data.description = ['Noisy_N=' int2str(numSamples) '_M=' int2str(numFuncs) '_k=' int2str(numActiveFuncs) '_L=' int2str(timeSteps)];
+    end
     dataTitle = ['exp_algo_comp/' data.description '-run-' int2str(run)];
     
     data.L = timeSteps;
@@ -71,7 +75,11 @@ for timeStepsIter = 80; %[1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80];
         noise = normrnd(0, sqrt(1/model.beta), [numSamples timeSteps]);
         targets = y + noise;
         
-        data.SNR(iter) = 10*log10(var(y)/var(noise));
+        if model.sigma == 0.0
+            data.SNR(iter) = Inf;
+        else
+            data.SNR(iter) = 10*log10(var(y)/var(noise));
+        end
         
         data.w_true_norm(iter) = norm(x);
         
@@ -118,7 +126,7 @@ for timeStepsIter = 80; %[1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80];
         %% MFOCUSS
         lambda = 0.001;
         t0 = tic;
-        [X_focuss, gamma_ind_focuss, gamma_est_focuss, count_focuss] = MFOCUSS(A, targets, lambda);
+        [X_focuss, gamma_ind_focuss, gamma_est_focuss, count_focuss] = MFOCUSS(A, targets, lambda, 'print',0);
         t_mfocuss = toc(t0);
         
         data.err_mfocuss(iter) = sum((X_focuss(:)-x(:)).^2)/sum(x(:).^2); %err_mard_accum;
@@ -132,7 +140,18 @@ for timeStepsIter = 80; %[1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80];
         % If 6dB < SNR <= 22 dB,  Weight = TMSBL(Phi, Y, 'noise','mild');
         % If SNR <= 6 dB,         Weight = TMSBL(Phi, Y, 'noise','large');
         t0 = tic;
-        [X_tmsbl, gamma_ind, gamma_est, count, B_est] = TMSBL(A, targets, 'noise','small');
+        noiseEstimation = '';
+        if data.SNR(iter) > 1000
+            noiseEstimation = 'no';
+        elseif data.SNR(iter) >= 23
+            noiseEstimation = 'small';
+        elseif data.SNR(iter) >= 6
+            noiseEstimation = 'mild';
+        else
+            noiseEstimation = 'large';
+        end
+        
+        [X_tmsbl, gamma_ind, gamma_est, count, B_est] = TMSBL(A, targets, 'noise',noiseEstimation, 'print',0);
         data.time_tmsbl(iter) = toc(t0);
         
         data.err_tmsbl(iter) = sum((X_tmsbl(:)-x(:)).^2)/sum(x(:).^2); %err_mard_accum;
@@ -156,7 +175,7 @@ for timeStepsIter = 80; %[1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80];
             disp(sprintf('Iter:%i', iter));
         end
         
-%         save(dataTitle, 'data');
+        save(dataTitle, 'data');
     end
 end
 
@@ -164,18 +183,18 @@ end
 
 
 % 
-figure(1); plot(data.err_mard); hold on;
-plot(data.err_mfocuss);
-plot(data.err_tmsbl);
-hold off;
-legend('M-ARD','MFOCUSS','T-MSBL');
-
-
-figure(2); plot(data.time_mard); hold on;
-plot(data.time_mfocuss);
-plot(data.time_tmsbl);
-hold off;
-legend('M-ARD','MFOCUSS','T-MSBL');
+% figure(1); plot(data.err_mard); hold on;
+% plot(data.err_mfocuss);
+% plot(data.err_tmsbl);
+% hold off;
+% legend('M-ARD','MFOCUSS','T-MSBL');
+% 
+% 
+% figure(2); plot(data.time_mard); hold on;
+% plot(data.time_mfocuss);
+% plot(data.time_tmsbl);
+% hold off;
+% legend('M-ARD','MFOCUSS','T-MSBL');
 
 
 
