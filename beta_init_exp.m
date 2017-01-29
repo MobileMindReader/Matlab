@@ -93,7 +93,7 @@ for iter=1:iterations
         % Do ridge test error
 
     end
-%     save(dataTitle, 'data');
+     save(dataTitle, 'data');
     
     if mod(iter, 5) == 0
         disp(iter);

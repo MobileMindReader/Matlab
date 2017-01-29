@@ -6,7 +6,7 @@ files = dir(path);
 fileIndex = find(~[files.isdir]);
 fileNames={}; dataFiles = {};
 realSizeFileName={}; realSizeFiles={};
-for i = 1:length(fileIndex)
+for i = 1:length(fileIndex) 
     fileName = files(fileIndex(i)).name;
     if fileName(1) == '.'       
         continue; 

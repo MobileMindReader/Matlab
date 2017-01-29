@@ -10,7 +10,6 @@ s = RandStream('mt19937ar','Seed', randi(100)*run);
 % s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
-
 betaRange = [1e-4 1e-3 1e-2 1e-1 1 1e1 1e2 1e3 1e4];
 
 iterations = 100;
@@ -63,7 +62,7 @@ for iter=1:iterations
 %         targets_test = y_test + normrnd(0, sqrt(1/model.beta), [N timeSteps]);
         
         %% SNR
-        data.SNR(iter) = 10*log10(var(y)/var(noise));
+        data.SNR(iter, intraIter) = 10*log10(var(y)/var(noise));
         
         beta_init = intraIter;
         data.beta_init(iter,intraIter) = beta_init; % values(intraIter);
