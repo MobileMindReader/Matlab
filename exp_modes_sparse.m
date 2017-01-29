@@ -13,7 +13,7 @@ RandStream.setGlobalStream(s);
 sampleRange = [10:10:100 150:50:1000];
 iterations = numel(sampleRange);
 
-intraIterations = 50;
+intraIterations = 20;
 
 % Unimodal
 llh_uni = zeros(iterations, intraIterations);
