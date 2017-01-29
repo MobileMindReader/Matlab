@@ -2,7 +2,7 @@
 
 % True parameters
 model.noiseMean = 0;
-model.sigma = 0.2; % Noise std deviation
+model.sigma = 1; % Noise std deviation
 model.beta = (1/model.sigma.^2);
 model.dimension = 1;
 
@@ -23,7 +23,7 @@ timeSteps=1;
 data.description = ['Beta sweep: 1e-4:1e4, alpha inits same for a full beta sweep.'];
 data.exp = sprintf('%i%i%i', N, numFuncs,numActiveFuncs);
 data.titleDescription = ['N=' int2str(N) '_M=' int2str(numFuncs) '_k=' int2str(numActiveFuncs) '_L=' int2str(timeSteps)];
-dataTitle = ['beta_init2/' data.titleDescription '-run-' int2str(run)];
+dataTitle = ['beta_init2/sigma1/' data.titleDescription '-run-' int2str(run)];
 
 data.beta = zeros(iterations, intraIterations);
 
@@ -64,7 +64,7 @@ for iter=1:iterations
 %         targets_test = y_test + normrnd(0, sqrt(1/model.beta), [N timeSteps]);
         
         %% SNR
-        data.SNR(iter) = 10*log10(var(y)/var(noise));
+        data.SNR(iter, intraIter) = 10*log10(var(y)/var(noise));
         
         beta_init = betaRange(intraIter);
         data.beta_init(iter,intraIter) = beta_init; % values(intraIter);

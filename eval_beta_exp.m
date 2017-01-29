@@ -22,13 +22,13 @@ end
 %%
 %N20, M768, k32
 
-colorList = [   [0.301,  0.745,  0.933]; 
-                [0.000,  0.447,  0.741]; 
+colorList = [   [0.000,  0.447,  0.741]; 
                 [0.850,  0.325,  0.098]; 
                 [0.929,  0.694,  0.125]; 
+                [0.301,  0.745,  0.933]; 
                 [0.466,  0.674,  0.188]];
 
-experiments = {{},{},{},{},{}};
+experiments = {{},{},{}};
 
 for expIdx=1:numel(experiments)
     experiments{expIdx}.beta = [];
@@ -45,16 +45,17 @@ for file=dataFiles
     expIdx = 0;
     switch data1.exp
         case '100100100'
-%             continue
-            expIdx = 1;
+            continue
+%             expIdx = 1;
         case '10010020'
-            expIdx = 2;
+            expIdx = 1;
         case '1002020'
-            expIdx = 3;
+            continue
+%             expIdx = 3;
         case '2010020'
-            expIdx = 4;
+            expIdx = 2;
         case '2076832'
-            expIdx = 5;
+            expIdx = 3;
     end
     
     experiments{expIdx}.description = data1.description;
@@ -76,7 +77,8 @@ for file=dataFiles
     experiments{expIdx}.convergence = [experiments{expIdx}.convergence; convergence];
 end
 
-experiments(1)=[];
+
+% experiments(1)=[];
 
 iterations = 1000;
 intraIterations = 100;
@@ -111,7 +113,7 @@ set(gca,'XTickLabels',tickLabels);
 set(gca, 'YScale', 'log');
 xlabel('\beta');
 ylabel('TNMSE');
-legend('N100,M100,k20', 'N100,M20,k20','N20,M100,k20','N20,M768,k32');
+legend('N100,M100,k20','N20,M100,k20','N20,M768,k32');
 % legend('N100,M100,k100,Train', 'N100,M100,k100,Test', 'N100,M100,k20,Train', 'N100,M100,k20,Test', 'N100,M20,k20,Train','N100,M20,k20,Test','N20,M100,k20,Train','N20,M100,k20,Test');
 figure(2),hold off;
 
@@ -123,9 +125,12 @@ for exp = experiments
     plot(mean(exp.SNR,1), 'Color', exp.color); hold on;
 end
 title('SNR');
+xlabel('\beta');
+ylabel('SNR_{dB}');
+set(gca,'XTickLabels',tickLabels);
 set(gca,'fontsize',12);
-set(gca, 'YScale', 'log');
-legend('N100,M100,k20', 'N100,M20,k20','N20,M100,k20','N20,M768,k32');
+% set(gca, 'YScale', 'log');
+legend('N100,M100,k20','N20,M100,k20','N20,M768,k32');
 hold off;
 
 %%
