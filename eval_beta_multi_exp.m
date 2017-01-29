@@ -22,10 +22,10 @@ end
 %%
 %N20, M768, k32
 
-colorList = [   [0.301,  0.745,  0.933]; 
-                [0.000,  0.447,  0.741]; 
+colorList = [   [0.000,  0.447,  0.741]; 
                 [0.850,  0.325,  0.098]; 
                 [0.929,  0.694,  0.125]; 
+                [0.301,  0.745,  0.933]; 
                 [0.466,  0.674,  0.188]];
 
 experiments = {{},{},{},{},{}};
@@ -44,16 +44,17 @@ for file=dataFiles
     expIdx = 0;
     switch data1.exp
         case '100100100'
-%             continue
-            expIdx = 1;
+            continue
+%             expIdx = 1;
         case '10010020'
-            expIdx = 2;
+            expIdx = 1;
         case '1002020'
-            expIdx = 3;
+            continue
+%             expIdx = 3;
         case '2010020'
-            expIdx = 4;
+            expIdx = 2;
         case '2076832'
-            expIdx = 5;
+            expIdx = 3;
     end
     
     experiments{expIdx}.description = data1.description;
@@ -85,7 +86,7 @@ hold off;
 %%
 ticks=1:size(experiments{1}.beta,2);
 tickLabels = {'1e-4','1e-3','1e-2','1e-1','1e0','1e1','1e2','1e3','1e4'};
-% experiments{4}.norm(1001:1100,:) = [];
+% tickLabels = strsplit(int2str(ticks*10));
 figure(2);
 for exp = experiments
     exp = exp{:};
@@ -93,13 +94,16 @@ for exp = experiments
 %     plot(mean(exp.testError,1), 'Color', exp.color);
     exp.title;
 end
+
+line([5 5], [1e-1 1e4],'Color','k');
+
 title('TNMSE of parameters as a function of chosen \beta, L = 40.');
 set(gca,'fontsize',12);
-set(gca,'XTickLabel',tickLabels);
+set(gca,'XTickLabels',tickLabels);
 set(gca, 'YScale', 'log');
 xlabel('\beta');
-ylabel('MSE');
-legend('N100,M100,k20', 'N100,M20,k20','N20,M100,k20','N20,M768,k32');
+ylabel('TNMSE');
+legend('N100,M100,k20','N20,M100,k20','N20,M768,k32', 'True beta', 'location','NorthWest');
 % legend('N100,M100,k100,Train', 'N100,M100,k100,Test', 'N100,M100,k20,Train', 'N100,M100,k20,Test', 'N100,M20,k20,Train','N100,M20,k20,Test','N20,M100,k20,Train','N20,M100,k20,Test');
 figure(2),hold off;
 

@@ -14,7 +14,7 @@ s = RandStream('mt19937ar','Seed',randSeed);
 RandStream.setGlobalStream(s);
 
 %% Experiment parameters
-iterations = 20;
+iterations = 1;
 
 for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80];
     
@@ -32,7 +32,7 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80];
     if model.sigma == 0.0
         data.description = ['Noiseless_N=' int2str(numSamples) '_M=' int2str(numFuncs) '_k=' int2str(numActiveFuncs) '_L=' int2str(timeSteps)];
     else 
-        data.description = ['Noisy_N=' int2str(numSamples) '_M=' int2str(numFuncs) '_k=' int2str(numActiveFuncs) '_L=' int2str(timeSteps)];
+        data.description = ['Noisy_Sigmax10=' int2str(model.sigma*10) '_N=' int2str(numSamples) '_M=' int2str(numFuncs) '_k=' int2str(numActiveFuncs) '_L=' int2str(timeSteps)];
     end
     dataTitle = ['exp_algo_comp/' data.description '-run-' int2str(run)];
     
