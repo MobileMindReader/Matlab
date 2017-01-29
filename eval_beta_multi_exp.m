@@ -28,7 +28,7 @@ colorList = [   [0.000,  0.447,  0.741];
                 [0.301,  0.745,  0.933]; 
                 [0.466,  0.674,  0.188]];
 
-experiments = {{},{},{},{},{}};
+experiments = {{},{},{}};
 
 for expIdx=1:numel(experiments)
     experiments{expIdx}.beta = [];
@@ -67,8 +67,6 @@ for file=dataFiles
     experiments{expIdx}.norm = [experiments{expIdx}.norm; data1.w_true_norm];
 end
 
-experiments(1)=[];
-
 iterations = 1000;
 model.beta = 25;
 %%
@@ -95,7 +93,7 @@ for exp = experiments
     exp.title;
 end
 
-line([5 5], [1e-1 1e4],'Color','k');
+line([5 5], [1e-2 1e1],'Color','k');
 
 title('TNMSE of parameters as a function of chosen \beta, L = 40.');
 set(gca,'fontsize',12);
@@ -129,8 +127,8 @@ for exp = experiments
 end
 title('SNR');
 set(gca,'fontsize',12);
-set(gca, 'YScale', 'log');
-legend('N100,M100,k20', 'N100,M20,k20','N20,M100,k20','N20,M768,k32');
+% set(gca, 'YScale', 'log');
+legend('N100,M100,k20','N20,M100,k20','N20,M768,k32');
 hold off;
 
 %% 

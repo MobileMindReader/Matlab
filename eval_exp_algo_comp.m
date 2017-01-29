@@ -5,23 +5,43 @@ clear;
 % path=('exp_algo_comp/45db/');
 % path=('exp_algo_comp2/');
 % path=('exp_algo_comp2/sigma1/');
-path=('exp_algo_comp/');
+
+path=('exp_algo_comp/Noiseless/');
+path2=('exp_algo_comp/Noisy/');
+
 files = dir(path);
+files2 = dir(path2);
 fileIndex = find(~[files.isdir]);
+fileIndex2 = find(~[files2.isdir]);
 fileNames={}; dataFiles = {};
+fileNames2={};
 for i = 1:length(fileIndex)
     fileName = files(fileIndex(i)).name;
     if fileName(1) == '.'       
         continue; 
 %     elseif fileName(end-8:end) == '-10db.mat'
 %     elseif fileName(1:3) == 'exp'
-    elseif fileName(1:5) == 'Noisy'
+%     elseif fileName(1:5) == 'Noisy'
+    elseif fileName(end-3:end) == '.mat'
         fileNames{end+1} = files(fileIndex(i)).name;
+    end
+end
+
+for i = 1:length(fileIndex2)
+    fileName = files2(fileIndex2(i)).name;
+    if fileName(1) == '.'       
+        continue; 
+    elseif fileName(end-3:end) == '.mat'
+        fileNames2{end+1} = files2(fileIndex2(i)).name;
     end
 end
 
 for i=1:numel(fileNames)
     dataFiles{i} = importdata([path fileNames{i}]);
+end
+
+for i=1:numel(fileNames2)
+    dataFiles{numel(fileNames)+i} = importdata([path2 fileNames2{i}]);
 end
 
 %%
@@ -33,14 +53,17 @@ for i=1:numel(exp)
     exp{i}.ard_err = [];
     exp{i}.mard_err = [];
     exp{i}.mfocuss_err = [];
+    exp{i}.tmbsl_err = [];
     exp{i}.ridge_err = [];
     exp{i}.true_norm = [];
     exp{i}.ard_norm = [];
     exp{i}.mard_norm = [];
+    exp{i}.tmsbl_norm = [];
     
     exp{i}.ard_time = [];
     exp{i}.mard_time = [];
     exp{i}.mfocuss_time = [];
+    exp{i}.tmsbl_time = [];
     exp{i}.ridge_time = [];
     exp{i}.ard_convergence = [];
     exp{i}.mard_convergence = [];
@@ -92,11 +115,13 @@ for file=dataFiles
     exp{currentExp}.mard_err = [exp{currentExp}.mard_err data.err_mard];
     exp{currentExp}.ridge_err = [exp{currentExp}.ridge_err data.err_ridge];
     exp{currentExp}.mfocuss_err = [exp{currentExp}.mfocuss_err data.err_mfocuss];
+    exp{currentExp}.tmbsl_err = [exp{currentExp}.tmbsl_err data.err_tmsbl];
     
     exp{currentExp}.ard_time = [exp{currentExp}.ard_time data.time_ard];
     exp{currentExp}.mard_time = [exp{currentExp}.mard_time data.time_mard];
     exp{currentExp}.mfocuss_time = [exp{currentExp}.mfocuss_time data.time_mfocuss];
     exp{currentExp}.ridge_time = [exp{currentExp}.ridge_time data.time_ridge];
+    exp{currentExp}.tmsbl_time = [exp{currentExp}.tmsbl_time data.time_tmsbl];
     
     exp{currentExp}.ard_convergence = [exp{currentExp}.ard_convergence data.ard_convergence];
     exp{currentExp}.mard_convergence = [exp{currentExp}.mard_convergence data.mard_convergence];
@@ -106,6 +131,7 @@ for file=dataFiles
     exp{currentExp}.true_norm = [exp{currentExp}.true_norm data.w_true_norm];
     exp{currentExp}.ard_norm = [exp{currentExp}.ard_norm data.ard_norm];
     exp{currentExp}.mard_norm = [exp{currentExp}.mard_norm data.mard_norm];
+    exp{currentExp}.tmsbl_norm = [exp{currentExp}.tmsbl_norm data.tmsbl_norm];
 end
 
 allExp = {};
@@ -115,6 +141,9 @@ allExp.mard_err = [];
 allExp.mfocuss_err = [];
 allExp.ridge_err = [];
 
+allExp.tmbsl_err = [];
+allExp.tmsbl_time = [];
+    
 allExp.true_norm = [];
 
 allExp.ard_norm = [];
@@ -134,10 +163,12 @@ for i=1:numel(exp)
     allExp.mard_err = [allExp.mard_err; exp{i}.mard_err];
     allExp.ridge_err = [allExp.ridge_err; exp{i}.ridge_err];
     allExp.mfocuss_err = [allExp.mfocuss_err; exp{i}.mfocuss_err];
-
+    allExp.tmbsl_err = [allExp.tmbsl_err; exp{i}.tmbsl_err];
+    
     allExp.ard_time = [allExp.ard_time; exp{i}.ard_time];
     allExp.mard_time = [allExp.mard_time; exp{i}.mard_time];
     allExp.mfocuss_time = [allExp.mfocuss_time; exp{i}.mfocuss_time];
+    allExp.tmsbl_time = [allExp.tmsbl_time; exp{i}.tmsbl_time];
     allExp.ridge_time = [allExp.ridge_time; exp{i}.ridge_time];
     
     allExp.ard_convergence = [allExp.ard_convergence; exp{i}.ard_convergence];
@@ -146,6 +177,7 @@ for i=1:numel(exp)
     allExp.true_norm = [allExp.true_norm; exp{i}.true_norm];
     allExp.ard_norm = [allExp.ard_norm; exp{i}.ard_norm];
     allExp.mard_norm = [allExp.mard_norm; exp{i}.mard_norm];
+%     tmsbl norm
     
     allExp.SNR = [allExp.SNR; exp{i}.SNR];
 end
@@ -162,6 +194,8 @@ meanMARDErr = mean(normErrorMArd,2);%./range;
 meanMFOCUSSErr = mean(allExp.mfocuss_err,2);%./range;
 meanRidgeErr = mean(allExp.ridge_err,2);
 
+meanTMBSLErr = mean(allExp.tmbsl_err,2);
+
 figure(1)
 
 % range = ones(13,1);
@@ -172,16 +206,17 @@ plot(meanARDErr); hold on;
 % plot(mean(allExp.ard_test_err,2));
 plot(meanMARDErr);
 plot(meanMFOCUSSErr);
-plot(meanRidgeErr);
+plot(meanTMBSLErr);
+% plot(meanRidgeErr);
 % plot(mean(allExp.mard_test_err,2));
 
 title('MSE of parameters normalized by norm and number of responses');
 set(gca,'XTick',[1:numel(exp)], 'XTickLabel',tickLabels);
-% set(gca, 'YScale', 'log');
+set(gca, 'YScale', 'log');
 xlabel('Number of simultaneous responses (L)')
 ylabel('(MSE / \mid\mid w_{true} \mid\mid ) / L');
 set(gca,'fontsize',12);
-legend('ARD', 'M-ARD', 'MFOCUSS', 'Ridge');
+legend('ARD', 'M-ARD', 'MFOCUSS', 'T-MSBL');
 hold off;
 
 
@@ -192,11 +227,11 @@ plot(mean(allExp.ard_time,2)); hold on;
 % plot(mean(allExp.ard_test_time,2));
 plot(mean(allExp.mard_time,2));
 plot(mean(allExp.mfocuss_time,2));
-plot(mean(allExp.ridge_time,2));
+plot(mean(allExp.tmsbl_time,2));
 % plot(mean(allExp.mard_test_time,2));
 
 title('Time');
-legend('ARD', 'M-ARD', 'MFOCUSS', 'Ridge');
+legend('ARD', 'M-ARD', 'MFOCUSS', 'T-MSBL');
 hold off;
 
 %%
