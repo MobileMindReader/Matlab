@@ -13,8 +13,8 @@ for i = 1:length(fileIndex)
     if fileName(1) == '.'
         continue; 
 %     elseif fileName(1:17) == 'v2-08-Dec-2016 13'
-%     elseif fileName(1:2) == 'v3'
-    elseif fileName(1:6) == 'N22-v2'
+    elseif fileName(1:2) == 'v3'
+%     elseif fileName(1:6) == 'N22-v2'
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end

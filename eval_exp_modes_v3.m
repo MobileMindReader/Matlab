@@ -12,13 +12,94 @@ for i = 1:length(fileIndex)
 %     end
     if fileName(1) == '.'
         continue;
-    elseif fileName(1:2) == 'v2'
+    elseif fileName(1:2) == 'v3'
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
-for i=1:numel(fileNames)
-    dataFilesDense{i} = importdata([path fileNames{i}]);
+% for i=1:10%numel(fileNames)
+%     dataFilesDense{i} = importdata([path fileNames{i}]);
+% %     dataFilesDense{i} = load([path fileNames{i}]);
+% end
+
+% Load data into variables - shared alpha model
+
+a_dense_shared = [];
+b_dense_shared = [];
+a_dense_separate = [];
+b_dense_separate = [];
+llh_dense_shared=[];
+llh_dense_separate=[];
+w_dense_separate_norm = [];
+w_dense_shared_norm = [];    
+w_dense_true_norm = [];
+w_dense_separate_error = [];
+w_dense_shared_error = [];    
+SNR_dense = [];
+
+% a_dense_shared2 = [];
+% b_dense_shared2 = [];
+% a_dense_separate2 = [];
+% b_dense_separate2 = [];
+% llh_dense_shared2=[];
+% llh_dense_separate2=[];
+% w_dense_separate2 = [];
+% w_dense_shared2 = [];    
+% w_dense_true2 = [];
+% SNR_dense2 = [];
+
+
+% for data=dataFilesDense
+for i=1:numel(fileNames)   
+    data = importdata([path fileNames{i}]);
+%     data = data{:};
+    if data.numSamples == '50*iter'
+        w_dense_separate_error = [w_dense_separate_error data.w_multi_error];
+        w_dense_shared_error = [w_dense_shared_error data.w_uni_error];
+%         w_dense_true_norm = [w_dense_true_norm data.w_true];
+        a_dense_shared = [a_dense_shared data.alpha_uni];
+        b_dense_shared = [b_dense_shared data.beta_uni];
+        llh_dense_shared = [llh_dense_shared data.llh_uni];
+        w_dense_shared_norm = [w_dense_shared_norm data.w_uni_norm];
+        a_dense_separate = [a_dense_separate data.alpha_multi];
+        b_dense_separate = [b_dense_separate data.beta_multi];
+        llh_dense_separate = [llh_dense_separate data.llh_multi];
+        w_dense_separate_norm = [w_dense_separate_norm data.w_multi_norm];
+        SNR_dense = [SNR_dense data.SNRdB];
+    elseif data.numSamples == '10*iter'
+%         w_dense_true2 = [w_dense_true2 data.w_true];
+%         a_dense_shared2 = [a_dense_shared2 data.alpha_uni];
+%         b_dense_shared2 = [b_dense_shared2 data.beta_uni];
+%         llh_dense_shared2 = [llh_dense_shared2 data.llh_uni];
+%         w_dense_shared2 = [w_dense_shared2 data.w_uni];
+%         a_dense_separate2 = [a_dense_separate2 data.alpha_multi];
+%         b_dense_separate2 = [b_dense_separate2 data.beta_multi];
+%         llh_dense_separate2 = [llh_dense_separate2 data.llh_multi];
+%         w_dense_separate2 = [w_dense_separate2 data.w_multi];
+%         SNR_dense2 = [SNR_dense2 data.SNRdB];
+    end
+    disp(['Import: ' int2str(i)]);
 end
+
+% w_dense_true = [w_dense_true2; w_dense_true];
+% a_dense_shared = [a_dense_shared2; a_dense_shared];
+% b_dense_shared = [b_dense_shared2; b_dense_shared];
+% llh_dense_shared = [llh_dense_shared2; llh_dense_shared];
+% w_dense_shared = [w_dense_shared2; w_dense_shared];
+% a_dense_separate = [a_dense_separate2; a_dense_separate];
+% b_dense_separate = [b_dense_separate2; b_dense_separate];
+% llh_dense_separate = [llh_dense_separate2; llh_dense_separate];
+% w_dense_separate = [w_dense_separate2; w_dense_separate];
+% SNR_dense = [SNR_dense2; SNR_dense];
+        
+
+dataSeparateAlphas=dataFilesDense{1};
+
+clearvars dataFilesDense;
+
+
+%%
+
+
 path=('exp_modes_sparse/');
 files = dir(path);
 fileIndex = find(~[files.isdir]);
@@ -27,7 +108,7 @@ for i = 1:length(fileIndex)
     fileName = files(fileIndex(i)).name;
     if fileName(1) == '.'
         continue;
-    elseif fileName(1:2) == 'v2'
+    elseif fileName(1:2) == 'v3'
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
@@ -35,17 +116,18 @@ for i=1:numel(fileNames)
     dataFilesSparse{i} = importdata([path fileNames{i}]);
 end
 
-%% Load data into variables - separate alpha model
+% Load data into variables - separate alpha model
 a_sparse_shared = [];
 b_sparse_shared = [];
 a_sparse_separate = [];
 b_sparse_separate = [];
 llh_sparse_shared=[];
 llh_sparse_separate=[];
-w_sparse_separate = [];
-w_sparse_shared = [];    
-w_sparse_true = [];
-
+w_sparse_separate_norm = [];
+w_sparse_shared_norm = [];    
+w_sparse_true_norm = [];
+w_sparse_separate_error = [];
+w_sparse_shared_error = [];
 SNR_sparse = [];
 
 % a_sparse_shared2 = [];
@@ -63,15 +145,17 @@ SNR_sparse2 = [];
 for data=dataFilesSparse
     data = data{:};
     if data.numSamples == '50*iter'
-        w_sparse_true = [w_sparse_true data.w_true];
+        w_sparse_separate_error = [w_sparse_separate_error data.w_multi_error];
+        w_sparse_shared_error = [w_sparse_shared_error data.w_uni_error];
+        w_sparse_true_norm = [w_sparse_true_norm data.w_true];
         a_sparse_shared = [a_sparse_shared data.alpha_uni];
         b_sparse_shared = [b_sparse_shared data.beta_uni];
         llh_sparse_shared = [llh_sparse_shared data.llh_uni];
-        w_sparse_shared = [w_sparse_shared data.w_uni];
+        w_sparse_shared_norm = [w_sparse_shared_norm data.w_uni];
         a_sparse_separate = [a_sparse_separate data.alpha_multi];
         b_sparse_separate = [b_sparse_separate data.beta_multi];
         llh_sparse_separate = [llh_sparse_separate data.llh_multi];
-        w_sparse_separate = [w_sparse_separate data.w_multi];
+        w_sparse_separate_norm = [w_sparse_separate_norm data.w_multi];
         SNR_sparse = [SNR_sparse data.SNRdB];
     elseif data.numSamples == '10*iter'
 %         w_sparse_true2 = [w_sparse_true2 data.w_true];
@@ -98,89 +182,24 @@ end
 % w_sparse_separate = [w_sparse_separate2; w_sparse_separate];
 % SNR_sparse = [SNR_sparse2;SNR_sparse];
 
-% Load data into variables - shared alpha model
 
-a_dense_shared = [];
-b_dense_shared = [];
-a_dense_separate = [];
-b_dense_separate = [];
-llh_dense_shared=[];
-llh_dense_separate=[];
-w_dense_separate = [];
-w_dense_shared = [];    
-w_dense_true = [];
-SNR_dense = [];
-
-% a_dense_shared2 = [];
-% b_dense_shared2 = [];
-% a_dense_separate2 = [];
-% b_dense_separate2 = [];
-% llh_dense_shared2=[];
-% llh_dense_separate2=[];
-% w_dense_separate2 = [];
-% w_dense_shared2 = [];    
-% w_dense_true2 = [];
-% SNR_dense2 = [];
-
-
-for data=dataFilesDense
-    data = data{:};
-    if data.numSamples == '50*iter'
-        w_dense_true = [w_dense_true data.w_true];
-        a_dense_shared = [a_dense_shared data.alpha_uni];
-        b_dense_shared = [b_dense_shared data.beta_uni];
-        llh_dense_shared = [llh_dense_shared data.llh_uni];
-        w_dense_shared = [w_dense_shared data.w_uni];
-        a_dense_separate = [a_dense_separate data.alpha_multi];
-        b_dense_separate = [b_dense_separate data.beta_multi];
-        llh_dense_separate = [llh_dense_separate data.llh_multi];
-        w_dense_separate = [w_dense_separate data.w_multi];
-        SNR_dense = [SNR_dense data.SNRdB];
-    elseif data.numSamples == '10*iter'
-%         w_dense_true2 = [w_dense_true2 data.w_true];
-%         a_dense_shared2 = [a_dense_shared2 data.alpha_uni];
-%         b_dense_shared2 = [b_dense_shared2 data.beta_uni];
-%         llh_dense_shared2 = [llh_dense_shared2 data.llh_uni];
-%         w_dense_shared2 = [w_dense_shared2 data.w_uni];
-%         a_dense_separate2 = [a_dense_separate2 data.alpha_multi];
-%         b_dense_separate2 = [b_dense_separate2 data.beta_multi];
-%         llh_dense_separate2 = [llh_dense_separate2 data.llh_multi];
-%         w_dense_separate2 = [w_dense_separate2 data.w_multi];
-%         SNR_dense2 = [SNR_dense2 data.SNRdB];
-    end
-end
-
-% w_dense_true = [w_dense_true2; w_dense_true];
-% a_dense_shared = [a_dense_shared2; a_dense_shared];
-% b_dense_shared = [b_dense_shared2; b_dense_shared];
-% llh_dense_shared = [llh_dense_shared2; llh_dense_shared];
-% w_dense_shared = [w_dense_shared2; w_dense_shared];
-% a_dense_separate = [a_dense_separate2; a_dense_separate];
-% b_dense_separate = [b_dense_separate2; b_dense_separate];
-% llh_dense_separate = [llh_dense_separate2; llh_dense_separate];
-% w_dense_separate = [w_dense_separate2; w_dense_separate];
-% SNR_dense = [SNR_dense2; SNR_dense];
-        
-
-dataSeparateAlphas=dataFilesDense{1};
 % N = 50; %data.numSamples;
 M = 500;
-iterations = size(w_sparse_true,1);
+iterations = size(w_sparse_true_norm,1);
 intraIterations = dataSeparateAlphas.intraIterations;
 model = dataSeparateAlphas.model;
-numExperiments = size(w_sparse_true,2);
+numExperiments = size(w_sparse_true_norm,2);
 
 % disp(dataSeparateAlphas.description);
 
 ticks = 0:5:size(a_sparse_shared,1);
 ticks(1) = 1;
-% ticks = [1 2 3 4 5 9 14 19 24];
-% ticks = [1:5:
+ticks = [1 2 3 4 5 9 14 19 24];
 tickLabels = strsplit(int2str(ticks*50));
 tickLabels{1} = '50';
-% tickLabels = {'10', '20', '30', '40', '50', '250', '500', '750', '1000'};
+tickLabels = {'10', '20', '30', '40', '50', '250', '500', '750', '1000'};
 
-clearvars dataFilesSeparateAlphas dataFilesSharedAlpha fileIndex fileName fileNames files dataSeparateAlphas
+clearvars dataFilesSparse dataFilesSeparateAlphas dataFilesSharedAlpha fileIndex fileName fileNames files dataSeparateAlphas
 
 %% MSE of weights
 
@@ -200,14 +219,14 @@ w_mse_rand_dense_shared = zeros(M, iterations);
 for i=1:iterations
     for j=1:numExperiments
         
-        mag_sparse = mean(w_sparse_true{i,j}.^2); % sqrt(mean(w_sparse_true{i,j}.^2));
-        mag_dense = mean(w_dense_true{i,j}.^2); %sqrt(mean(w_dense_true{i,j}.^2));
+        mag_sparse = mean(w_sparse_true_norm{i,j}.^2); % sqrt(mean(w_sparse_true{i,j}.^2));
+        mag_dense = mean(w_dense_true_norm{i,j}.^2); %sqrt(mean(w_dense_true{i,j}.^2));
         
 %         something = sum((w_sparse_separate{i,j} - w_sparse_true{i,j}).^2) / sum(w_sparse_true{i,j}.^2);
-        w_mse_sparse_separate(:,i) = w_mse_sparse_separate(:,i) + ((w_sparse_separate{i,j}-w_sparse_true{i,j}).^2)/mag_sparse;
-        w_mse_sparse_shared(:,i) = w_mse_sparse_shared(:,i) + (w_sparse_shared{i,j}-w_sparse_true{i,j}).^2/mag_sparse;
-        w_mse_dense_separate(:,i) = w_mse_dense_separate(:,i) + (w_dense_separate{i,j}-w_dense_true{i,j}).^2/mag_dense;
-        w_mse_dense_shared(:,i) = w_mse_dense_shared(:,i) + (w_dense_shared{i,j}-w_dense_true{i,j}).^2/mag_dense;
+        w_mse_sparse_separate(:,i) = w_mse_sparse_separate(:,i) + ((w_sparse_separate_norm{i,j}'-w_sparse_true_norm{i,j}).^2)/mag_sparse;
+        w_mse_sparse_shared(:,i) = w_mse_sparse_shared(:,i) + (w_sparse_shared_norm{i,j}-w_sparse_true_norm{i,j}).^2/mag_sparse;
+        w_mse_dense_separate(:,i) = w_mse_dense_separate(:,i) + (w_dense_separate_norm{i,j}-w_dense_true_norm{i,j}).^2/mag_dense;
+        w_mse_dense_shared(:,i) = w_mse_dense_shared(:,i) + (w_dense_shared_norm{i,j}-w_dense_true_norm{i,j}).^2/mag_dense;
         
         
         %%% Randoms        
@@ -217,8 +236,8 @@ for i=1:iterations
         
 %         w_mse_rand_sparse_separate(:,i) = w_mse_rand_sparse_separate(:,i) + ((w_sparse_rand-w_sparse_true{i,j}).^2)/mag_sparse;
 %         w_mse_rand_sparse_shared(:,i) = w_mse_rand_sparse_shared(:,i) + (w_sparse_rand-w_sparse_true{i,j}).^2/mag_sparse;
-        w_mse_rand_dense_separate(:,i) = w_mse_rand_dense_separate(:,i) + (w_sparse_rand-w_dense_true{i,j}).^2/mag_dense;
-        w_mse_rand_dense_shared(:,i) = w_mse_rand_dense_shared(:,i) + (w_dense_rand-w_dense_true{i,j}).^2/mag_dense;
+        w_mse_rand_dense_separate(:,i) = w_mse_rand_dense_separate(:,i) + (w_sparse_rand-w_dense_true_norm{i,j}).^2/mag_dense;
+        w_mse_rand_dense_shared(:,i) = w_mse_rand_dense_shared(:,i) + (w_dense_rand-w_dense_true_norm{i,j}).^2/mag_dense;
     end
     
     w_mse_sparse_separate(:,i) = w_mse_sparse_separate(:,i)/numExperiments;
@@ -242,7 +261,7 @@ set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
 set(gca,'fontsize',12);
 title('Dense model (500/500 non-zero parameters)');
 xlabel('Number of samples');
-ylabel('Relative MSE for all parameters'); %, averaged over ' int2str(numExperiments) ' runs'
+ylabel('Relative MSE for all weights'); %, averaged over ' int2str(numExperiments) ' runs'
 legend('EA', 'ARD');
 
 
@@ -252,7 +271,7 @@ set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
 set(gca,'fontsize',12);
 title('Sparse model (20/500 non-zero parameters)');
 xlabel('Number of samples');
-ylabel('Relative MSE for all parameters'); 
+ylabel('Relative MSE for all weights'); 
 legend('EA', 'ARD');
 
 %%
@@ -296,9 +315,9 @@ f1_msha_sep = zeros(iterations, numExperiments);
 for i=1:iterations
     for j=1:numExperiments
         % Separate priors model
-        nonZeroIdxSep = find(w_sparse_separate{i,j} ~= 0);
-        nonZeroIdxSha = find(w_sparse_shared{i,j} ~= 0);
-        nonzIdxTrue = find(w_sparse_true{i,j} ~= 0);
+        nonZeroIdxSep = find(w_sparse_separate_norm{i,j} ~= 0);
+        nonZeroIdxSha = find(w_sparse_shared_norm{i,j} ~= 0);
+        nonzIdxTrue = find(w_sparse_true_norm{i,j} ~= 0);
         
         falsePosSep = numel(find(ismember(nonZeroIdxSep,nonzIdxTrue) ==0));
         truePosSep = numel(find(ismember(nonZeroIdxSep,nonzIdxTrue)  ~=0));
@@ -326,9 +345,9 @@ for i=1:iterations
         
         
         % Shared prior model - reuse variables
-        nonZeroIdxSep = find(w_dense_separate{i,j} ~= 0);
-        nonZeroIdxSha = find(w_dense_shared{i,j} ~= 0);
-        nonzIdxTrue = find(w_dense_true{i,j} ~= 0);
+        nonZeroIdxSep = find(w_dense_separate_norm{i,j} ~= 0);
+        nonZeroIdxSha = find(w_dense_shared_norm{i,j} ~= 0);
+        nonzIdxTrue = find(w_dense_true_norm{i,j} ~= 0);
         
         falsePosSep = numel(find(ismember(nonZeroIdxSep,nonzIdxTrue) ==0));
         truePosSep = numel(find(ismember(nonZeroIdxSep,nonzIdxTrue)  ~=0));
@@ -357,19 +376,19 @@ subplot(2,1,1), plot(mean(f1_msha_sha,2)), hold on;
 subplot(2,1,1), plot(mean(f1_msha_sep,2)), hold off;
 set(gca,'XTick',ticks,'XTickLabel',tickLabels);% 'YScale', 'log');
 set(gca,'fontsize',12);
-title('Dense model (500/500 non-zero parameters)');
+title('Dense model');
 xlabel('Number of samples');
-ylabel('F1-score');
-legend('EA','ARD','location','SouthEast');
+ylabel('F1-score for non-zero weights');
+legend('Shared prior estimate','Separate priors estimate','location','SouthEast');
 
 subplot(2,1,2), plot(mean(f1_msep_sha,2)), hold on;
 subplot(2,1,2), plot(mean(f1_msep_sep,2)), hold off;
 set(gca,'XTick',ticks,'XTickLabel',tickLabels);% 'YScale', 'log');
 set(gca,'fontsize',12);
-title('Sparse model (20/500 non-zero parameters)');
+title('Sparse model');
 xlabel('Number of samples'); 
-ylabel('F1-score');
-legend('EA','ARD','location','NorthEast');
+ylabel('F1-score for non-zero weights');
+legend('Shared prior estimate','Separate priors estimate');
 
 %%
 print(figure(2), 'figures/sample_sweep_f1','-dpdf')
@@ -413,8 +432,8 @@ for i=1:iterations
     end
     for j=1:numExperiments
         % Sparse
-        nonZeroIdxSparse = find(w_sparse_separate{i,j} ~= 0);
-        nonZeroIdxDense = find(w_dense_separate{i,j} ~= 0);
+        nonZeroIdxSparse = find(w_sparse_separate_norm{i,j} ~= 0);
+        nonZeroIdxDense = find(w_dense_separate_norm{i,j} ~= 0);
 %         nonZeroIdxTrue = find(w_sparse_true{i,j} ~= 0);
         
         alpha_mean_sparse_separate(i,j) = mean(a_sparse_separate{i,j}(nonZeroIdxSparse));
@@ -423,15 +442,15 @@ for i=1:iterations
         alpha_std_sparse_separate(i,j) = std(a_sparse_separate{i,j}(nonZeroIdxSparse));
         alpha_std_dense_separate(i,j) = std(a_dense_separate{i,j}(nonZeroIdxDense));
         
-        err_sparse_separate(i,j) = alpha_std_sparse_separate(i,j)/(sqrt(50*i));
-        err_dense_separate(i,j) = alpha_std_dense_separate(i,j)/(sqrt(50*i));
+        err_sparse_separate(i,j) = alpha_std_sparse_separate(i,j)/(sqrt(N));
+        err_dense_separate(i,j) = alpha_std_dense_separate(i,j)/(sqrt(N));
         
         nonZeroParamsDenseSeparate(i,j) = numel(nonZeroIdxDense);
         nonZeroParamsSparseSeparate(i,j) = numel(nonZeroIdxSparse);
     end
     
-    err_sparse_shared(i) = std(a_sparse_shared(i,:))/(sqrt(50*i));
-    err_dense_shared(i) = std(a_dense_shared(i,:))/(sqrt(50*i));
+    err_sparse_shared(i) = std(a_sparse_shared(i,:))/(sqrt(N));
+    err_dense_shared(i) = std(a_dense_shared(i,:))/(sqrt(N));
 end
 
 
@@ -444,7 +463,7 @@ figure(3)
 subplot(2,1,1), erb1=errorbar(mean(a_dense_shared,2), err_dense_shared); hold on;
 subplot(2,1,1), erb2=errorbar(mean(alpha_mean_dense_separate,2), mean(err_dense_separate,2));
 subplot(2,1,1), plot(1:iterations, expectedAlpha*ones(1,iterations), '--'), hold off;
-axis([0, inf, 1, 100]);
+% axis([0, inf, 1, 100]);
 set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
 set(gca,'fontsize',12);
 set(erb1(1),'Linewidth',2)
@@ -459,7 +478,7 @@ legend('EA','ARD', 'True alpha');
 subplot(2,1,2), erb3=errorbar(mean(a_sparse_shared,2), err_sparse_shared); hold on;
 subplot(2,1,2), erb4=errorbar(mean(alpha_mean_sparse_separate,2), mean(err_sparse_separate,2));
 subplot(2,1,2), plot(1:iterations, expectedAlpha*ones(1,iterations), '--'), hold off;
-axis([0, inf, 1, inf]);
+% axis([0, inf, 1, inf]);
 set(gca,'XTick',ticks,'XTickLabel',tickLabels, 'YScale', 'log');
 set(gca,'fontsize',12);
 set(erb3(1),'Linewidth',2);
@@ -516,7 +535,7 @@ subplot(2,1,1), semilogy(1:iterations, mean(b_dense_separate,2));
 subplot(2,1,1), semilogy(1:iterations, model.beta*ones(1,iterations), '--');  hold off
 set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
 set(gca, 'fontsize',12);
-legend('EA','ARD', 'True beta');
+legend('Shared prior estimation','Separate priors estimation', 'True beta');
 title('Dense model (500/500 non-zero parameters)');
 ylabel(['Estimated beta']);
 xlabel('Number of samples');
@@ -529,7 +548,7 @@ subplot(2,1,2), semilogy(1:iterations, model.beta*ones(1,iterations), '--');  ho
 set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
 set(gca,'fontsize',12);
 title('Sparse model (20/500 non-zero parameters)');
-legend('EA','ARD', 'True beta');
+legend('Shared prior estimation','Separate priors estimation','True beta');
 ylabel(['Estimated beta']);
 xlabel('Number of samples');
 
@@ -547,8 +566,8 @@ subplot(2,1,1), semilogy(1:iterations, (mean(alpha_mean_dense_separate,2)./mean(
 subplot(2,1,1), semilogy(1:iterations, (expectedAlpha/25)*ones(1,iterations), '--'), hold off;
 set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
 set(gca,'fontsize',12);
-title('Dense model (500/500 non-zero parameters)');
-legend('EA','ARD', 'True','location','SouthEast');
+title('Dense model');
+legend('Shared prior estimation','Separate priors estimation', 'Expected', 'location','SouthEast');
 ylabel(['alpha/beta ratio']);
 xlabel('Number of samples');
 
@@ -557,8 +576,8 @@ subplot(2,1,2), semilogy(1:iterations, (mean(alpha_mean_sparse_separate,2)./mean
 subplot(2,1,2), semilogy(1:iterations, (expectedAlpha/25)*ones(1,iterations), '--'), hold off;
 set(gca,'XTick',ticks); set(gca,'XTickLabel',tickLabels);
 set(gca,'fontsize',12);
-title('Sparse model (20/500 non-zero parameters)');
-legend('EA','ARD', 'True','location','SouthEast');
+title('Sparse model');
+legend('Shared prior estimation','Separate priors estimation', 'Expected', 'location','SouthEast');
 ylabel(['alpha/beta ratio']);
 xlabel('Number of samples');
 
@@ -704,8 +723,8 @@ for i=1:1
 %     plot(w_est,w_true, '+b'), hold on;
 
     for j=idx % int16(unifrnd(1,2000, [1 400]))
-        y=w_sparse_separate{i,j};
-        x=w_sparse_true{i,j};
+        y=w_sparse_separate_norm{i,j};
+        x=w_sparse_true_norm{i,j};
 %         y=y(y~=0 & x~=0);
 %         x=x(y~=0);
         plot(x,y, '+b'), hold on;
@@ -714,8 +733,8 @@ for i=1:1
 end
 for i=20:20
     for j=idx
-        y=w_sparse_separate{i,j};
-        x=w_sparse_true{i,j};
+        y=w_sparse_separate_norm{i,j};
+        x=w_sparse_true_norm{i,j};
         plot(x,y, '+r'), hold on;
     end
 end
@@ -726,51 +745,14 @@ axis('square');
 %% Scatter plot and histogram of weight estimation
 
 figure(9)
-idxExp=unique(int16(unifrnd(1,1000, [1 20])));
-idx=[1,20];
-x=[];
-y=[];
-for i=idx
-    for j=idxExp
-        x = [x (w_sparse_true{i,j})];
-        y = [y (w_sparse_separate{i,j})];
-    end
-end
-% x1 = (w_sparse_true{idx, idxExp});
-% y1 = horzcat(w_sparse_separate{idx,idxExp});
-
-% x2 = vertcat(w_sparse_true{20,idx});
-% y2 = vertcat(w_sparse_separate{20,idx});
-
-
-h = scatterhist(x(:), y(:), 'Group', [idx(1)*ones(1, numel(x)/2) idx(2)*ones(1, numel(x)/2)], 'Style','bar');
-legend('N=50','N=1000', 'Location', 'NorthWest');
-title('Estimated parameters in sparse model (20/500 non-zero parameters)');
-% title('Estimated weights as a function of the true weights for estimated weights (10 non-zero)');
-ylabel('Estimated weight'), xlabel('True weight');
-
-set(h,'fontsize',12);
-% this = h(2).findobj;
-% uistack(this(3), 'top');
-
-set(h(2:3),'YScale','log');
-axis(h(1),'auto');  % Sync axes
-axis(h(1), 'square');
-
-%%
-% print(figure(9), 'figures/sample_sweep_weight_underdetermined','-dpdf')
-
-%% Scatter plot and histogram of weight estimation
-
-figure(9)
 idxExp=unique(int16(unifrnd(1,1000, [1 10])));
 idx=[1,20];
 x=[];
 y=[];
 for i=idx
     for j=idxExp
-        x = [x (w_sparse_true{i,j})];
-        y = [y (w_sparse_separate{i,j})];
+        x = [x (w_sparse_true_norm{i,j})];
+        y = [y (w_sparse_separate_norm{i,j})];
     end
 end
 % x1 = (w_sparse_true{idx, idxExp});

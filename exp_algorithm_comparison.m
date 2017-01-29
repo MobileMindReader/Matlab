@@ -3,17 +3,18 @@
 
 %% True parameters
 model.noiseMean = 0;
-model.sigma = 0.8; % Noise std deviation
+model.sigma = 0.0; % Noise std deviation
 model.beta = (1/model.sigma.^2);
 model.alpha=2;
 
 %% Fix seed
-s = RandStream('mt19937ar','Seed','shuffle');
+randSeed = run*randi(100);
+s = RandStream('mt19937ar','Seed',randSeed);
 % s = RandStream('mt19937ar','Seed', randi(100*run)*run);
 RandStream.setGlobalStream(s);
 
 %% Experiment parameters
-iterations = 1;
+iterations = 20;
 
 for timeStepsIter = 80; %[1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80];
     
@@ -28,7 +29,7 @@ for timeStepsIter = 80; %[1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80];
 %     forwardModel = importdata('model/mBrainLeadfield.mat');
     % dataTitle = ['exp_algo_comp/' datestr(datetime('now')) 'beta_rand'];
     
-    data.description = ['Noisy_N=' int2str(numSamples) '_M=' int2str(numFuncs) '_k=' int2str(numActiveFuncs) '_L=' int2str(timeSteps)];
+    data.description = ['Noiseless_N=' int2str(numSamples) '_M=' int2str(numFuncs) '_k=' int2str(numActiveFuncs) '_L=' int2str(timeSteps)];
     dataTitle = ['exp_algo_comp/' data.description '-run-' int2str(run)];
     
     data.L = timeSteps;
@@ -163,18 +164,18 @@ end
 
 
 % 
-% figure(1); plot(data.err_mard); hold on;
-% plot(data.err_mfocuss);
-% plot(data.err_tmsbl);
-% hold off;
-% legend('M-ARD','MFOCUSS','T-MSBL');
-% 
-% 
-% figure(2); plot(data.time_mard); hold on;
-% plot(data.time_mfocuss);
-% plot(data.time_tmsbl);
-% hold off;
-% legend('M-ARD','MFOCUSS','T-MSBL');
+figure(1); plot(data.err_mard); hold on;
+plot(data.err_mfocuss);
+plot(data.err_tmsbl);
+hold off;
+legend('M-ARD','MFOCUSS','T-MSBL');
+
+
+figure(2); plot(data.time_mard); hold on;
+plot(data.time_mfocuss);
+plot(data.time_tmsbl);
+hold off;
+legend('M-ARD','MFOCUSS','T-MSBL');
 
 
 

@@ -119,10 +119,9 @@ for iter=1:iterations
 
         save(dataTitle, 'data');
     end
-%     if mod(iter, 5) == 0
+    if mod(iter, 5) == 0
+        disp(iter);
         % Save data often
-
-
-%     end
+    end
 end
 
