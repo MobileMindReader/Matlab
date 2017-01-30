@@ -13,8 +13,8 @@ s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 forwardModel = importdata('model/mBrainLeadfield.mat');
 %% Experiment parameters
-iterations = 10;
-intraIterations = 1;
+iterations = 20;
+intraIterations = 100;
 
 for iter=1:iterations
     
@@ -27,7 +27,7 @@ for iter=1:iterations
     numActiveFuncs = 32;
     
 %     disp(0.05*iter);
-    model.sigma = 1; 0.05*iter;
+    model.sigma = 0.05*iter;
 %     model.sigma = 0.6;
     model.beta = (1/model.sigma.^2);
     
@@ -42,7 +42,7 @@ for iter=1:iterations
     data.k = numActiveFuncs;
     data.exp = sprintf('%i%i%i%i', numSamples, numFuncs, numActiveFuncs, timeSteps);
 %     data.totalIterations = intraIterations;
-    data.details = 'beta = abs(normrnd(25,20)), alpha=ones*0.1';
+%     data.details = 'beta = abs(normrnd(25,20)), alpha=ones*0.1';
     
     data.noiseVariance = model.sigma;
     data.beta = model.beta;
