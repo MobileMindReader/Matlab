@@ -11,7 +11,7 @@ for i = 1:length(fileIndex)
         continue; 
 %     elseif fileName(end-8:end) == '-10db.mat'
 %     elseif fileName(1:3) == 'exp'
-    elseif fileName(1:5) == 'sigma'
+    elseif fileName(1:8) == 'sigmax20'
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
@@ -30,9 +30,12 @@ for i=1:numel(exp)
     exp{i}.mfocuss_err = [];
     exp{i}.true_norm = [];
     exp{i}.mard_norm = [];
-    exp{i}.mfocuss_norm = [];
+    exp{i}.mfocuss_convergence = [];
     exp{i}.mard_time = [];
     exp{i}.mfocuss_time = [];
+    exp{i}.tmsbl_err = [];
+    exp{i}.tmsbl_time = [];
+    exp{i}.tmsbl_convergence = [];
     
     exp{i}.mard_convergence = [];
     exp{i}.SNR = [];
@@ -72,11 +75,14 @@ for file=dataFiles
     exp{currentExp}.SNR = [exp{currentExp}.SNR data.SNR];
     exp{currentExp}.true_norm = [exp{currentExp}.true_norm data.w_true_norm];
     exp{currentExp}.mard_norm = [exp{currentExp}.mard_norm data.mard_norm];
+    exp{currentExp}.tmsbl_err = [exp{currentExp}.tmsbl_err data.err_tmsbl];    
+    exp{currentExp}.tmsbl_time = [exp{currentExp}.tmsbl_time data.time_tmsbl];
+    exp{currentExp}.tmsbl_convergence = [exp{currentExp}.tmsbl_convergence data.tmsbl_convergence];
     
     try ~isempty(data.err_mfocuss);
         exp{currentExp}.mfocuss_err = [exp{currentExp}.mfocuss_err data.err_mfocuss];
         exp{currentExp}.mfocuss_time = [exp{currentExp}.mfocuss_time data.time_mfocuss];
-        exp{currentExp}.mfocuss_norm = [exp{currentExp}.mfocuss_norm data.mfocuss_norm];
+        exp{currentExp}.mfocuss_convergence = [exp{currentExp}.mfocuss_convergence data.mfocuss_convergence];
     end
 end
 
@@ -86,11 +92,14 @@ allExp.mard_err = [];
 allExp.mfocuss_err = [];
 allExp.true_norm = [];
 allExp.mard_norm = [];
-allExp.mfocuss_norm = [];
+allExp.mfocuss_convergence = [];
 allExp.mard_time = [];
 allExp.mfocuss_time = [];
 allExp.mard_convergence = [];
 allExp.SNR = [];
+allExp.tmsbl_err = [];
+allExp.tmsbl_time = [];
+allExp.tmsbl_convergence = [];
 
 for i=1:numel(exp)
     allExp.mard_err = [allExp.mard_err; exp{i}.mard_err];
@@ -99,11 +108,14 @@ for i=1:numel(exp)
     allExp.true_norm = [allExp.true_norm; exp{i}.true_norm];
     allExp.mard_norm = [allExp.mard_norm; exp{i}.mard_norm];
     allExp.SNR = [allExp.SNR; exp{i}.SNR];
+    allExp.tmsbl_err = [allExp.tmsbl_err; exp{i}.tmsbl_err];
+    allExp.tmsbl_time = [allExp.tmsbl_time; exp{i}.tmsbl_time];
+    allExp.tmsbl_convergence = [allExp.tmsbl_convergence; exp{i}.tmsbl_convergence];
     
     if ~isempty(exp{i}.mfocuss_err)
         allExp.mfocuss_err = [allExp.mfocuss_err; exp{i}.mfocuss_err];
         allExp.mfocuss_time = [allExp.mfocuss_time; exp{i}.mfocuss_time];
-        allExp.mfocuss_norm = [allExp.mfocuss_norm; exp{i}.mfocuss_norm];
+        allExp.mfocuss_convergence = [allExp.mfocuss_convergence; exp{i}.mfocuss_convergence];
     end
 end
 %%
@@ -119,17 +131,20 @@ ticks = 0.05:0.05:1;
 tickLabels = strsplit(num2str(ticks));
 
 subplot(2,1,1), plot(meanMARDErr); hold on;
-subplot(2,1,1), plot(meanMFOCUSSErr); hold off;
+subplot(2,1,1), plot(meanMFOCUSSErr); 
+subplot(2,1,1), plot(mean(allExp.tmsbl_err,2));hold off;
+grid on;
 
-title('TNMSE of parameters, L=40');
+title('TNMSE of parameters, L = 40');
 set(gca,'XTick',[1:numel(exp)], 'XTickLabel',tickLabels);
 set(gca, 'YScale', 'log');
 xlabel('Noise variance, \sigma')
 ylabel('TNMSE');
 set(gca,'fontsize',12);
-legend('M-ARD', 'MFOCUSS');
+legend('M-ARD', 'MFOCUSS', 'TMSBL', 'location','NorthWest');
 
 subplot(2,1,2), plot(mean(allExp.SNR,2), 'k');
+grid on;
 set(gca,'XTick',[1:numel(exp)], 'XTickLabel',tickLabels);
 xlabel('Noise variance, \sigma');
 set(gca,'fontsize',12);
@@ -148,14 +163,17 @@ tickLabels = strsplit(num2str(ticks));
 
 subplot(2,1,1), plot(mean(allExp.mard_time,2)); hold on;
 subplot(2,1,1), plot(mean(allExp.mfocuss_time,2));
+subplot(2,1,1), plot(mean(allExp.tmsbl_time,2));
 title('Time');
 set(gca,'XTick',[1:numel(exp)], 'XTickLabel',tickLabels);
-legend('M-ARD', 'MFOCUSS');
+legend('M-ARD', 'MFOCUSS', 'TMSBL');
 
-subplot(2,1,2), plot(mean(allExp.mard_convergence,2));
+subplot(2,1,2), plot(mean(allExp.mard_convergence,2)); hold on;
+subplot(2,1,2), plot(mean(allExp.mfocuss_convergence,2));
+subplot(2,1,2), plot(mean(allExp.tmsbl_convergence,2)); hold off;
 title('Iterations for converging');
 set(gca,'XTick',[1:numel(exp)], 'XTickLabel',tickLabels);
-legend('M-ARD');
+legend('M-ARD', 'MFOCUSS', 'TMSBL');
 
 
 

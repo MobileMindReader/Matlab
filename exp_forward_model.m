@@ -80,7 +80,7 @@ for iter=1:iterations
         data.w_true_norm(intraIter) = norm(x);
         
         alpha_init = 0.1*ones(numFuncs, 1);
-        beta_init = 1; %abs(normrnd(25,20));
+%         beta_init = 1; %abs(normrnd(25,20));
         
 %         %% ARD 
 %         ard_convergence = 0;
@@ -98,6 +98,18 @@ for iter=1:iterations
 %         data.time_ard(iter) = t_ard;
         
         %% M-ARD
+        beta_init=1;
+        if data.SNR(intraIter) > 1000
+            beta_init = 1000;
+        elseif data.SNR(intraIter) >= 23
+            beta_init = 20;
+        elseif data.SNR(intraIter) >= 6
+            beta_init = 5;
+        else
+            beta_init = 1;
+        end
+        
+        
         t0 = tic;
         [alphas_mard, betas_mard, m_mard, llh_mard] = MARD(alpha_init, beta_init, A, targets);
         t_mard = toc(t0);

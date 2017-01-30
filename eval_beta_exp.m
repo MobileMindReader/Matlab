@@ -110,7 +110,7 @@ for exp = experiments
     exp.title;
 end
 
-line([size(experiments{1}.beta,2) size(experiments{1}.beta,2)], [1e-6 1e1],'Color','k');
+line([size(experiments{1}.beta,2) size(experiments{1}.beta,2)], [1e-5 1e1],'Color','k');
 
 title('TNMSE of parameters as a function of chosen \beta, L = 1.');
 set(gca,'fontsize',12);

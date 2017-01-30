@@ -57,6 +57,8 @@ for file=dataFiles
             expIdx = 2;
         case '2076832'
             expIdx = 3;
+        otherwise
+            continue;
     end
     
     experiments{expIdx}.description = data1.description;
@@ -95,7 +97,7 @@ for exp = experiments
     exp.title;
 end
 
-line([5 5], [1e-2 1e1],'Color','k');
+line([9 9 ], [1e-4 1e0],'Color','k');
 
 title('TNMSE of parameters as a function of chosen \beta, L = 40.');
 set(gca,'fontsize',12);
