@@ -7,17 +7,18 @@ model.alpha=2;
 
 %% Fix seed
 % s = RandStream('mt19937ar','Seed','shuffle');
-s = RandStream('mt19937ar','Seed', (rand*100*run)/run);
+randSeed = run*randi(100);
+s = RandStream('mt19937ar','Seed', randSeed);
 RandStream.setGlobalStream(s);
 forwardModel = importdata('model/mBrainLeadfield.mat');
 
 %% Experiment parameters
-iterations = 1;
-intraIterations = 1;
+iterations = 20;
+intraIterations = 100;
 
 for iter=1:iterations
     
-    timeSteps = 80;
+    timeSteps = 40;
     fragments = 1;
     fragmentSize = ceil(timeSteps/fragments);
     
@@ -25,9 +26,9 @@ for iter=1:iterations
     numFuncs = 768;
     numActiveFuncs = 32;
     
-%     disp(0.1*iter);
-%     model.sigma = 0.05*iter;
-    model.sigma = 0.6;
+    disp(0.05*iter);
+    model.sigma = 0.05*iter;
+%     model.sigma = 0.6;
     model.beta = (1/model.sigma.^2);
     
     data.description = ['sigmax20=' int2str(model.sigma*20) '_N=' int2str(numSamples) '_M=' int2str(numFuncs) '_k=' int2str(numActiveFuncs) '_L=' int2str(timeSteps)];
@@ -44,6 +45,7 @@ for iter=1:iterations
     data.details = 'beta = abs(normrnd(25,20)), alpha=ones*0.1';
     
     data.noiseVariance = model.sigma;
+    data.beta = model.beta;
     
     for intraIter=1:intraIterations
         %% Generate data
@@ -74,7 +76,7 @@ for iter=1:iterations
         targets = y + noise;
         
         data.SNR(intraIter) = 10*log10(var(y)/var(noise));
-        data.SNR
+        data.SNR;
         data.w_true_norm(intraIter) = norm(x);
         
         alpha_init = 0.1*ones(numFuncs, 1);
@@ -114,7 +116,31 @@ for iter=1:iterations
         data.err_mfocuss(intraIter) = sum((X_focuss(:)-x(:)).^2)/sum(x(:).^2); %err_mard_accum;
         data.time_mfocuss(intraIter) = t_mfocuss;
         data.mfocuss_norm(intraIter) = norm(X_focuss);        
+        data.mfocuss_convergence(intraIter) = count_focuss;
         
+         %% T-MSBL (3rd party)
+        % If no noise,            Weight = TMSBL(Phi, Y, 'noise','no');
+        % If SNR >= 23 dB,        Weight = TMSBL(Phi, Y, 'noise','small');
+        % If 6dB < SNR <= 22 dB,  Weight = TMSBL(Phi, Y, 'noise','mild');
+        % If SNR <= 6 dB,         Weight = TMSBL(Phi, Y, 'noise','large');
+        t0 = tic;
+        noiseEstimation = '';
+        if data.SNR(intraIter) > 1000
+            noiseEstimation = 'no';
+        elseif data.SNR(intraIter) >= 23
+            noiseEstimation = 'small';
+        elseif data.SNR(intraIter) >= 6
+            noiseEstimation = 'mild';
+        else
+            noiseEstimation = 'large';
+        end
+        
+        [X_tmsbl, gamma_ind, gamma_est, count, B_est] = TMSBL(A, targets, 'noise',noiseEstimation, 'print',0);
+        data.time_tmsbl(intraIter) = toc(t0);
+        
+        data.err_tmsbl(intraIter) = sum((X_tmsbl(:)-x(:)).^2)/sum(x(:).^2); %err_mard_accum;
+        data.tmsbl_norm(intraIter) = norm(X_tmsbl);
+        data.tmsbl_convergence(intraIter) = count;
         
 %         %% Ridge for baseline
 %         m_ridge = [];

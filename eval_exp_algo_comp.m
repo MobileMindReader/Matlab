@@ -68,12 +68,18 @@ for i=1:numel(exp)
     exp{i}.ard_convergence = [];
     exp{i}.mard_convergence = [];
     exp{i}.SNR = [];
+    exp{i}.sigma = [];
 end
 
 
 for file=dataFiles
     data = file{:};
     currentExp = 0;
+    
+%     if data.noiseVariance ~= 1.0
+%         continue;
+%     end
+    
     switch data.L
         case 1
             currentExp = 1;
@@ -111,6 +117,7 @@ for file=dataFiles
             currentExp = 17;            
     end
     
+    exp{currentExp}.sigma = [exp{currentExp}.sigma data.noiseVariance];
     exp{currentExp}.ard_err = [exp{currentExp}.ard_err data.err_ard];
     exp{currentExp}.mard_err = [exp{currentExp}.mard_err data.err_mard];
     exp{currentExp}.ridge_err = [exp{currentExp}.ridge_err data.err_ridge];
@@ -157,8 +164,10 @@ allExp.ridge_time = [];
 allExp.ard_convergence = [];
 allExp.mard_convergence = [];
 allExp.SNR = [];
+allExp.sigma = [];
 
 for i=1:numel(exp)
+   
     allExp.ard_err = [allExp.ard_err; exp{i}.ard_err];
     allExp.mard_err = [allExp.mard_err; exp{i}.mard_err];
     allExp.ridge_err = [allExp.ridge_err; exp{i}.ridge_err];
@@ -178,13 +187,16 @@ for i=1:numel(exp)
     allExp.ard_norm = [allExp.ard_norm; exp{i}.ard_norm];
     allExp.mard_norm = [allExp.mard_norm; exp{i}.mard_norm];
 %     tmsbl norm
-    
+    allExp.sigma = [allExp.sigma; exp{i}.sigma];
     allExp.SNR = [allExp.SNR; exp{i}.SNR];
 end
+
 %%
 % Normalize
 range = [0:5:80]';
 range(1) = 1;
+
+sigmaIndex = 1;
 
 normErrorArd = allExp.ard_err;%./allExp.true_norm;
 normErrorMArd = allExp.mard_err;%./allExp.true_norm;
@@ -203,20 +215,82 @@ figure(1)
 tickLabels = strsplit(int2str(range'));
 
 plot(meanARDErr); hold on;
-% plot(mean(allExp.ard_test_err,2));
 plot(meanMARDErr);
 plot(meanMFOCUSSErr);
 plot(meanTMBSLErr);
 % plot(meanRidgeErr);
 % plot(mean(allExp.mard_test_err,2));
 
-title('MSE of parameters normalized by norm and number of responses');
+title(['TNMSE of parameters, \sigma = ' num2str(allExp.sigma(1))]);
 set(gca,'XTick',[1:numel(exp)], 'XTickLabel',tickLabels);
 set(gca, 'YScale', 'log');
 xlabel('Number of simultaneous responses (L)')
-ylabel('(MSE / \mid\mid w_{true} \mid\mid ) / L');
+ylabel('TNMSE');
 set(gca,'fontsize',12);
 legend('ARD', 'M-ARD', 'MFOCUSS', 'T-MSBL');
+hold off;
+
+
+%%
+% Normalize
+range = [0:5:80]';
+range(1) = 1;
+tickLabels = strsplit(int2str(range'));
+
+
+figure(10)
+colors = get(gca, 'ColorOrder');
+plot(mean(noiseless.ard_err,2), 'Color', colors(1,:)); hold on;
+plot(mean(noisy.ard_err,2), '--', 'Color', colors(1,:)); 
+plot(mean(noiseless.mard_err,2), 'Color', colors(2,:));
+plot(mean(noisy.mard_err,2), '--', 'Color', colors(2,:)); 
+plot(mean(noiseless.mfocuss_err,2), 'Color', colors(3,:)); 
+plot(mean(noisy.mfocuss_err,2), '--', 'Color', colors(3,:)); 
+plot(mean(noiseless.tmbsl_err,2), 'Color', colors(4,:)); 
+plot(mean(noisy.tmbsl_err,2), '--', 'Color', colors(4,:)); 
+
+% plot(meanRidgeErr);
+% plot(mean(allExp.mard_test_err,2));
+
+title(['TNMSE of parameters, \sigma = ' num2str(allExp.sigma(1))]);
+set(gca,'XTick',[1:numel(exp)], 'XTickLabel',tickLabels);
+set(gca, 'YScale', 'log');
+xlabel('Number of simultaneous responses (L)')
+ylabel('TNMSE');
+set(gca,'fontsize',12);
+legend('ARD', 'M-ARD', 'MFOCUSS', 'T-MSBL');
+hold off;
+
+%%
+
+range = [0:5:80]';
+range(1) = 1;
+tickLabels = strsplit(int2str(range'));
+
+
+figure(20)
+colors = get(gca, 'ColorOrder');
+% plot(mean(noiseless.ard_err,2), 'Color', colors(1,:)); hold on;
+% plot(mean(noisy.ard_err,2), '--', 'Color', colors(1,:)); 
+legends = {'','','','','',''};
+
+legendIndex = [1 6 2 3 4 5];
+for i=[0 2 3 4 5 1];
+plot(mean(allExp.mard_err(:,1+(i*1000):(i+1)*1000),2), 'Color', colors(i+1,:)); hold on;
+% plot(mean(allExp.mard_err,2), '--', 'Color', colors(1,:)); 
+legends{legendIndex(i+1)} = ['\sigma=' num2str(allExp.sigma(1,1+(i*50)))];
+end
+% plot(meanRidgeErr);
+% plot(mean(allExp.mard_test_err,2));
+
+title(['TNMSE of parameters for various \sigma']);
+set(gca,'XTick',[1:numel(exp)], 'XTickLabel',tickLabels);
+set(gca, 'YScale', 'log');
+xlabel('Number of simultaneous responses (L)')
+ylabel('TNMSE');
+set(gca,'fontsize',12);
+% legend('ARD', 'M-ARD', 'MFOCUSS', 'T-MSBL');
+legend(legends);
 hold off;
 
 

@@ -118,17 +118,26 @@ figure(1)
 ticks = 0.05:0.05:1;
 tickLabels = strsplit(num2str(ticks));
 
-plot(meanMARDErr); hold on;
-plot(meanMFOCUSSErr);
-% plot(mean(allExp.mard_test_err,2));
+subplot(2,1,1), plot(meanMARDErr); hold on;
+subplot(2,1,1), plot(meanMFOCUSSErr); hold off;
 
-title('MSE of parameters normalized by norm and number of responses');
+title('TNMSE of parameters, L=40');
 set(gca,'XTick',[1:numel(exp)], 'XTickLabel',tickLabels);
-% set(gca, 'YScale', 'log');
+set(gca, 'YScale', 'log');
 xlabel('Noise variance, \sigma')
-ylabel('(MSE / \mid\mid w_{true} \mid\mid ) / L');
+ylabel('TNMSE');
 set(gca,'fontsize',12);
 legend('M-ARD', 'MFOCUSS');
+
+subplot(2,1,2), plot(mean(allExp.SNR,2), 'k');
+set(gca,'XTick',[1:numel(exp)], 'XTickLabel',tickLabels);
+xlabel('Noise variance, \sigma');
+set(gca,'fontsize',12);
+title('SNR');
+ylabel('SNR_{dB}');
+% plot(mean(allExp.mard_test_err,2));
+
+
 hold off;
 
 
