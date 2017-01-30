@@ -32,7 +32,7 @@ for iter=1:iterations
     model.beta = (1/model.sigma.^2);
     
     data.description = ['sigmax20=' int2str(model.sigma*20) '_N=' int2str(numSamples) '_M=' int2str(numFuncs) '_k=' int2str(numActiveFuncs) '_L=' int2str(timeSteps)];
-    dataTitle = ['exp_forward/' data.description '-run-' int2str(run)];
+    dataTitle = ['exp_forward2/' data.description '-run-' int2str(run)];
     
     data.expIter = iter;
     
