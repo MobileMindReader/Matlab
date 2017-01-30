@@ -9,30 +9,33 @@ model.alpha=2;
 % s = RandStream('mt19937ar','Seed','shuffle');
 randSeed = run*randi(100);
 s = RandStream('mt19937ar','Seed', randSeed);
-s = RandStream('mt19937ar','Seed','shuffle');
+% s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 forwardModel = importdata('model/mBrainLeadfield.mat');
 %% Experiment parameters
-iterations = 10;
-intraIterations = 1;
+% iterations = 1:35;
+iterations = 1;%1:30;%35;
+intraIterations = 20;
 
-for iter=1:iterations
+testData.error = zeros(numel(iterations), intraIterations);
+
+for iter=iterations
     
-    timeSteps = 40;
+    timeSteps = 10;
     fragments = 1;
     fragmentSize = ceil(timeSteps/fragments);
     
-    numSamples = 22;
-    numFuncs = 768;
-    numActiveFuncs = 32;
+    numSamples = 5; %20*iter;
+    numFuncs = 50;
+    numActiveFuncs = 4;% 32-iter;
     
 %     disp(0.05*iter);
-    model.sigma = 1; 0.05*iter;
+    model.sigma = 0.0; %1; 0.05*iter;
 %     model.sigma = 0.6;
     model.beta = (1/model.sigma.^2);
     
     data.description = ['sigmax20=' int2str(model.sigma*20) '_N=' int2str(numSamples) '_M=' int2str(numFuncs) '_k=' int2str(numActiveFuncs) '_L=' int2str(timeSteps)];
-    dataTitle = ['exp_forward/' data.description '-run-' int2str(run)];
+    dataTitle = ['exp_model_size/' data.description '-run-' int2str(run)];
     
     data.expIter = iter;
     
@@ -42,7 +45,7 @@ for iter=1:iterations
     data.k = numActiveFuncs;
     data.exp = sprintf('%i%i%i%i', numSamples, numFuncs, numActiveFuncs, timeSteps);
 %     data.totalIterations = intraIterations;
-    data.details = 'beta = abs(normrnd(25,20)), alpha=ones*0.1';
+    data.details = 'beta = 1, alpha=ones*0.1';
     
     data.noiseVariance = model.sigma;
     data.beta = model.beta;
@@ -50,7 +53,8 @@ for iter=1:iterations
     for intraIter=1:intraIterations
         %% Generate data
         
-        A = forwardModel(:, sort(randperm(size(forwardModel,2),numFuncs)));
+        A = randn(numSamples, numFuncs);
+%         A = forwardModel(:, sort(randperm(size(forwardModel,2),numFuncs)));
         alphas = zeros(1, numFuncs);
         
         model.w = zeros(numFuncs,fragments);
@@ -80,22 +84,7 @@ for iter=1:iterations
         data.w_true_norm(intraIter) = norm(x);
         
         alpha_init = 0.1*ones(numFuncs, 1);
-        beta_init = 1; %abs(normrnd(25,20));
-        
-%         %% ARD 
-%         ard_convergence = 0;
-%         alphas_ard = []; betas_ard=[]; m_ard=[]; llh_ard=[];
-%         t0 = tic;
-%         for l=1:timeSteps
-%             [alphas_ard(:,l), betas_ard(:,l), m_ard(:,l), llh] = ARD(alpha_init, beta_init, A, targets(:,l));
-%             llh_ard(l) = llh(end);
-%             ard_convergence = ard_convergence + numel(llh);
-%         end
-%         t_ard = toc(t0);
-%         data.ard_norm(iter) = norm(m_ard);
-%         data.ard_convergence(iter) = ard_convergence;
-%         data.err_ard(iter) = sum((m_ard(:)-x(:)).^2)/sum(x(:).^2); %err_ard_accum;
-%         data.time_ard(iter) = t_ard;
+        beta_init = 100; %abs(normrnd(25,20));
         
         %% M-ARD
         t0 = tic;
@@ -107,56 +96,13 @@ for iter=1:iterations
         data.err_mard(intraIter) = sum((m_mard(:)-x(:)).^2)/sum(x(:).^2); %err_mard_accum;
         data.mard_convergence(intraIter) = numel(llh_mard);
         
-        %% MFOCUSS
-        lambda = 0.001;
-        t0 = tic;
-        [X_focuss, gamma_ind_focuss, gamma_est_focuss, count_focuss] = MFOCUSS(A, targets, lambda);
-        t_mfocuss = toc(t0);
-        
-        data.err_mfocuss(intraIter) = sum((X_focuss(:)-x(:)).^2)/sum(x(:).^2); %err_mard_accum;
-        data.time_mfocuss(intraIter) = t_mfocuss;
-        data.mfocuss_norm(intraIter) = norm(X_focuss);        
-        data.mfocuss_convergence(intraIter) = count_focuss;
-        
-         %% T-MSBL (3rd party)
-        % If no noise,            Weight = TMSBL(Phi, Y, 'noise','no');
-        % If SNR >= 23 dB,        Weight = TMSBL(Phi, Y, 'noise','small');
-        % If 6dB < SNR <= 22 dB,  Weight = TMSBL(Phi, Y, 'noise','mild');
-        % If SNR <= 6 dB,         Weight = TMSBL(Phi, Y, 'noise','large');
-        t0 = tic;
-        noiseEstimation = '';
-        if data.SNR(intraIter) > 1000
-            noiseEstimation = 'no';
-        elseif data.SNR(intraIter) >= 23
-            noiseEstimation = 'small';
-        elseif data.SNR(intraIter) >= 6
-            noiseEstimation = 'mild';
-        else
-            noiseEstimation = 'large';
-        end
-        
-        [X_tmsbl, gamma_ind, gamma_est, count, B_est] = TMSBL(A, targets, 'noise',noiseEstimation, 'print',0);
-        data.time_tmsbl(intraIter) = toc(t0);
-        
-        data.err_tmsbl(intraIter) = sum((X_tmsbl(:)-x(:)).^2)/sum(x(:).^2); %err_mard_accum;
-        data.tmsbl_norm(intraIter) = norm(X_tmsbl);
-        data.tmsbl_convergence(intraIter) = count;
-        
-%         %% Ridge for baseline
-%         m_ridge = [];
-%         t0 = tic();
-%         for l=1:timeSteps
-%             m_ridge(:,l) = (A'*A + 1e-2*eye(size(A, 2)))\(A'*targets(:,l));
-%         end
-%         t_ridge = toc(t0);
-%         data.err_ridge(iter) = sum((m_ridge(:)-x(:)).^2)/sum(x(:).^2); 
-%         data.time_ridge(iter) = t_ridge;
+        testData.error((iterations == iter), intraIter) = data.err_mard(intraIter);
         
         %% save data
         if mod(intraIter, 10) == 0
             disp(sprintf('Iter:%i', intraIter));
         end
-        save(dataTitle, 'data');
+%         save(dataTitle, 'data');
     end
 end
 

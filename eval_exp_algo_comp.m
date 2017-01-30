@@ -304,6 +304,8 @@ plot(mean(allExp.mfocuss_time,2));
 plot(mean(allExp.tmsbl_time,2));
 % plot(mean(allExp.mard_test_time,2));
 
+set(gca,'XTick',[1:numel(exp)], 'XTickLabel',tickLabels);
+% set(gca, 'YScale', 'log');
 title('Time');
 legend('ARD', 'M-ARD', 'MFOCUSS', 'T-MSBL');
 hold off;
@@ -312,6 +314,7 @@ hold off;
 figure(3)
 plot(mean(allExp.ard_convergence,2)); hold on;
 plot(mean(allExp.mard_convergence,2));
+% plot(mean(allExp.mfocuss_convergence,2));
 title('Iterations for converging');
 legend('ARD','M-ARD');
 hold off;
