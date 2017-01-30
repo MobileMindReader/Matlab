@@ -1,7 +1,8 @@
 %%
 clear
 %%
-path=('beta_init_multi/sigma1/');
+% path=('beta_init_multi/sigma1/');
+path=('beta_init_multi/');
 files = dir(path);
 fileIndex = find(~[files.isdir]);
 fileNames={}; dataFiles = {};
@@ -10,7 +11,8 @@ for i = 1:length(fileIndex)
     fileName = files(fileIndex(i)).name;
     if fileName(1) == '.'       
         continue; 
-    elseif fileName(end-3:end) == '.mat'
+%     elseif fileName(end-3:end) == '.mat'
+    elseif fileName(1:9) == 'Noiseless'
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end

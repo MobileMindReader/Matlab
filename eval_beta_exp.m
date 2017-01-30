@@ -1,7 +1,8 @@
 %%
 clear
 
-path=('beta_init2/sigma1/');
+% path=('beta_init2/sigma1/');
+path=('beta_init2/');
 files = dir(path);
 fileIndex = find(~[files.isdir]);
 fileNames={}; dataFiles = {};
@@ -10,7 +11,8 @@ for i = 1:length(fileIndex)
     fileName = files(fileIndex(i)).name;
     if fileName(1) == '.'       
         continue; 
-    elseif fileName(end-3:end) == '.mat'
+%     elseif fileName(end-3:end) == '.mat'
+    elseif fileName(1:9) == 'Noiseless'
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
@@ -108,7 +110,7 @@ for exp = experiments
     exp.title;
 end
 
-line([5 5], [1e-1 1e4],'Color','k');
+line([size(experiments{1}.beta,2) size(experiments{1}.beta,2)], [1e-6 1e1],'Color','k');
 
 title('TNMSE of parameters as a function of chosen \beta, L = 1.');
 set(gca,'fontsize',12);
