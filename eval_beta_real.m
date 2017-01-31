@@ -27,7 +27,7 @@ colorList = [   [0.000,  0.447,  0.741];
                 [0.929,  0.694,  0.125]; 
                 [0.466,  0.674,  0.188]];
 
-experiments = {{},{},{},{}};
+experiments = {{},{},{},{},{},{}};
 
 for expIdx=1:numel(experiments)
     experiments{expIdx}.beta = [];
@@ -39,17 +39,34 @@ end
             
 for file=dataFiles
     data1 = file{:};
-    expIdx = 0;
+%     expIdx = 0;
     switch data1.sigma_true
-        case 0.2
+        case 0.0
             expIdx = 1;
-        case 0.4
+        case 0.1
+            continue;
+        case 0.2
             expIdx = 2;
-        case 0.6
+        case 0.3
+            continue;
+        case 0.4
             expIdx = 3;
-        case 0.8
+        case 0.5
+            continue;
+        case 0.6
             expIdx = 4;
+        case 0.7
+            continue;
+        case 0.8
+            expIdx = 5;
+        case 0.9
+            continue;            
+        case 1.0
+            expIdx = 6;
     end
+    
+%     expIdx = round(1+data1.sigma_true*10);
+    
     experiments{expIdx}.sigma_true = data1.sigma_true;
     experiments{expIdx}.beta_true = data1.true_beta;
     experiments{expIdx}.description = data1.description;
@@ -57,7 +74,7 @@ for file=dataFiles
     experiments{expIdx}.beta = [experiments{expIdx}.beta; data1.beta];
     experiments{expIdx}.error = [experiments{expIdx}.error; data1.error];
     experiments{expIdx}.SNR = [experiments{expIdx}.SNR; data1.SNR];
-    experiments{expIdx}.color = colorList(expIdx,:);
+%     experiments{expIdx}.color = colorList(expIdx,:);
     experiments{expIdx}.convergence = [experiments{expIdx}.convergence; data1.convergence];
     experiments{expIdx}.norm = [experiments{expIdx}.norm; data1.w_true_norm];
 end
@@ -82,19 +99,24 @@ hold off;
 ticks=1:size(experiments{1}.beta,2);
 tickLabels = {'1e-4','1e-3','1e-2','1e-1','1e0','1e1','1e2','1e3','1e4'};
 % experiments{4}.norm(1001:1100,:) = [];
+legends = {'','','','','',''};
+
 figure(2);
-for exp = experiments
-    exp = exp{:};
-    plot(mean(exp.error,1), 'Color', exp.color); hold on;
+for i = 1:numel(experiments)
+    exp = experiments{i};
+    plot(mean(exp.error,1)); hold on;
     exp.beta_true;
+    legends{i} = ['True \beta = ' num2str(exp.beta_true)];
 end
+
 title('TNMSE of parameters as a function of chosen \beta, L = 40.');
 set(gca,'fontsize',12);
 set(gca,'XTickLabel',tickLabels);
 set(gca, 'YScale', 'log');
 xlabel('\beta');
 ylabel('MSE');
-legend('True \beta = 25', 'True \beta = 6.25', 'True \beta = 2.78', 'True \beta = 1.56', 'location','NorthWest');
+% legend('True \beta = 25', 'True \beta = 6.25', 'True \beta = 2.78', 'True \beta = 1.56', 'location','NorthWest');
+legend(legends, 'location', 'NorthWest');
 % legend('N100,M100,k100,Train', 'N100,M100,k100,Test', 'N100,M100,k20,Train', 'N100,M100,k20,Test', 'N100,M20,k20,Train','N100,M20,k20,Test','N20,M100,k20,Train','N20,M100,k20,Test');
 figure(2),hold off;
 

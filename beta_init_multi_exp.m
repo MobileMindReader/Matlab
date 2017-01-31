@@ -6,7 +6,8 @@ model.sigma = 0.01; % Noise std deviation
 model.beta = (1/model.sigma.^2);
 model.dimension = 1;
 
-s = RandStream('mt19937ar','Seed', randi(100)*run);
+randSeed = run*randi(100);
+s = RandStream('mt19937ar','Seed', randSeed);
 % s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
@@ -26,6 +27,8 @@ data.titleDescription = ['Noiseless_N=' int2str(N) '_M=' int2str(numFuncs) '_k='
 dataTitle = ['beta_init_multi/' data.titleDescription '-run-' int2str(run)];
 
 data.beta = zeros(iterations, intraIterations);
+data.randSeed = randSeed;
+
 
 for iter=1:iterations
     
@@ -64,7 +67,7 @@ for iter=1:iterations
         %% SNR
         data.SNR(iter, intraIter) = 10*log10(var(y)/var(noise));
         
-        beta_init = intraIter;
+        beta_init = betaRange(intraIter);
         data.beta_init(iter,intraIter) = beta_init; % values(intraIter);
        
         %% 

@@ -6,7 +6,8 @@ model.sigma = 0.01; % Noise std deviation
 model.beta = (1/model.sigma.^2);
 model.dimension = 1;
 
-s = RandStream('mt19937ar','Seed', randi(100*run)*run);
+randSeed = run*randi(100);
+s = RandStream('mt19937ar','Seed', randSeed);
 % s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
@@ -14,7 +15,6 @@ betaRange = [1e-4 1e-3 1e-2 1e-1 1 1e1 1e2 1e3 1e4];
 
 iterations = 100;
 intraIterations = numel(betaRange);
-
 
 numFuncs = funcs;
 % numActiveFuncs = numActiveFuncs;% floor(numFuncs/4);
@@ -24,6 +24,8 @@ data.description = ['Beta sweep: 1e-4:1e4, alpha inits same for a full beta swee
 data.exp = sprintf('%i%i%i', N, numFuncs,numActiveFuncs);
 data.titleDescription = ['Noiseless_N=' int2str(N) '_M=' int2str(numFuncs) '_k=' int2str(numActiveFuncs) '_L=' int2str(timeSteps)];
 dataTitle = ['beta_init2/' data.titleDescription '-run-' int2str(run)];
+
+data.randSeed = randSeed;
 
 data.beta = zeros(iterations, intraIterations);
 

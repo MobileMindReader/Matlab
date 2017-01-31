@@ -1,7 +1,7 @@
 % 
 clear;
 
-path=('exp_forward/');
+path=('exp_forward2/');
 files = dir(path);
 fileIndex = find(~[files.isdir]);
 fileNames={}; dataFiles = {};
@@ -149,7 +149,7 @@ set(gca,'XTick',[1:numel(exp)], 'XTickLabel',tickLabels);
 xlabel('Noise variance, \sigma');
 set(gca,'fontsize',12);
 title('SNR');
-ylabel('SNR_{dB}');
+ylabel('dB');
 % plot(mean(allExp.mard_test_err,2));
 
 

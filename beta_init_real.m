@@ -71,7 +71,7 @@ for iter=1:iterations
         %% SNR
         data.SNR(iter, intraIter) = 10*log10(var(y)/var(noise));
         
-        beta_init = intraIter;
+        beta_init = betaRange(intraIter);
         data.beta_init(iter,intraIter) = beta_init; % values(intraIter);
        
         %% 
