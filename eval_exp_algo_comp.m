@@ -220,7 +220,7 @@ plot(meanMFOCUSSErr);
 plot(meanTMBSLErr);
 % plot(meanRidgeErr);
 % plot(mean(allExp.mard_test_err,2));
-
+grid on;
 title(['TNMSE of parameters, \sigma = ' num2str(allExp.sigma(1))]);
 set(gca,'XTick',[1:numel(exp)], 'XTickLabel',tickLabels);
 set(gca, 'YScale', 'log');
@@ -278,14 +278,18 @@ legendIndex = [1 6 2 3 4 5];
 for i=[0 2 3 4 5 1];
 plot(mean(allExp.mard_err(:,1+(i*1000):(i+1)*1000),2), 'Color', colors(i+1,:)); hold on;
 % plot(mean(allExp.mard_err,2), '--', 'Color', colors(1,:)); 
-legends{legendIndex(i+1)} = ['\sigma=' num2str(allExp.sigma(1,1+(i*50)))];
+
+snrInt = round(mean(mean(allExp.SNR(:,1+(i*1000):(i+1)*1000),2)));
+
+legends{legendIndex(i+1)} = ['\sigma=' num2str(allExp.sigma(1,1+(i*50)),'%1.1f') ', SNR=' int2str(snrInt) ' dB'];
 end
 % plot(meanRidgeErr);
 % plot(mean(allExp.mard_test_err,2));
+grid on;
 
 title(['TNMSE of parameters for various \sigma']);
 set(gca,'XTick',[1:numel(exp)], 'XTickLabel',tickLabels);
-set(gca, 'YScale', 'log');
+% set(gca, 'YScale', 'log');
 xlabel('Number of simultaneous responses (L)')
 ylabel('TNMSE');
 set(gca,'fontsize',12);
@@ -303,11 +307,14 @@ plot(mean(allExp.mard_time,2));
 plot(mean(allExp.mfocuss_time,2));
 plot(mean(allExp.tmsbl_time,2));
 % plot(mean(allExp.mard_test_time,2));
-
+grid on;
 set(gca,'XTick',[1:numel(exp)], 'XTickLabel',tickLabels);
+set(gca,'fontsize',12);
 % set(gca, 'YScale', 'log');
-title('Time');
-legend('ARD', 'M-ARD', 'MFOCUSS', 'T-MSBL');
+xlabel('Number of simultaneous responses (L)');
+ylabel('Time in seconds');
+title(['Time usage, \sigma = ' num2str(allExp.sigma(1))]);
+legend('ARD', 'M-ARD', 'MFOCUSS', 'T-MSBL', 'location','NorthWest');
 hold off;
 
 %%

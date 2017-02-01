@@ -14,9 +14,9 @@ s = RandStream('mt19937ar','Seed',randSeed);
 RandStream.setGlobalStream(s);
 
 %% Experiment parameters
-iterations = 1;
+iterations = 40;
 
-for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80];
+for timeStepsIter = [1 10 20 30 40 50 60 70 80 90 100 110 120 130 140];
     
     fragments = 1;
     fragmentSize = ceil(timeStepsIter/fragments);
@@ -84,26 +84,26 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80];
         data.w_true_norm(iter) = norm(x);
         
         alpha_init = 0.1*ones(numFuncs, 1);
-        beta_init = abs(normrnd(25,20));
-        
+        beta_init = 4; %abs(normrnd(5,5));
+        data.beta_init = beta_init;
         %% ARD ERM
-        ard_convergence = 0;
-        alphas_ard = []; betas_ard=[]; m_ard=[]; llh_ard=[];
-        t0 = tic;
-        for l=1:timeSteps
-            [alphas_ard(:,l), betas_ard(:,l), m_ard(:,l), llh] = ARD(alpha_init, beta_init, A, targets(:,l));
-            llh_ard(l) = llh(end);
-            ard_convergence = ard_convergence + numel(llh);
-        end
-        t_ard = toc(t0);
-        
-        data.ard_norm(iter) = norm(m_ard);
-        data.ard_convergence(iter) = ard_convergence;
-        
-%         err_ard = mean((m_ard(:) - x(:)).^2);
-        
-        data.err_ard(iter) = sum((m_ard(:)-x(:)).^2)/sum(x(:).^2); %err_ard_accum;
-        data.time_ard(iter) = t_ard;
+%         ard_convergence = 0;
+%         alphas_ard = []; betas_ard=[]; m_ard=[]; llh_ard=[];
+%         t0 = tic;
+%         for l=1:timeSteps
+%             [alphas_ard(:,l), betas_ard(:,l), m_ard(:,l), llh] = ARD(alpha_init, beta_init, A, targets(:,l));
+%             llh_ard(l) = llh(end);
+%             ard_convergence = ard_convergence + numel(llh);
+%         end
+%         t_ard = toc(t0);
+%         
+%         data.ard_norm(iter) = norm(m_ard);
+%         data.ard_convergence(iter) = ard_convergence;
+%         
+% %         err_ard = mean((m_ard(:) - x(:)).^2);
+%         
+%         data.err_ard(iter) = sum((m_ard(:)-x(:)).^2)/sum(x(:).^2); %err_ard_accum;
+%         data.time_ard(iter) = t_ard;
         
 %         norm_ard = err_ard./norm(x)
 %         norm_ard/timeSteps
@@ -124,51 +124,51 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80];
        
         
         %% MFOCUSS
-        lambda = 0.001;
-        t0 = tic;
-        [X_focuss, gamma_ind_focuss, gamma_est_focuss, count_focuss] = MFOCUSS(A, targets, lambda, 'print',0);
-        t_mfocuss = toc(t0);
-        
-        data.err_mfocuss(iter) = sum((X_focuss(:)-x(:)).^2)/sum(x(:).^2); %err_mard_accum;
-        data.time_mfocuss(iter) = t_mfocuss;
-        data.mfocuss_norm(iter) = norm(X_focuss);
-        
+%         lambda = 0.001;
+%         t0 = tic;
+%         [X_focuss, gamma_ind_focuss, gamma_est_focuss, count_focuss] = MFOCUSS(A, targets, lambda, 'print',0);
+%         t_mfocuss = toc(t0);
+%         
+%         data.err_mfocuss(iter) = sum((X_focuss(:)-x(:)).^2)/sum(x(:).^2); %err_mard_accum;
+%         data.time_mfocuss(iter) = t_mfocuss;
+%         data.mfocuss_norm(iter) = norm(X_focuss);
+%         
         
         %% T-MSBL (3rd party)
-        % If no noise,            Weight = TMSBL(Phi, Y, 'noise','no');
-        % If SNR >= 23 dB,        Weight = TMSBL(Phi, Y, 'noise','small');
-        % If 6dB < SNR <= 22 dB,  Weight = TMSBL(Phi, Y, 'noise','mild');
-        % If SNR <= 6 dB,         Weight = TMSBL(Phi, Y, 'noise','large');
-        t0 = tic;
-        noiseEstimation = '';
-        if data.SNR(iter) > 1000
-            noiseEstimation = 'no';
-        elseif data.SNR(iter) >= 23
-            noiseEstimation = 'small';
-        elseif data.SNR(iter) >= 6
-            noiseEstimation = 'mild';
-        else
-            noiseEstimation = 'large';
-        end
-        
-        [X_tmsbl, gamma_ind, gamma_est, count, B_est] = TMSBL(A, targets, 'noise',noiseEstimation, 'print',0);
-        data.time_tmsbl(iter) = toc(t0);
-        
-        data.err_tmsbl(iter) = sum((X_tmsbl(:)-x(:)).^2)/sum(x(:).^2); %err_mard_accum;
-        data.tmsbl_norm(iter) = norm(X_tmsbl);
-        
+%         % If no noise,            Weight = TMSBL(Phi, Y, 'noise','no');
+%         % If SNR >= 23 dB,        Weight = TMSBL(Phi, Y, 'noise','small');
+%         % If 6dB < SNR <= 22 dB,  Weight = TMSBL(Phi, Y, 'noise','mild');
+%         % If SNR <= 6 dB,         Weight = TMSBL(Phi, Y, 'noise','large');
+%         t0 = tic;
+%         noiseEstimation = '';
+%         if data.SNR(iter) > 1000
+%             noiseEstimation = 'no';
+%         elseif data.SNR(iter) >= 23
+%             noiseEstimation = 'small';
+%         elseif data.SNR(iter) >= 6
+%             noiseEstimation = 'mild';
+%         else
+%             noiseEstimation = 'large';
+%         end
+%         
+%         [X_tmsbl, gamma_ind, gamma_est, count, B_est] = TMSBL(A, targets, 'noise',noiseEstimation, 'print',0);
+%         data.time_tmsbl(iter) = toc(t0);
+%         
+%         data.err_tmsbl(iter) = sum((X_tmsbl(:)-x(:)).^2)/sum(x(:).^2); %err_mard_accum;
+%         data.tmsbl_norm(iter) = norm(X_tmsbl);
+%         
         
         %% Ridge for baseline
-        m_ridge = [];
-        t0 = tic();
-        for l=1:timeSteps
-            m_ridge(:,l) = (A'*A + 1e-2*eye(size(A, 2)))\(A'*targets(:,l));
-        end
-        t_ridge = toc(t0);
-%         err_ridge = mean((m_ridge(:) - x(:)).^2);
-
-        data.err_ridge(iter) = sum((m_ridge(:)-x(:)).^2)/sum(x(:).^2); 
-        data.time_ridge(iter) = t_ridge;
+%         m_ridge = [];
+%         t0 = tic();
+%         for l=1:timeSteps
+%             m_ridge(:,l) = (A'*A + 1e-2*eye(size(A, 2)))\(A'*targets(:,l));
+%         end
+%         t_ridge = toc(t0);
+% %         err_ridge = mean((m_ridge(:) - x(:)).^2);
+% 
+%         data.err_ridge(iter) = sum((m_ridge(:)-x(:)).^2)/sum(x(:).^2); 
+%         data.time_ridge(iter) = t_ridge;
         
         %% save data
         if mod(iter, 10) == 0

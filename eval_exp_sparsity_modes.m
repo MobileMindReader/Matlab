@@ -97,17 +97,18 @@ for i=1:iterations
     w_mse_sparse_shared(:,i) = w_mse_sparse_shared(:,i)/numExperiments;
     
 end
-
+%%
 figure(1)
 plot(mean(w_mse_sparse_shared,1)), hold on;
 plot(mean(w_mse_sparse_separate,1)), hold off;
 % xlim([min(ticks) max(ticks)])
 set(gca,'XTick',ticks,'XTickLabel',tickLabels)%, 'YScale', 'log');
 set(gca,'fontsize',12);
+% set(gca,'YScale','log');
 title(' ... ');
 xlabel('Number of non-zero weights');
 ylabel('Relative MSE for all weights'); %, averaged over ' int2str(numExperiments) ' runs'
-legend('Shared prior estimation', 'Separate priors estimation');
+legend('EA', 'ARD');
 
 % print(figure(1), 'figures/sample_sweep_weight_relative_mse','-dpdf')
 
@@ -193,18 +194,18 @@ for i=1:iterations
 %     f1_model_separate_estimate_shared(:,i) = f1_model_separate_estimate_shared(:,i)/numExperiments;
 end
 
-
+%%
 
 figure(2)
 
-plot(mean(f1_msep_sha,2)), hold on;
-plot(mean(f1_msep_sep,2)), hold off;
-set(gca,'XTick',ticks,'XTickLabel',tickLabels);
+plot(fliplr(mean(f1_msep_sha,2)')), hold on;
+plot(fliplr(mean(f1_msep_sep,2)')), hold off;
+set(gca,'XTick',ticks,'XTickLabel',fliplr(tickLabels));
 set(gca,'fontsize',12);
-ylabel('F1-score for true non-zero weights');
+ylabel('F1-score');
 xlabel('Number of non-zero parameters')
-title('');
-legend('Shared prior estimate','Separate priors estimate');
+title('F1-score');
+legend('EA','ARD');
 
 % print(figure(2), 'figures/sparsity_sweep_f1','-dpdf')
 

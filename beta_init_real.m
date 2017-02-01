@@ -49,7 +49,8 @@ for iter=1:iterations
 %         Phi = randn(N, numFuncs);
         
         model.w = zeros(timeSteps, numFuncs);
-        model.w(1:numActiveFuncs) = normrnd(0,sqrt(1/model.alpha), [1 numActiveFuncs]);
+        idx=sort(randperm(size(A,2),numActiveFuncs));
+        model.w(idx) = normrnd(0,sqrt(1/model.alpha), [1 numActiveFuncs]);
         
         x=zeros(numFuncs, timeSteps);
         for i=1:numFuncs
@@ -94,7 +95,7 @@ for iter=1:iterations
 %         data.error_test(iter, intraIter) = mean((w_mard_test(:) - x_test(:)).^2);
 
     end
-    save(dataTitle, 'data');
+%     save(dataTitle, 'data');
     
     if mod(iter, 5) == 0
         disp(iter);

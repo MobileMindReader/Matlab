@@ -13,6 +13,7 @@ for i = 1:length(fileIndex)
         continue; 
 %     elseif fileName(end-3:end) == '.mat'
     elseif fileName(1:9) == 'Noiseless'
+%     elseif fileName(1:5) == 'Noisy'
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
@@ -30,7 +31,7 @@ colorList = [   [0.000,  0.447,  0.741];
                 [0.301,  0.745,  0.933]; 
                 [0.466,  0.674,  0.188]];
 
-experiments = {{},{},{}};
+experiments = {{},{}};
 
 for expIdx=1:numel(experiments)
     experiments{expIdx}.beta = [];
@@ -109,8 +110,9 @@ for exp = experiments
 %     plot(mean(exp.testError,1), 'Color', exp.color);
     exp.title;
 end
+grid on;
 
-line([size(experiments{1}.beta,2) size(experiments{1}.beta,2)], [1e-5 1e1],'Color','k');
+% line([5 5], [1e-1 1e4],'Color','k');
 
 title('TNMSE of parameters as a function of chosen \beta, L = 1.');
 set(gca,'fontsize',12);

@@ -108,13 +108,13 @@ for i = 1:numel(experiments)
     exp.beta_true;
     legends{i} = ['True \beta = ' num2str(exp.beta_true)];
 end
-
+grid on;
 title('TNMSE of parameters as a function of chosen \beta, L = 40.');
 set(gca,'fontsize',12);
 set(gca,'XTickLabel',tickLabels);
 set(gca, 'YScale', 'log');
 xlabel('\beta');
-ylabel('MSE');
+ylabel('TNMSE');
 % legend('True \beta = 25', 'True \beta = 6.25', 'True \beta = 2.78', 'True \beta = 1.56', 'location','NorthWest');
 legend(legends, 'location', 'NorthWest');
 % legend('N100,M100,k100,Train', 'N100,M100,k100,Test', 'N100,M100,k20,Train', 'N100,M100,k20,Test', 'N100,M20,k20,Train','N100,M20,k20,Test','N20,M100,k20,Train','N20,M100,k20,Test');
