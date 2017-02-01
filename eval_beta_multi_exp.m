@@ -98,7 +98,7 @@ for exp = experiments
     exp.title;
 end
 grid on;
-line([5 5 ], [1e-2 1e4],'Color','k');
+% line([5 5 ], [1e-2 1e4],'Color','k');
 
 title('TNMSE of parameters as a function of chosen \beta, L = 40.');
 set(gca,'fontsize',12);

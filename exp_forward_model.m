@@ -99,15 +99,15 @@ for iter=1:iterations
         
         %% M-ARD
         beta_init=1;
-        if data.SNR(intraIter) > 1000
-            beta_init = 1000;
-        elseif data.SNR(intraIter) >= 23
-            beta_init = 20;
-        elseif data.SNR(intraIter) >= 6
-            beta_init = 5;
-        else
-            beta_init = 1;
-        end
+%         if data.SNR(intraIter) > 1000
+%             beta_init = 1000;
+%         elseif data.SNR(intraIter) >= 23
+%             beta_init = 20;
+%         elseif data.SNR(intraIter) >= 6
+%             beta_init = 5;
+%         else
+%             beta_init = 1;
+%         end
         
         
         t0 = tic;
@@ -136,16 +136,16 @@ for iter=1:iterations
         % If 6dB < SNR <= 22 dB,  Weight = TMSBL(Phi, Y, 'noise','mild');
         % If SNR <= 6 dB,         Weight = TMSBL(Phi, Y, 'noise','large');
         t0 = tic;
-        noiseEstimation = '';
-        if data.SNR(intraIter) > 1000
-            noiseEstimation = 'no';
-        elseif data.SNR(intraIter) >= 23
-            noiseEstimation = 'small';
-        elseif data.SNR(intraIter) >= 6
-            noiseEstimation = 'mild';
-        else
-            noiseEstimation = 'large';
-        end
+        noiseEstimation = 'large';
+%         if data.SNR(intraIter) > 1000
+%             noiseEstimation = 'no';
+%         elseif data.SNR(intraIter) >= 23
+%             noiseEstimation = 'small';
+%         elseif data.SNR(intraIter) >= 6
+%             noiseEstimation = 'mild';
+%         else
+%             noiseEstimation = 'large';
+%         end
         
         [X_tmsbl, gamma_ind, gamma_est, count, B_est] = TMSBL(A, targets, 'noise',noiseEstimation, 'print',0);
         data.time_tmsbl(intraIter) = toc(t0);

@@ -106,7 +106,18 @@ for i = 1:numel(experiments)
     exp = experiments{i};
     plot(mean(exp.error,1)); hold on;
     exp.beta_true;
-    legends{i} = ['True \beta = ' num2str(exp.beta_true)];
+    snrInt = mean(mean(exp.SNR));
+    
+    betaString = num2str(exp.beta_true, '%1.2f');
+    
+    if round(exp.beta_true) == 25
+        betaString = num2str(exp.beta_true, '%1.1f');
+    end
+    if snrInt == -Inf
+        snrInt = Inf;
+    end
+    
+    legends{i} = ['True \beta = ' betaString ', SNR=' int2str(snrInt) ' dB'];
 end
 grid on;
 title('TNMSE of parameters as a function of chosen \beta, L = 40.');

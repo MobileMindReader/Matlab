@@ -129,6 +129,10 @@ meanMFOCUSSErr = mean(allExp.mfocuss_err,2);%./range;
 figure(1)
 ticks = 0.05:0.05:1;
 tickLabels = strsplit(num2str(ticks));
+% tickLabels = {};
+% for i=1:numel(SNR)
+%     tickLabels{i} = num2str(SNR(i),'%1.2f');
+% end
 
 subplot(2,1,1), plot(meanMARDErr); hold on;
 subplot(2,1,1), plot(meanMFOCUSSErr); 
