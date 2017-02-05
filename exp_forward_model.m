@@ -32,7 +32,7 @@ for iter=1:iterations
     model.beta = (1/model.sigma.^2);
     
     data.description = ['sigmax20=' int2str(model.sigma*20) '_N=' int2str(numSamples) '_M=' int2str(numFuncs) '_k=' int2str(numActiveFuncs) '_L=' int2str(timeSteps)];
-    dataTitle = ['exp_forward3/' data.description '-run-' int2str(run)];
+    dataTitle = ['exp_forward3/adaptive-' data.description '-run-' int2str(run)];
     
     data.expIter = iter;
     
@@ -100,15 +100,15 @@ for iter=1:iterations
         
         %% M-ARD
         beta_init=20;
-%         if data.SNR(intraIter) > 1000
-%             beta_init = 1000;
-%         elseif data.SNR(intraIter) >= 23
-%             beta_init = 20;
-%         elseif data.SNR(intraIter) >= 6
-%             beta_init = 5;
-%         else
-%             beta_init = 1;
-%         end
+        if data.SNR(intraIter) > 1000
+            beta_init = 1000;
+        elseif data.SNR(intraIter) >= 23
+            beta_init = 20;
+        elseif data.SNR(intraIter) >= 6
+            beta_init = 5;
+        else
+            beta_init = 1;
+        end
         
         t0 = tic;
         [alphas_mard, betas_mard, m_mard, llh_mard] = MARD(alpha_init, beta_init, A, targets);
@@ -122,15 +122,15 @@ for iter=1:iterations
         
         %% tMFOCUSS
         lambda = 0.01;
-%         if data.SNR(intraIter) > 1000
-%             lambda = 0.0001;
-%         elseif data.SNR(intraIter) >= 23
-%             lambda = 0.01;
-%         elseif data.SNR(intraIter) >= 6
-%             lambda = 0.1;
-%         else
-%             lambda = 1;
-%         end
+        if data.SNR(intraIter) > 1000
+            lambda = 0.0001;
+        elseif data.SNR(intraIter) >= 23
+            lambda = 0.01;
+        elseif data.SNR(intraIter) >= 6
+            lambda = 0.1;
+        else
+            lambda = 1;
+        end
         
         t0 = tic;
 %         [X_tmfocuss, gamma_ind_tf, gamma_est_tf, count_tmfocuss] = tMFOCUSS(A, targets, lambda);
@@ -150,15 +150,15 @@ for iter=1:iterations
         % If SNR <= 6 dB,         Weight = TMSBL(Phi, Y, 'noise','large');
         t0 = tic;
         noiseEstimation = 'small';
-%         if data.SNR(intraIter) > 1000
-%             noiseEstimation = 'no';
-%         elseif data.SNR(intraIter) >= 23
-%             noiseEstimation = 'small';
-%         elseif data.SNR(intraIter) >= 6
-%             noiseEstimation = 'mild';
-%         else
-%             noiseEstimation = 'large';
-%         end
+        if data.SNR(intraIter) > 1000
+            noiseEstimation = 'no';
+        elseif data.SNR(intraIter) >= 23
+            noiseEstimation = 'small';
+        elseif data.SNR(intraIter) >= 6
+            noiseEstimation = 'mild';
+        else
+            noiseEstimation = 'large';
+        end
         
         [X_tmsbl, gamma_ind, gamma_est, count, B_est] = TMSBL(A, targets, 'noise',noiseEstimation, 'print',0);
         data.time_tmsbl(intraIter) = toc(t0);
