@@ -11,7 +11,8 @@ for i = 1:length(fileIndex)
         continue; 
 %     elseif fileName(end-8:end) == '-10db.mat'
 %     elseif fileName(1:3) == 'exp'
-    elseif fileName(1:8) == 'sigmax20'
+%     elseif fileName(1:8) == 'sigmax20'
+    elseif fileName(1:8) == 'adaptive'        
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
@@ -145,7 +146,7 @@ set(gca, 'YScale', 'log');
 xlabel('Noise variance, \sigma')
 ylabel('TNMSE');
 set(gca,'fontsize',12);
-legend('M-ARD', 'MFOCUSS', 'TMSBL', 'location','NorthWest');
+legend('M-ARD', 'MFOCUSS', 'T-MSBL', 'location','NorthWest');
 
 subplot(2,1,2), plot(mean(allExp.SNR,2), 'k');
 grid on;
@@ -167,17 +168,27 @@ tickLabels = strsplit(num2str(ticks));
 
 subplot(2,1,1), plot(mean(allExp.mard_time,2)); hold on;
 subplot(2,1,1), plot(mean(allExp.mfocuss_time,2));
-subplot(2,1,1), plot(mean(allExp.tmsbl_time,2));
+subplot(2,1,1), plot(mean(allExp.tmsbl_time,2)); hold off;
 title('Time');
 set(gca,'XTick',[1:numel(exp)], 'XTickLabel',tickLabels);
-legend('M-ARD', 'MFOCUSS', 'TMSBL');
+xlabel('Noise variance, \sigma')
+ylabel('Time in seconds')
+legend('M-ARD', 'MFOCUSS', 'T-MSBL');
+set(gca,'fontsize',12);
+grid on;
+set(gca, 'YScale', 'log');
 
 subplot(2,1,2), plot(mean(allExp.mard_convergence,2)); hold on;
 subplot(2,1,2), plot(mean(allExp.mfocuss_convergence,2));
 subplot(2,1,2), plot(mean(allExp.tmsbl_convergence,2)); hold off;
-title('Iterations for converging');
+title('Convergence');
 set(gca,'XTick',[1:numel(exp)], 'XTickLabel',tickLabels);
-legend('M-ARD', 'MFOCUSS', 'TMSBL');
+set(gca, 'YScale', 'log');
+xlabel('Noise variance, \sigma')
+ylabel('Iterations')
+set(gca,'fontsize',12);
+grid on;
+legend('M-ARD', 'MFOCUSS', 'T-MSBL');
 
 
 

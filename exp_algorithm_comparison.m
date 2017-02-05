@@ -16,7 +16,7 @@ RandStream.setGlobalStream(s);
 %% Experiment parameters
 iterations = 40;
 
-for timeStepsIter = [1 10 20 30 40 50 60 70 80 90 100 110 120 130 140];
+for timeStepsIter = 40;% [1 10 20 30 40 50 60 70 80 90 100 110 120 130 140];
     
     fragments = 1;
     fragmentSize = ceil(timeStepsIter/fragments);
@@ -126,6 +126,7 @@ for timeStepsIter = [1 10 20 30 40 50 60 70 80 90 100 110 120 130 140];
         %% MFOCUSS
 %         lambda = 0.001;
 %         t0 = tic;
+%         [X_tf, gamma_ind_tf, gamma_est_tf, count_tf] = tMFOCUSS(A, targets, lambda, 'print', 0);
 %         [X_focuss, gamma_ind_focuss, gamma_est_focuss, count_focuss] = MFOCUSS(A, targets, lambda, 'print',0);
 %         t_mfocuss = toc(t0);
 %         

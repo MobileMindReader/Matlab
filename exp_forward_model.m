@@ -32,7 +32,7 @@ for iter=1:iterations
     model.beta = (1/model.sigma.^2);
     
     data.description = ['sigmax20=' int2str(model.sigma*20) '_N=' int2str(numSamples) '_M=' int2str(numFuncs) '_k=' int2str(numActiveFuncs) '_L=' int2str(timeSteps)];
-    dataTitle = ['exp_forward2/adaptive-' data.description '-run-' int2str(run)];
+    dataTitle = ['exp_forward3/' data.description '-run-' int2str(run)];
     
     data.expIter = iter;
     
@@ -78,6 +78,7 @@ for iter=1:iterations
         data.SNR(intraIter) = 10*log10(var(y)/var(noise));
         data.SNR;
         data.w_true_norm(intraIter) = norm(x);
+        data.trueIdx{intraIter} = idx;
         
         alpha_init = 0.1*ones(numFuncs, 1);
 %         beta_init = 1; %abs(normrnd(25,20));
@@ -98,45 +99,48 @@ for iter=1:iterations
 %         data.time_ard(iter) = t_ard;
         
         %% M-ARD
-        beta_init=1;
-        if data.SNR(intraIter) > 1000
-            beta_init = 1000;
-        elseif data.SNR(intraIter) >= 23
-            beta_init = 20;
-        elseif data.SNR(intraIter) >= 6
-            beta_init = 5;
-        else
-            beta_init = 1;
-        end
+        beta_init=20;
+%         if data.SNR(intraIter) > 1000
+%             beta_init = 1000;
+%         elseif data.SNR(intraIter) >= 23
+%             beta_init = 20;
+%         elseif data.SNR(intraIter) >= 6
+%             beta_init = 5;
+%         else
+%             beta_init = 1;
+%         end
         
         t0 = tic;
         [alphas_mard, betas_mard, m_mard, llh_mard] = MARD(alpha_init, beta_init, A, targets);
         t_mard = toc(t0);
         
         data.mard_norm(intraIter) = norm(m_mard);
+        data.mardIdx{intraIter} = (find((mean(m_mard,2) > 0) == 1));
         data.time_mard(intraIter) = t_mard;
         data.err_mard(intraIter) = sum((m_mard(:)-x(:)).^2)/sum(x(:).^2); %err_mard_accum;
         data.mard_convergence(intraIter) = numel(llh_mard);
         
-        %% MFOCUSS
-        lambda = 0.1;
-        if data.SNR(intraIter) > 1000
-            lambda = 0.0001;
-        elseif data.SNR(intraIter) >= 23
-            lambda = 0.001;
-        elseif data.SNR(intraIter) >= 6
-            lambda = 0.01;
-        else
-            lambda = 0.1;
-        end
+        %% tMFOCUSS
+        lambda = 0.01;
+%         if data.SNR(intraIter) > 1000
+%             lambda = 0.0001;
+%         elseif data.SNR(intraIter) >= 23
+%             lambda = 0.01;
+%         elseif data.SNR(intraIter) >= 6
+%             lambda = 0.1;
+%         else
+%             lambda = 1;
+%         end
         
         t0 = tic;
+%         [X_tmfocuss, gamma_ind_tf, gamma_est_tf, count_tmfocuss] = tMFOCUSS(A, targets, lambda);
         [X_focuss, gamma_ind_focuss, gamma_est_focuss, count_focuss] = MFOCUSS(A, targets, lambda);
         t_mfocuss = toc(t0);
         
         data.err_mfocuss(intraIter) = sum((X_focuss(:)-x(:)).^2)/sum(x(:).^2); %err_mard_accum;
         data.time_mfocuss(intraIter) = t_mfocuss;
         data.mfocuss_norm(intraIter) = norm(X_focuss);        
+        data.mfocussIdx{intraIter} = (find((mean(X_focuss,2) > 0) == 1));
         data.mfocuss_convergence(intraIter) = count_focuss;
         
          %% T-MSBL (3rd party)
@@ -145,16 +149,16 @@ for iter=1:iterations
         % If 6dB < SNR <= 22 dB,  Weight = TMSBL(Phi, Y, 'noise','mild');
         % If SNR <= 6 dB,         Weight = TMSBL(Phi, Y, 'noise','large');
         t0 = tic;
-        noiseEstimation = 'large';
-        if data.SNR(intraIter) > 1000
-            noiseEstimation = 'no';
-        elseif data.SNR(intraIter) >= 23
-            noiseEstimation = 'small';
-        elseif data.SNR(intraIter) >= 6
-            noiseEstimation = 'mild';
-        else
-            noiseEstimation = 'large';
-        end
+        noiseEstimation = 'small';
+%         if data.SNR(intraIter) > 1000
+%             noiseEstimation = 'no';
+%         elseif data.SNR(intraIter) >= 23
+%             noiseEstimation = 'small';
+%         elseif data.SNR(intraIter) >= 6
+%             noiseEstimation = 'mild';
+%         else
+%             noiseEstimation = 'large';
+%         end
         
         [X_tmsbl, gamma_ind, gamma_est, count, B_est] = TMSBL(A, targets, 'noise',noiseEstimation, 'print',0);
         data.time_tmsbl(intraIter) = toc(t0);
@@ -162,6 +166,7 @@ for iter=1:iterations
         data.err_tmsbl(intraIter) = sum((X_tmsbl(:)-x(:)).^2)/sum(x(:).^2); %err_mard_accum;
         data.tmsbl_norm(intraIter) = norm(X_tmsbl);
         data.tmsbl_convergence(intraIter) = count;
+        data.tmsblIdx{intraIter} = (find((mean(X_tmsbl,2) > 0) == 1));
         
 %         %% Ridge for baseline
 %         m_ridge = [];

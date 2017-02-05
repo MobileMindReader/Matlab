@@ -63,27 +63,35 @@ for iter=1:iterations
         
         targetsSparse = ySparse+noise;
         
-        beta_init = rand;
+        beta_init = 0.1;
         alphas = rand(1, numFuncs);
 %         alphas(1:numActiveFuncs) = model.alpha;
-        alpha_init = rand;
+        alpha_init = 0.1;
+        
         %%
         Phi=A;
         
-%         [A, beta, w_ard, llh] = ARD(alphas, beta_init, Phi, targets);
-%         [ASparse, betaSparse, w_ard_sparse, llh_sparse] = ARD(alphas, beta_init, Phi, targetsSparse);
-        [alpha, beta_bl, w_bl, llh_bl, gamma] = maximum_evidence(alpha_init, beta_init, Phi, targets);
+        beta = beta_init;
+        alpha = alpha_init;
+        lambda = beta*eig(Phi'*Phi);
+                
+        Sigma = alpha*eye(numFuncs) + beta * Phi'*Phi;
+        AU = chol(Sigma);
+        AInvU = inv(AU);
+        AInv = AInvU*AInvU';  %A^-1 = L^-1'*L^-1 = U^-1 * U^-1'
         
-%         [A_fixed, beta_fixed, w_ard_fixed, llh_fixed] = ARD_fixedBeta(alphas, beta_init, Phi, targets);
-%         [ASparse_fixed, betaSparse_fixed, w_ard_sparse_fixed, llh_sparse_fixed] = ARD_fixedBeta(alphas, beta_init, Phi, targetsSparse);
+        mN = beta * (AInv*(Phi'*targets));
+        gamma = 0;
+        for j=1:numFuncs
+            gamma = gamma + lambda(j)/(alpha + lambda(j));
+        end
+        alpha = gamma/(mN'*mN);
+        Ew = (sum((targets-Phi*mN).^2));
+        beta_inv = 1/(N-gamma) * Ew;
+        beta = 1/beta_inv;
         
-%         m_ridge1 = (Phi'*Phi + 1e-2*eye(size(Phi, 2)))\(Phi'*targets);
-%         m_ridge = (Phi'*Phi)\(Phi'*targets);
-        
-%         data.A{iter, intraIter} = A;
-        data.beta(iter, intraIter) = beta_bl;
-%         data.w{iter, intraIter} = w_ard;
-        data.w{iter, intraIter} = w_bl;
+        data.beta(iter, intraIter) = beta;
+        data.w{iter, intraIter} = mN;
        
 %         x_est_test = zeros(1,size(A,2));
 %         for i=1:size(A,2)
@@ -93,46 +101,14 @@ for iter=1:iterations
 %         end
 %         x_est_test
         
-        
-%         data.ASparse{iter, intraIter} = ASparse;
-%         data.betaSparse(iter, intraIter) = betaSparse;
-%         data.w_sparse{iter, intraIter} = w_ard_sparse;
-        
-
-%         data.A_fixed{iter, intraIter} = A_fixed;
-%         data.beta_fixed(iter, intraIter) = beta_fixed;
-%         data.w_fixed{iter, intraIter} = w_ard_fixed;
-        
-%         data.ASparse_fixed{iter, intraIter} = ASparse_fixed;
-%         data.betaSparse_fixed(iter, intraIter) = betaSparse_fixed;
-%         data.w_sparse_fixed{iter, intraIter} = w_ard_sparse_fixed;        
-        
         data.w_true_norm(iter, intraIter) = norm(data.w_true{iter, intraIter});
-%         data.w_ard_norm(iter, intraIter) = norm(w_ard);
-        data.w_bl_norm(iter, intraIter) = norm(w_bl);
+        data.w_bl_norm(iter, intraIter) = norm(mN);
 
-        data.w_true_sparse_norm(iter, intraIter) = norm(data.w_trueSparse{iter, intraIter});
+%         data.w_true_sparse_norm(iter, intraIter) = norm(data.w_trueSparse{iter, intraIter});
 %         data.w_ard_sparse_norm(iter, intraIter) = norm(w_ard_sparse);
         
-%         data.w_ard_norm_fixed(iter, intraIter) = norm(w_ard_fixed);
-%         data.w_ard_sparse_norm_fixed(iter, intraIter) = norm(w_ard_sparse_fixed);
+        data.error(iter, intraIter) = mean((mN(:) - data.x(:)).^2);
         
-        data.error(iter, intraIter) = mean((w_bl(:) - data.x(:)).^2);
-        
-        Sigma = inv(alpha*eye(numFuncs)+beta_bl*(Phi'*Phi));
-        w_bl_test = beta_bl*Sigma*Phi'*targets_test;
-        
-        data.error_test(iter, intraIter) = mean((w_bl_test(:) - data.x_test(:)).^2);
-%         data.test_error(iter, intraIter) = mean((w_bl_test(:) - data.w_true{iter, intraIter}(:)).^2);
-        
-%         data.error(iter, intraIter) = mean((w_ard(:) - data.w_true{iter, intraIter}(:)).^2);
-%         data.errorSparse(iter, intraIter) = mean((w_ard_sparse(:) - data.w_trueSparse{iter, intraIter}(:)).^2);
-        
-%         data.error_fixed(iter, intraIter) = mean((w_ard_fixed(:) - data.w_true{iter, intraIter}(:)).^2);
-%         data.errorSparse_fixed(iter, intraIter) = mean((w_ard_sparse_fixed(:) - data.w_trueSparse{iter, intraIter}(:)).^2);
-        
-%         data.error_ridge1(iter, intraIter) = mean((m_ridge1(:) - x(:)).^2);
-%         data.error_ridge(iter, intraIter) = mean((m_ridge(:) - x(:)).^2);
     end
     
     if mod(iter, 5) == 0
@@ -142,6 +118,9 @@ end
 
 
 %% 
+
+lambda = alpha_init/beta_init
+
 ticks = 0:10:iterations;
 % ticks = [1  8 18 28 38];
 % ticks(1) = 2;
@@ -149,7 +128,9 @@ tickLabels = strsplit(int2str(ticks*10));
 % tickLabels = {'20' '100' '200' '300' '400'};
 % tickLabels{2} = '20';
 
-figure(1);
+fignum = 4;
+
+figure(fignum);
 subplot(2,1,1);
 plot(mean(data.beta,2)), hold on;
 % plot(mean(data.betaSparse,2));
@@ -168,7 +149,7 @@ legend('Evidence approximation', 'True');
 % legend('Evidence approximation', 'True', 'Dense model, fixed \beta', 'Sparse model, fixed \beta', 'True', 'location', 'NorthEast');
 % legend('lambda = 0.01', 'lambda = 0.1', 'lambda = 1', 'lambda = 10', 'lambda = 100', 'True', 'location', 'NorthWest');
 
-figure(1);
+figure(fignum);
 subplot(2,1,2);
 plot(mean(data.w_bl_norm,2)); hold on;
 % plot(mean(data.w_ard_norm,2)); hold on;
@@ -188,22 +169,22 @@ title('\mid\midw_{EA}\mid\mid as a function of number of basis functions. N = 10
 % legend('lambda = 0.01', 'lambda = 0.1', 'lambda = 1', 'lambda = 10', 'lambda = 100', 'True', 'location', 'NorthWest');
 
 %%
-figure(2);
-% subplot(3,1,3);
-plot(mean(data.error,2)); hold on;
-plot(mean(data.error_test,2)); 
-
-% plot(mean(data.errorSparse,2));
-% plot(mean(data.error_fixed,2));
-% plot(mean(data.errorSparse_fixed,2));
-
-% plot(mean(data.error_ridge,2)); 
-hold off;
-legend('Train', 'Test');
-% legend('Dense model', 'Sparse model', 'Dense model, fixed \beta', 'Sparse model, fixed \beta', 'location', 'NorthWest');
-set(gca, 'YScale', 'log');
-set(gca,'XTick',ticks, 'XTickLabel',tickLabels);
-set(gca,'fontsize',12);
+% figure(2);
+% % subplot(3,1,3);
+% plot(mean(data.error,2)); hold on;
+% % plot(mean(data.error_test,2)); 
+% 
+% % plot(mean(data.errorSparse,2));
+% % plot(mean(data.error_fixed,2));
+% % plot(mean(data.errorSparse_fixed,2));
+% 
+% % plot(mean(data.error_ridge,2)); 
+% hold off;
+% legend('Train', 'Test');
+% % legend('Dense model', 'Sparse model', 'Dense model, fixed \beta', 'Sparse model, fixed \beta', 'location', 'NorthWest');
+% set(gca, 'YScale', 'log');
+% set(gca,'XTick',ticks, 'XTickLabel',tickLabels);
+% set(gca,'fontsize',12);
 
 
 %% 

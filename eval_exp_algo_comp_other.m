@@ -80,9 +80,9 @@ for file=dataFiles
     data = file{:};
     currentExp = 0;
     
-%     if data.noiseVariance ~= 1.0
-%         continue;
-%     end
+    if data.noiseVariance ~= 0.0
+        continue;
+    end
     
 %     currentExp = find(range == data.L);
 
@@ -124,27 +124,27 @@ for file=dataFiles
     end
     
     exp{currentExp}.sigma = [exp{currentExp}.sigma data.noiseVariance];
-%     exp{currentExp}.ard_err = [exp{currentExp}.ard_err data.err_ard];
+    exp{currentExp}.ard_err = [exp{currentExp}.ard_err data.err_ard];
     exp{currentExp}.mard_err = [exp{currentExp}.mard_err data.err_mard];
-%     exp{currentExp}.ridge_err = [exp{currentExp}.ridge_err data.err_ridge];
-%     exp{currentExp}.mfocuss_err = [exp{currentExp}.mfocuss_err data.err_mfocuss];
-%     exp{currentExp}.tmbsl_err = [exp{currentExp}.tmbsl_err data.err_tmsbl];
+    exp{currentExp}.ridge_err = [exp{currentExp}.ridge_err data.err_ridge];
+    exp{currentExp}.mfocuss_err = [exp{currentExp}.mfocuss_err data.err_mfocuss];
+    exp{currentExp}.tmbsl_err = [exp{currentExp}.tmbsl_err data.err_tmsbl];
     
-%     exp{currentExp}.ard_time = [exp{currentExp}.ard_time data.time_ard];
+    exp{currentExp}.ard_time = [exp{currentExp}.ard_time data.time_ard];
     exp{currentExp}.mard_time = [exp{currentExp}.mard_time data.time_mard];
-%     exp{currentExp}.mfocuss_time = [exp{currentExp}.mfocuss_time data.time_mfocuss];
-%     exp{currentExp}.ridge_time = [exp{currentExp}.ridge_time data.time_ridge];
-%     exp{currentExp}.tmsbl_time = [exp{currentExp}.tmsbl_time data.time_tmsbl];
+    exp{currentExp}.mfocuss_time = [exp{currentExp}.mfocuss_time data.time_mfocuss];
+    exp{currentExp}.ridge_time = [exp{currentExp}.ridge_time data.time_ridge];
+    exp{currentExp}.tmsbl_time = [exp{currentExp}.tmsbl_time data.time_tmsbl];
     
-%     exp{currentExp}.ard_convergence = [exp{currentExp}.ard_convergence data.ard_convergence];
+    exp{currentExp}.ard_convergence = [exp{currentExp}.ard_convergence data.ard_convergence];
     exp{currentExp}.mard_convergence = [exp{currentExp}.mard_convergence data.mard_convergence];
     
     exp{currentExp}.SNR = [exp{currentExp}.SNR data.SNR];
     
     exp{currentExp}.true_norm = [exp{currentExp}.true_norm data.w_true_norm];
-%     exp{currentExp}.ard_norm = [exp{currentExp}.ard_norm data.ard_norm];
+    exp{currentExp}.ard_norm = [exp{currentExp}.ard_norm data.ard_norm];
     exp{currentExp}.mard_norm = [exp{currentExp}.mard_norm data.mard_norm];
-%     exp{currentExp}.tmsbl_norm = [exp{currentExp}.tmsbl_norm data.tmsbl_norm];
+    exp{currentExp}.tmsbl_norm = [exp{currentExp}.tmsbl_norm data.tmsbl_norm];
 end
 
 allExp = {};
@@ -174,23 +174,23 @@ allExp.sigma = [];
 
 for i=1:numel(exp)
    
-%     allExp.ard_err = [allExp.ard_err; exp{i}.ard_err];
+    allExp.ard_err = [allExp.ard_err; exp{i}.ard_err];
     allExp.mard_err = [allExp.mard_err; exp{i}.mard_err];
-%     allExp.ridge_err = [allExp.ridge_err; exp{i}.ridge_err];
-%     allExp.mfocuss_err = [allExp.mfocuss_err; exp{i}.mfocuss_err];
-%     allExp.tmbsl_err = [allExp.tmbsl_err; exp{i}.tmbsl_err];
+    allExp.ridge_err = [allExp.ridge_err; exp{i}.ridge_err];
+    allExp.mfocuss_err = [allExp.mfocuss_err; exp{i}.mfocuss_err];
+    allExp.tmbsl_err = [allExp.tmbsl_err; exp{i}.tmbsl_err];
     
-%     allExp.ard_time = [allExp.ard_time; exp{i}.ard_time];
+    allExp.ard_time = [allExp.ard_time; exp{i}.ard_time];
     allExp.mard_time = [allExp.mard_time; exp{i}.mard_time];
-%     allExp.mfocuss_time = [allExp.mfocuss_time; exp{i}.mfocuss_time];
-%     allExp.tmsbl_time = [allExp.tmsbl_time; exp{i}.tmsbl_time];
-%     allExp.ridge_time = [allExp.ridge_time; exp{i}.ridge_time];
+    allExp.mfocuss_time = [allExp.mfocuss_time; exp{i}.mfocuss_time];
+    allExp.tmsbl_time = [allExp.tmsbl_time; exp{i}.tmsbl_time];
+    allExp.ridge_time = [allExp.ridge_time; exp{i}.ridge_time];
     
-%     allExp.ard_convergence = [allExp.ard_convergence; exp{i}.ard_convergence];
+    allExp.ard_convergence = [allExp.ard_convergence; exp{i}.ard_convergence];
     allExp.mard_convergence = [allExp.mard_convergence; exp{i}.mard_convergence];
     
     allExp.true_norm = [allExp.true_norm; exp{i}.true_norm];
-%     allExp.ard_norm = [allExp.ard_norm; exp{i}.ard_norm];
+    allExp.ard_norm = [allExp.ard_norm; exp{i}.ard_norm];
     allExp.mard_norm = [allExp.mard_norm; exp{i}.mard_norm];
 %     tmsbl norm
     allExp.sigma = [allExp.sigma; exp{i}.sigma];
@@ -308,20 +308,28 @@ hold off;
 %%
 figure(2)
 
-plot(mean(allExp.ard_time,2)); hold on;
-% plot(mean(allExp.ard_test_time,2));
-plot(mean(allExp.mard_time,2));
-plot(mean(allExp.mfocuss_time,2));
-plot(mean(allExp.tmsbl_time,2));
-% plot(mean(allExp.mard_test_time,2));
+colors = get(gca, 'ColorOrder');
+
+plot(mean(allExp.ard_time,2), 'Color', colors(1,:)); hold on;
+plot(mean(allExp2.ard_time,2), '--', 'Color', colors(1,:));
+
+plot(mean(allExp.mard_time,2), 'Color', colors(2,:));
+plot(mean(allExp2.mard_time,2), '--', 'Color', colors(2,:));
+
+plot(mean(allExp.mfocuss_time,2), 'Color', colors(3,:));
+plot(mean(allExp2.mfocuss_time,2), '--', 'Color', colors(3,:));
+
+plot(mean(allExp.tmsbl_time,2), 'Color', colors(4,:));
+plot(mean(allExp2.tmsbl_time,2), '--', 'Color', colors(4,:));
+
 grid on;
 set(gca,'XTick',[1:numel(exp)], 'XTickLabel',tickLabels);
 set(gca,'fontsize',12);
-% set(gca, 'YScale', 'log');
+set(gca, 'YScale', 'log');
 xlabel('Number of simultaneous responses (L)');
 ylabel('Time in seconds');
-title(['Time usage, \sigma = ' num2str(allExp.sigma(1))]);
-legend('ARD', 'M-ARD', 'MFOCUSS', 'T-MSBL', 'location','NorthWest');
+title(['Time usage']);
+legend('ARD, \sigma = 0', 'ARD, \sigma = 1', 'M-ARD, \sigma = 0', 'M-ARD, \sigma = 1', 'MFOCUSS, \sigma = 0', 'MFOCUSS, \sigma = 1', 'T-MSBL, \sigma = 0', 'T-MSBL, \sigma = 1', 'location','SouthEast');
 hold off;
 
 %%
@@ -340,14 +348,11 @@ legends = {};
 
 legendIndex = [1 6 2 3 4 5];
 for i=[0 2 3 4 5 1];
-% subplot(2,1,1), plot(mean(allExp.mard_time(:,1+(i*1000):(i+1)*1000),2), 'Color', colors(i+1,:)); hold on;
-subplot(2,1,1), plot(mean(allExp.mard_convergence(:,1+(i*1000):(i+1)*1000),2), 'Color', colors(i+1,:)); hold on;
+subplot(2,1,1), plot(mean(allExp.mard_time(:,1+(i*1000):(i+1)*1000),2), 'Color', colors(i+1,:)); hold on;
 
-expTime = mean(allExp.mard_time(:,1+(i*1000):(i+1)*1000),2);
-expIter = mean(allExp.mard_convergence(:,1+(i*1000):(i+1)*1000),2);
-
-% expTime./expIter
-subplot(2,1,2), plot((expTime./expIter)', 'Color', colors(i+1,:)); hold on;
+subplot(2,1,2), plot(mean(allExp.mard_convergence(:,1+(i*1000):(i+1)*1000),2), 'Color', colors(i+1,:)); hold on;
+% plot(mean(allExp.mard_convergence(:,1+(i*1000):(i+1)*1000),2), '--', 'Color', colors(i+1,:)); 
+% plot(mean(allExp.mard_err,2), '--', 'Color', colors(1,:)); 
 
 snrInt = round(mean(mean(allExp.SNR(:,1+(i*1000):(i+1)*1000),2)));
 
@@ -358,7 +363,19 @@ end
 subplot(2,1,1);
 grid on;
 
-% title(['Time usage for various \sigma']);
+title(['Time usage for various \sigma']);
+set(gca,'XTick',[1:numel(exp)], 'XTickLabel',tickLabels);
+set(gca, 'YScale', 'log');
+% set(gca, 'XScale', 'log');
+xlabel('Number of simultaneous responses (L)')
+ylabel('Time in seconds');
+set(gca,'fontsize',12);
+% legend('ARD', 'M-ARD', 'MFOCUSS', 'T-MSBL');
+legend(legends,'location','SouthEast');
+hold off;
+subplot(2,1,2);
+grid on;
+
 title(['Convergence for various \sigma']);
 set(gca,'XTick',[1:numel(exp)], 'XTickLabel',tickLabels);
 set(gca, 'YScale', 'log');
@@ -368,19 +385,6 @@ ylabel('Iterations');
 set(gca,'fontsize',12);
 % legend('ARD', 'M-ARD', 'MFOCUSS', 'T-MSBL');
 legend(legends,'location','NorthEast');
-hold off;
-subplot(2,1,2);
-grid on;
-
-title(['Time per iteration for various \sigma']);
-set(gca,'XTick',[1:numel(exp)], 'XTickLabel',tickLabels);
-set(gca, 'YScale', 'log');
-% set(gca, 'XScale', 'log');
-xlabel('Number of simultaneous responses (L)')
-ylabel('Time in seconds');
-set(gca,'fontsize',12);
-% legend('ARD', 'M-ARD', 'MFOCUSS', 'T-MSBL');
-legend(legends,'location','SouthEast');
 
 hold off;
 
