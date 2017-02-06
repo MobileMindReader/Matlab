@@ -111,11 +111,11 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80]
         
         %% M-ARD
         beta_init=20;
-        if data.SNR(intraIter) > 1000
+        if data.SNR(iter) > 1000
             beta_init = 1000;
-        elseif data.SNR(intraIter) >= 23
+        elseif data.SNR(iter) >= 23
             beta_init = 20;
-        elseif data.SNR(intraIter) >= 6
+        elseif data.SNR(iter) >= 6
             beta_init = 5;
         else
             beta_init = 1;
