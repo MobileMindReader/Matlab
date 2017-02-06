@@ -131,6 +131,9 @@ dist_est_true_sha = zeros(iterations, numExperiments);
 
 dist_sha = zeros(iterations, numExperiments);
 
+recovery_msep_sha = zeros(iterations, numExperiments);
+recovery_msep_sep = zeros(iterations, numExperiments);
+
 % Calculate MSE 
 for i=1:iterations
     for j=1:numExperiments
@@ -186,6 +189,9 @@ for i=1:iterations
         recallSha=truePosSha/(truePosSha+falseNegSha);
         
         f1_msep_sha(i,j) = 2*(precisionSha*recallSha)/(precisionSha+recallSha);
+        
+        recovery_msep_sha(i,j) = f1_msep_sha(i,j) < 1;
+        recovery_msep_sep(i,j) = f1_msep_sep(i,j) < 1;
     end
     
 %     dist_true_est_sep(i,:) = dist_true_est_sep(i,:)/ (500-((i-1)*10));
@@ -197,10 +203,10 @@ end
 %%
 
 figure(2)
-
-plot(fliplr(mean(f1_msep_sha,2)')), hold on;
-plot(fliplr(mean(f1_msep_sep,2)')), hold off;
-set(gca,'XTick',ticks,'XTickLabel',fliplr(tickLabels));
+% fliplr
+plot((mean(f1_msep_sha,2)')), hold on;
+plot((mean(f1_msep_sep,2)')), hold off;
+set(gca,'XTick',ticks,'XTickLabel',(tickLabels));
 set(gca,'fontsize',12);
 ylabel('F1-score');
 xlabel('Number of non-zero parameters')
@@ -208,6 +214,19 @@ title('F1-score');
 legend('EA','ARD');
 
 % print(figure(2), 'figures/sparsity_sweep_f1','-dpdf')
+
+%%
+
+figure(34);
+plot(sum(recovery_msep_sha,2)./numExperiments); hold on;
+plot(sum(recovery_msep_sep,2)./numExperiments); hold off;
+set(gca,'XTick',ticks,'XTickLabel',tickLabels);% 'YScale', 'log');
+set(gca,'fontsize',12);
+title('Sparse model (20/500 non-zero parameters)');
+xlabel('Number of non-zero parameters')
+ylabel('Failure rate');
+
+legend('EA','ARD');
 
 %%
 

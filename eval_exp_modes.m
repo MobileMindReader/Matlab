@@ -221,6 +221,11 @@ f1_msep_sep = zeros(iterations, numExperiments);
 f1_msha_sha = zeros(iterations, numExperiments);
 f1_msha_sep = zeros(iterations, numExperiments);
 
+recovery_msep_sha = zeros(iterations, numExperiments);
+recovery_msep_sep = zeros(iterations, numExperiments);
+recovery_msha_sha = zeros(iterations, numExperiments);
+recovery_msha_sep = zeros(iterations, numExperiments);
+
 for i=1:iterations
     for j=1:numExperiments
         % Separate priors model
@@ -273,6 +278,11 @@ for i=1:iterations
         recallSha=truePosSha/(truePosSha+falseNegSha);
         
         f1_msha_sha(i,j) = 2*(precisionSha*recallSha)/(precisionSha+recallSha);
+        
+        recovery_msep_sha(i,j) = f1_msep_sha(i,j) < 1;
+        recovery_msep_sep(i,j) = f1_msep_sep(i,j) < 1;
+        recovery_msha_sep(i,j) = f1_msha_sep(i,j) < 1;
+        recovery_msha_sha(i,j) = f1_msha_sha(i,j) < 1;
     end
 end
 
@@ -298,6 +308,29 @@ title('Sparse model (20/500 non-zero parameters)');
 xlabel('Number of samples'); 
 ylabel('F1-score for non-zero weights');
 legend('Shared prior estimate','Separate priors estimate');
+
+%%
+
+figure(33)
+subplot(2,1,1), plot(sum(recovery_msha_sha,2)./numExperiments); hold on;
+subplot(2,1,1), plot(sum(recovery_msha_sep,2)./numExperiments); hold off;
+set(gca,'fontsize',12);
+title('Dense model (500/500 non-zero parameters)');
+set(gca,'XTick',ticks,'XTickLabel',tickLabels);% 'YScale', 'log');
+xlabel('Number of samples');
+ylabel('Failure rate');
+legend('EA','ARD');
+%
+
+subplot(2,1,2), plot(sum(recovery_msep_sha,2)./numExperiments); hold on;
+subplot(2,1,2), plot(sum(recovery_msep_sep,2)./numExperiments); hold off;
+set(gca,'XTick',ticks,'XTickLabel',tickLabels);% 'YScale', 'log');
+set(gca,'fontsize',12);
+title('Sparse model (20/500 non-zero parameters)');
+xlabel('Number of samples'); 
+ylabel('Failure rate');
+
+legend('EA','ARD');
 
 %%
 print(figure(2), 'figures/sample_sweep_f1','-dpdf')

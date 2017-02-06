@@ -14,9 +14,10 @@ s = RandStream('mt19937ar','Seed',randSeed);
 RandStream.setGlobalStream(s);
 
 %% Experiment parameters
-iterations = 40;
+iterations = 20;
+% [1 10 20 30 40 50 60 70 80 90 100 110 120 130 140];
 
-for timeStepsIter = 40;% [1 10 20 30 40 50 60 70 80 90 100 110 120 130 140];
+for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80]
     
     fragments = 1;
     fragmentSize = ceil(timeStepsIter/fragments);
@@ -105,8 +106,8 @@ for timeStepsIter = 40;% [1 10 20 30 40 50 60 70 80 90 100 110 120 130 140];
 %         data.err_ard(iter) = sum((m_ard(:)-x(:)).^2)/sum(x(:).^2); %err_ard_accum;
 %         data.time_ard(iter) = t_ard;
         
-%         norm_ard = err_ard./norm(x)
-%         norm_ard/timeSteps
+% % % %         norm_ard = err_ard./norm(x)
+% % % %         norm_ard/timeSteps
         
         %% M-ARD
         
@@ -121,7 +122,9 @@ for timeStepsIter = 40;% [1 10 20 30 40 50 60 70 80 90 100 110 120 130 140];
         
         data.err_mard(iter) = sum((m_mard(:)-x(:)).^2)/sum(x(:).^2); %err_mard_accum;
         data.mard_convergence(iter) = numel(llh_mard);
-       
+        mard_idx = find((m_mard > 0) == 1);
+        
+        data.failure_rate(iter) = mean(ismember(idx, mard_idx)) < 1;
         
         %% MFOCUSS
 %         lambda = 0.001;

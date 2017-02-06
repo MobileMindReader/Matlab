@@ -12,8 +12,8 @@ for i = 1:length(fileIndex)
     if fileName(1) == '.'       
         continue; 
 %     elseif fileName(end-3:end) == '.mat'
-    elseif fileName(1:9) == 'Noiseless'
-%     elseif fileName(1:5) == 'Noisy'
+%     elseif fileName(1:9) == 'Noiseless'
+    elseif fileName(1:5) == 'Noisy'
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
@@ -51,16 +51,17 @@ for file=dataFiles
             continue
 %             expIdx = 1;
         case '10010020'
-            expIdx = 1;
+%             expIdx = 1;
+            continue;
         case '1002020'
             continue
 %             expIdx = 3;
         case '2010020'
-            expIdx = 2;
+            expIdx = 1;
         case '2076832'
-            expIdx = 3;
+            expIdx = 2;
     end
-    
+
     experiments{expIdx}.description = data1.description;
     experiments{expIdx}.title = data1.titleDescription;
     experiments{expIdx}.beta = [experiments{expIdx}.beta; data1.beta];
@@ -112,7 +113,7 @@ for exp = experiments
 end
 grid on;
 
-% line([5 5], [1e-1 1e4],'Color','k');
+line([5 5], [0.8 1.7],'Color','k');
 
 title('TNMSE of parameters as a function of chosen \beta, L = 1.');
 set(gca,'fontsize',12);
@@ -120,7 +121,7 @@ set(gca,'XTickLabels',tickLabels);
 set(gca, 'YScale', 'log');
 xlabel('\beta');
 ylabel('TNMSE');
-legend('N100,M100,k20','N20,M100,k20','N20,M768,k32', 'True beta', 'location','NorthWest');
+legend('N20,M100,k20','N20,M768,k32', 'True beta', 'location','NorthWest');
 % legend('N100,M100,k100,Train', 'N100,M100,k100,Test', 'N100,M100,k20,Train', 'N100,M100,k20,Test', 'N100,M20,k20,Train','N100,M20,k20,Test','N20,M100,k20,Train','N20,M100,k20,Test');
 figure(2),hold off;
 

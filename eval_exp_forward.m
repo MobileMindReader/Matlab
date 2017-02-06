@@ -1,7 +1,7 @@
 % 
 clear;
 
-path=('exp_forward2/');
+path=('exp_forward3/');
 files = dir(path);
 fileIndex = find(~[files.isdir]);
 fileNames={}; dataFiles = {};
@@ -9,10 +9,11 @@ for i = 1:length(fileIndex)
     fileName = files(fileIndex(i)).name;
     if fileName(1) == '.'       
         continue; 
-%     elseif fileName(end-8:end) == '-10db.mat'
-%     elseif fileName(1:3) == 'exp'
-%     elseif fileName(1:8) == 'sigmax20'
     elseif fileName(1:8) == 'adaptive'        
+%     elseif fileName(1:8) == 'sigmax20'
+%         if fileName(end-4) == '1' || fileName(end-4) == '2' || fileName(end-4) == '5' || fileName(end-4) == '6'
+%             continue;
+%         end
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
@@ -40,6 +41,10 @@ for i=1:numel(exp)
     
     exp{i}.mard_convergence = [];
     exp{i}.SNR = [];
+    exp{i}.MARDIdx = [];
+    exp{i}.TMSBLIdx = [];
+    exp{i}.MFOCUSSIdx = [];
+    exp{i}.idx = [];
 end
 
 
@@ -80,6 +85,14 @@ for file=dataFiles
     exp{currentExp}.tmsbl_time = [exp{currentExp}.tmsbl_time data.time_tmsbl];
     exp{currentExp}.tmsbl_convergence = [exp{currentExp}.tmsbl_convergence data.tmsbl_convergence];
     
+    
+    exp{currentExp}.idx = [exp{currentExp}.idx data.trueIdx];
+    exp{currentExp}.MARDIdx = [exp{currentExp}.MARDIdx data.mardIdx];
+    exp{currentExp}.MFOCUSSIdx = [exp{currentExp}.MFOCUSSIdx data.mfocussIdx];
+    exp{currentExp}.TMSBLIdx = [exp{currentExp}.TMSBLIdx data.tmsblIdx];
+    
+    
+    
     try ~isempty(data.err_mfocuss);
         exp{currentExp}.mfocuss_err = [exp{currentExp}.mfocuss_err data.err_mfocuss];
         exp{currentExp}.mfocuss_time = [exp{currentExp}.mfocuss_time data.time_mfocuss];
@@ -102,6 +115,11 @@ allExp.tmsbl_err = [];
 allExp.tmsbl_time = [];
 allExp.tmsbl_convergence = [];
 
+allExp.MARDIdx = [];
+allExp.TMSBLIdx = [];
+allExp.MFOCUSSIdx = [];
+allExp.idx = [];
+
 for i=1:numel(exp)
     allExp.mard_err = [allExp.mard_err; exp{i}.mard_err];
     allExp.mard_time = [allExp.mard_time; exp{i}.mard_time];
@@ -113,12 +131,49 @@ for i=1:numel(exp)
     allExp.tmsbl_time = [allExp.tmsbl_time; exp{i}.tmsbl_time];
     allExp.tmsbl_convergence = [allExp.tmsbl_convergence; exp{i}.tmsbl_convergence];
     
+    allExp.idx = [allExp.idx; exp{i}.idx];
+    allExp.MARDIdx = [allExp.MARDIdx; exp{i}.MARDIdx];
+    allExp.MFOCUSSIdx = [allExp.MFOCUSSIdx; exp{i}.MFOCUSSIdx];
+    allExp.TMSBLIdx = [allExp.TMSBLIdx; exp{i}.TMSBLIdx];
+    
     if ~isempty(exp{i}.mfocuss_err)
         allExp.mfocuss_err = [allExp.mfocuss_err; exp{i}.mfocuss_err];
         allExp.mfocuss_time = [allExp.mfocuss_time; exp{i}.mfocuss_time];
         allExp.mfocuss_convergence = [allExp.mfocuss_convergence; exp{i}.mfocuss_convergence];
     end
 end
+%%
+
+this = std(allExp.mard_convergence,0,2)./sqrt(1000)
+
+%% Failure rate
+
+fMF = zeros(size(allExp.idx));
+fMA = zeros(size(allExp.idx));
+fTM = zeros(size(allExp.idx));
+
+for i=1:size(allExp.idx,1)
+    for j=1:size(allExp.idx,2)
+        
+    fMF(i,j) = mean(ismember(allExp.idx{i,j}, allExp.MFOCUSSIdx{i,j})) < 1;
+    fMA(i,j) = mean(ismember(allExp.idx{i,j}, allExp.MARDIdx{i,j})) < 1;
+    fTM(i,j) = mean(ismember(allExp.idx{i,j}, allExp.TMSBLIdx{i,j})) < 1;
+    end
+end
+
+numExperiments = size(allExp.idx,2);
+plot(sum(fMA,2)./numExperiments); hold on;
+plot(sum(fMF,2)./numExperiments);
+plot(sum(fTM,2)./numExperiments); hold off;
+
+% set(gca,'XTick',ticks,'XTickLabel',tickLabels);% 'YScale', 'log');
+set(gca,'fontsize',12);
+title('Failure rate');
+xlabel('Number of samples'); 
+ylabel('Failure rate');
+
+
+
 %%
 % Normalize
 

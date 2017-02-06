@@ -2,7 +2,7 @@
 
 % True parameters
 model.noiseMean = 0;
-model.sigma = 1; % Noise std deviation
+model.sigma = 0.01; % Noise std deviation
 model.beta = (1/model.sigma.^2);
 model.dimension = 1;
 
@@ -44,11 +44,9 @@ for iter=1:iterations
         model.w(1:numActiveFuncs) = normrnd(0,sqrt(1/model.alpha), [1 numActiveFuncs]);
         
         x=zeros(numFuncs, timeSteps);
-%         x_test=zeros(numFuncs, timeSteps);
         for i=1:numFuncs
             xInput = sin(0.5*randn*(1:timeSteps));
-            x(i,:)=model.w(i)*xInput(1:timeSteps);
-%             x_test(i,:) = model.w(i)*xInput(timeSteps+1:timeSteps*2);
+            x(i,:)=model.w(i); %*xInput(1:timeSteps);
         end
         
 %         data.w_true{iter, intraIter} = x;

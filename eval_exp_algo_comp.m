@@ -80,9 +80,9 @@ for file=dataFiles
     data = file{:};
     currentExp = 0;
     
-%     if data.noiseVariance ~= 1.0
-%         continue;
-%     end
+    if data.noiseVariance ~= 1.0
+        continue;
+    end
     
 %     currentExp = find(range == data.L);
 
