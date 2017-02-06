@@ -14,7 +14,7 @@ s = RandStream('mt19937ar','Seed',randSeed);
 RandStream.setGlobalStream(s);
 
 %% Experiment parameters
-iterations = 20;
+iterations = 100;
 % [1 10 20 30 40 50 60 70 80 90 100 110 120 130 140];
 
 for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80]
@@ -23,9 +23,9 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80]
     fragmentSize = ceil(timeStepsIter/fragments);
     
     timeSteps = timeStepsIter
-    numSamples = 22;
-    numFuncs = 768;
-    numActiveFuncs = 32;
+    numSamples = 20;
+    numFuncs = 100;
+    numActiveFuncs = 20;
     
 %     forwardModel = importdata('model/mBrainLeadfield.mat');
     % dataTitle = ['exp_algo_comp/' datestr(datetime('now')) 'beta_rand'];
@@ -85,8 +85,8 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80]
         data.w_true_norm(iter) = norm(x);
         
         alpha_init = 0.1*ones(numFuncs, 1);
-        beta_init = 4; %abs(normrnd(5,5));
-        data.beta_init = beta_init;
+%         beta_init = 50; %abs(normrnd(5,5));
+        
         %% ARD ERM
 %         ard_convergence = 0;
 %         alphas_ard = []; betas_ard=[]; m_ard=[]; llh_ard=[];
@@ -110,7 +110,17 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80]
 % % % %         norm_ard/timeSteps
         
         %% M-ARD
-        
+        beta_init=20;
+        if data.SNR(intraIter) > 1000
+            beta_init = 1000;
+        elseif data.SNR(intraIter) >= 23
+            beta_init = 20;
+        elseif data.SNR(intraIter) >= 6
+            beta_init = 5;
+        else
+            beta_init = 1;
+        end
+        data.beta_init = beta_init;
         t0 = tic;
         [alphas_mard, betas_mard, m_mard, llh_mard] = MARD(alpha_init, beta_init, A, targets);
         t_mard = toc(t0);
@@ -122,7 +132,8 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80]
         
         data.err_mard(iter) = sum((m_mard(:)-x(:)).^2)/sum(x(:).^2); %err_mard_accum;
         data.mard_convergence(iter) = numel(llh_mard);
-        mard_idx = find((m_mard > 0) == 1);
+        
+        mard_idx = find((alphas_mard < 1e6) == 1);
         
         data.failure_rate(iter) = mean(ismember(idx, mard_idx)) < 1;
         
@@ -178,7 +189,7 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80]
         if mod(iter, 10) == 0
             disp(sprintf('Iter:%i', iter));
         end
-        
+%         data.failure_rate
         save(dataTitle, 'data');
     end
 end

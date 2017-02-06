@@ -6,10 +6,10 @@ clear;
 % path=('exp_algo_comp2/');
 % path=('exp_algo_comp2/sigma1/');
 
-path=('exp_algo_comp/Noiseless/');
-path2=('exp_algo_comp/Noisy/');
+% path=('exp_algo_comp/Noiseless/');
+% path2=('exp_algo_comp/Noisy/');
 
-% path=('exp_algo_comp3/');
+path=('exp_algo_mard_comp/');
 
 files = dir(path);
 fileIndex = find(~[files.isdir]);
@@ -26,25 +26,25 @@ for i = 1:length(fileIndex)
     end
 end
 
-files2 = dir(path2);
-fileIndex2 = find(~[files2.isdir]);
-fileNames2={};
-for i = 1:length(fileIndex2)
-    fileName = files2(fileIndex2(i)).name;
-    if fileName(1) == '.'       
-        continue; 
-    elseif fileName(end-3:end) == '.mat'
-        fileNames2{end+1} = files2(fileIndex2(i)).name;
-    end
-end
+% files2 = dir(path2);
+% fileIndex2 = find(~[files2.isdir]);
+% fileNames2={};
+% for i = 1:length(fileIndex2)
+%     fileName = files2(fileIndex2(i)).name;
+%     if fileName(1) == '.'       
+%         continue; 
+%     elseif fileName(end-3:end) == '.mat'
+%         fileNames2{end+1} = files2(fileIndex2(i)).name;
+%     end
+% end
 
 for i=1:numel(fileNames)
     dataFiles{i} = importdata([path fileNames{i}]);
 end
 
-for i=1:numel(fileNames2)
-    dataFiles{numel(fileNames)+i} = importdata([path2 fileNames2{i}]);
-end
+% for i=1:numel(fileNames2)
+%     dataFiles{numel(fileNames)+i} = importdata([path2 fileNames2{i}]);
+% end
 
 %%
 
@@ -74,17 +74,18 @@ for i=1:numel(range)
     exp{i}.mard_convergence = [];
     exp{i}.SNR = [];
     exp{i}.sigma = [];
+    exp{i}.failure_rate = [];
 end
 
 for file=dataFiles
     data = file{:};
     currentExp = 0;
+%     
+%     if data.noiseVariance ~= 1.0
+%         continue;
+%     end
     
-    if data.noiseVariance ~= 1.0
-        continue;
-    end
-    
-%     currentExp = find(range == data.L);
+    currentExp = find(range == data.L);
 
     switch data.L
         case 1
@@ -138,7 +139,7 @@ for file=dataFiles
     
 %     exp{currentExp}.ard_convergence = [exp{currentExp}.ard_convergence data.ard_convergence];
     exp{currentExp}.mard_convergence = [exp{currentExp}.mard_convergence data.mard_convergence];
-    
+    exp{currentExp}.failure_rate = [exp{currentExp}.failure_rate data.failure_rate];
     exp{currentExp}.SNR = [exp{currentExp}.SNR data.SNR];
     
     exp{currentExp}.true_norm = [exp{currentExp}.true_norm data.w_true_norm];
@@ -171,6 +172,7 @@ allExp.ard_convergence = [];
 allExp.mard_convergence = [];
 allExp.SNR = [];
 allExp.sigma = [];
+allExp.failure_rate = [];
 
 for i=1:numel(exp)
    
@@ -193,6 +195,7 @@ for i=1:numel(exp)
 %     allExp.ard_norm = [allExp.ard_norm; exp{i}.ard_norm];
     allExp.mard_norm = [allExp.mard_norm; exp{i}.mard_norm];
 %     tmsbl norm
+    allExp.failure_rate = [allExp.failure_rate; exp{i}.failure_rate];
     allExp.sigma = [allExp.sigma; exp{i}.sigma];
     allExp.SNR = [allExp.SNR; exp{i}.SNR];
 end
@@ -283,7 +286,7 @@ legends = {};
 
 legendIndex = [1 6 2 3 4 5];
 for i=[0 2 3 4 5 1];
-plot(mean(allExp.mard_err(:,1+(i*1000):(i+1)*1000),2), 'Color', colors(i+1,:)); hold on;
+plot(mean(allExp.failure_rate(:,1+(i*1000):(i+1)*1000),2), 'Color', colors(i+1,:)); hold on;
 % plot(mean(allExp.mard_err,2), '--', 'Color', colors(1,:)); 
 
 snrInt = round(mean(mean(allExp.SNR(:,1+(i*1000):(i+1)*1000),2)));
@@ -296,7 +299,7 @@ grid on;
 
 title(['TNMSE of parameters for various \sigma']);
 set(gca,'XTick',[1:numel(exp)], 'XTickLabel',tickLabels);
-set(gca, 'YScale', 'log');
+% set(gca, 'YScale', 'log');
 xlabel('Number of simultaneous responses (L)')
 ylabel('TNMSE');
 set(gca,'fontsize',12);
