@@ -9,11 +9,11 @@ for i = 1:length(fileIndex)
     fileName = files(fileIndex(i)).name;
     if fileName(1) == '.'       
         continue; 
-    elseif fileName(1:8) == 'adaptive'        
-%     elseif fileName(1:8) == 'sigmax20'
-%         if fileName(end-4) == '1' || fileName(end-4) == '2' || fileName(end-4) == '5' || fileName(end-4) == '6'
-%             continue;
-%         end
+%     elseif fileName(1:8) == 'adaptive'        
+    elseif fileName(1:8) == 'sigmax20'
+        if fileName(end-4) == '1' || fileName(end-4) == '2' || fileName(end-4) == '5' || fileName(end-4) == '6' || fileName(end-4) == '8'
+            continue;
+        end
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
@@ -144,7 +144,7 @@ for i=1:numel(exp)
 end
 %%
 
-this = std(allExp.mard_convergence,0,2)./sqrt(1000)
+
 
 %% Failure rate
 
@@ -190,6 +190,17 @@ tickLabels = strsplit(num2str(ticks));
 %     tickLabels{i} = num2str(SNR(i),'%1.2f');
 % end
 
+stdErrMARD = (std(allExp.mard_err,0,2)./sqrt(500))./mean(allExp.mard_err,2)
+stdErrMFOCUSS = (std(allExp.mfocuss_err,0,2)./sqrt(500))./mean(allExp.mfocuss_err,2)
+stdErrTMSBL = (std(allExp.tmsbl_err,0,2)./sqrt(500))./mean(allExp.tmsbl_err,2)
+
+% subplot(2,1,1), erb1=errorbar(mean(a_dense_shared,2), err_dense_shared); hold on;
+% subplot(2,1,1), errorbar(meanMARDErr, stdErrMARD); hold on;
+% subplot(2,1,1), errorbar(meanMFOCUSSErr,stdErrMFOCUSS); 
+% subplot(2,1,1), errorbar(mean(allExp.tmsbl_err,2), stdErrTMSBL);hold off;
+
+
+
 subplot(2,1,1), plot(meanMARDErr); hold on;
 subplot(2,1,1), plot(meanMFOCUSSErr); 
 subplot(2,1,1), plot(mean(allExp.tmsbl_err,2));hold off;
@@ -217,7 +228,7 @@ hold off;
 
 
 %%
-figure(2)
+figure(5)
 ticks = 0.05:0.05:1;
 tickLabels = strsplit(num2str(ticks));
 

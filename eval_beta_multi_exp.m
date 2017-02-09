@@ -108,7 +108,7 @@ set(gca,'XTickLabels',tickLabels);
 set(gca, 'YScale', 'log');
 xlabel('\beta');
 ylabel('TNMSE');
-legend('N20,M100,k20','N20,M768,k32', 'True beta', 'location','SouthWest');
+legend('N20,M100,k20','N22,M768,k32', 'True beta', 'location','SouthWest');
 % legend('N100,M100,k100,Train', 'N100,M100,k100,Test', 'N100,M100,k20,Train', 'N100,M100,k20,Test', 'N100,M20,k20,Train','N100,M20,k20,Test','N20,M100,k20,Train','N20,M100,k20,Test');
 figure(2),hold off;
 

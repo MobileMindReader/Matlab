@@ -6,10 +6,10 @@ clear;
 % path=('exp_algo_comp2/');
 % path=('exp_algo_comp2/sigma1/');
 
-% path=('exp_algo_comp/Noiseless/');
-% path2=('exp_algo_comp/Noisy/');
+path=('exp_algo_comp/Noiseless/');
+path2=('exp_algo_comp/Noisy/');
 
-path=('exp_algo_mard_comp/');
+% path=('exp_algo_mard_comp/');
 
 files = dir(path);
 fileIndex = find(~[files.isdir]);
@@ -26,25 +26,25 @@ for i = 1:length(fileIndex)
     end
 end
 
-% files2 = dir(path2);
-% fileIndex2 = find(~[files2.isdir]);
-% fileNames2={};
-% for i = 1:length(fileIndex2)
-%     fileName = files2(fileIndex2(i)).name;
-%     if fileName(1) == '.'       
-%         continue; 
-%     elseif fileName(end-3:end) == '.mat'
-%         fileNames2{end+1} = files2(fileIndex2(i)).name;
-%     end
-% end
+files2 = dir(path2);
+fileIndex2 = find(~[files2.isdir]);
+fileNames2={};
+for i = 1:length(fileIndex2)
+    fileName = files2(fileIndex2(i)).name;
+    if fileName(1) == '.'       
+        continue; 
+    elseif fileName(end-3:end) == '.mat'
+        fileNames2{end+1} = files2(fileIndex2(i)).name;
+    end
+end
 
 for i=1:numel(fileNames)
     dataFiles{i} = importdata([path fileNames{i}]);
 end
 
-% for i=1:numel(fileNames2)
-%     dataFiles{numel(fileNames)+i} = importdata([path2 fileNames2{i}]);
-% end
+for i=1:numel(fileNames2)
+    dataFiles{numel(fileNames)+i} = importdata([path2 fileNames2{i}]);
+end
 
 %%
 
@@ -125,21 +125,21 @@ for file=dataFiles
     end
     
     exp{currentExp}.sigma = [exp{currentExp}.sigma data.noiseVariance];
-%     exp{currentExp}.ard_err = [exp{currentExp}.ard_err data.err_ard];
+    exp{currentExp}.ard_err = [exp{currentExp}.ard_err data.err_ard];
     exp{currentExp}.mard_err = [exp{currentExp}.mard_err data.err_mard];
 %     exp{currentExp}.ridge_err = [exp{currentExp}.ridge_err data.err_ridge];
-%     exp{currentExp}.mfocuss_err = [exp{currentExp}.mfocuss_err data.err_mfocuss];
-%     exp{currentExp}.tmbsl_err = [exp{currentExp}.tmbsl_err data.err_tmsbl];
+    exp{currentExp}.mfocuss_err = [exp{currentExp}.mfocuss_err data.err_mfocuss];
+    exp{currentExp}.tmbsl_err = [exp{currentExp}.tmbsl_err data.err_tmsbl];
     
-%     exp{currentExp}.ard_time = [exp{currentExp}.ard_time data.time_ard];
+    exp{currentExp}.ard_time = [exp{currentExp}.ard_time data.time_ard];
     exp{currentExp}.mard_time = [exp{currentExp}.mard_time data.time_mard];
-%     exp{currentExp}.mfocuss_time = [exp{currentExp}.mfocuss_time data.time_mfocuss];
+    exp{currentExp}.mfocuss_time = [exp{currentExp}.mfocuss_time data.time_mfocuss];
 %     exp{currentExp}.ridge_time = [exp{currentExp}.ridge_time data.time_ridge];
-%     exp{currentExp}.tmsbl_time = [exp{currentExp}.tmsbl_time data.time_tmsbl];
+    exp{currentExp}.tmsbl_time = [exp{currentExp}.tmsbl_time data.time_tmsbl];
     
-%     exp{currentExp}.ard_convergence = [exp{currentExp}.ard_convergence data.ard_convergence];
+    exp{currentExp}.ard_convergence = [exp{currentExp}.ard_convergence data.ard_convergence];
     exp{currentExp}.mard_convergence = [exp{currentExp}.mard_convergence data.mard_convergence];
-    exp{currentExp}.failure_rate = [exp{currentExp}.failure_rate data.failure_rate];
+%     exp{currentExp}.failure_rate = [exp{currentExp}.failure_rate data.failure_rate];
     exp{currentExp}.SNR = [exp{currentExp}.SNR data.SNR];
     
     exp{currentExp}.true_norm = [exp{currentExp}.true_norm data.w_true_norm];
@@ -176,23 +176,23 @@ allExp.failure_rate = [];
 
 for i=1:numel(exp)
    
-%     allExp.ard_err = [allExp.ard_err; exp{i}.ard_err];
+    allExp.ard_err = [allExp.ard_err; exp{i}.ard_err];
     allExp.mard_err = [allExp.mard_err; exp{i}.mard_err];
 %     allExp.ridge_err = [allExp.ridge_err; exp{i}.ridge_err];
-%     allExp.mfocuss_err = [allExp.mfocuss_err; exp{i}.mfocuss_err];
-%     allExp.tmbsl_err = [allExp.tmbsl_err; exp{i}.tmbsl_err];
+    allExp.mfocuss_err = [allExp.mfocuss_err; exp{i}.mfocuss_err];
+    allExp.tmbsl_err = [allExp.tmbsl_err; exp{i}.tmbsl_err];
     
-%     allExp.ard_time = [allExp.ard_time; exp{i}.ard_time];
+    allExp.ard_time = [allExp.ard_time; exp{i}.ard_time];
     allExp.mard_time = [allExp.mard_time; exp{i}.mard_time];
-%     allExp.mfocuss_time = [allExp.mfocuss_time; exp{i}.mfocuss_time];
-%     allExp.tmsbl_time = [allExp.tmsbl_time; exp{i}.tmsbl_time];
+    allExp.mfocuss_time = [allExp.mfocuss_time; exp{i}.mfocuss_time];
+    allExp.tmsbl_time = [allExp.tmsbl_time; exp{i}.tmsbl_time];
 %     allExp.ridge_time = [allExp.ridge_time; exp{i}.ridge_time];
     
-%     allExp.ard_convergence = [allExp.ard_convergence; exp{i}.ard_convergence];
+    allExp.ard_convergence = [allExp.ard_convergence; exp{i}.ard_convergence];
     allExp.mard_convergence = [allExp.mard_convergence; exp{i}.mard_convergence];
     
     allExp.true_norm = [allExp.true_norm; exp{i}.true_norm];
-%     allExp.ard_norm = [allExp.ard_norm; exp{i}.ard_norm];
+    allExp.ard_norm = [allExp.ard_norm; exp{i}.ard_norm];
     allExp.mard_norm = [allExp.mard_norm; exp{i}.mard_norm];
 %     tmsbl norm
     allExp.failure_rate = [allExp.failure_rate; exp{i}.failure_rate];
@@ -291,7 +291,7 @@ plot(mean(allExp.failure_rate(:,1+(i*1000):(i+1)*1000),2), 'Color', colors(i+1,:
 
 snrInt = round(mean(mean(allExp.SNR(:,1+(i*1000):(i+1)*1000),2)));
 
-legends{legendIndex(i+1)} = ['\sigma=' num2str(allExp.sigma(1,1+(i*50)),'%1.1f') ', SNR=' int2str(snrInt) ' dB'];
+legends{legendIndex(i+1)} = ['\sigma=' num2str(allExp.sigma(1,1+(i*10)),'%1.1f') ', SNR=' int2str(snrInt) ' dB'];
 end
 % plot(meanRidgeErr);
 % plot(mean(allExp.mard_test_err,2));
@@ -304,7 +304,7 @@ xlabel('Number of simultaneous responses (L)')
 ylabel('TNMSE');
 set(gca,'fontsize',12);
 % legend('ARD', 'M-ARD', 'MFOCUSS', 'T-MSBL');
-legend(legends);
+legend(legends,'location','SouthWest');
 hold off;
 
 

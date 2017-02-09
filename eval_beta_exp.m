@@ -12,8 +12,8 @@ for i = 1:length(fileIndex)
     if fileName(1) == '.'       
         continue; 
 %     elseif fileName(end-3:end) == '.mat'
-%     elseif fileName(1:9) == 'Noiseless'
-    elseif fileName(1:5) == 'Noisy'
+    elseif fileName(1:9) == 'Noiseless'
+%     elseif fileName(1:5) == 'Noisy'
         fileNames{end+1} = files(fileIndex(i)).name;
     end
 end
@@ -113,7 +113,7 @@ for exp = experiments
 end
 grid on;
 
-line([5 5], [0.8 1.7],'Color','k');
+line([9 9], [0.55 1.3],'Color','k');
 
 title('TNMSE of parameters as a function of chosen \beta, L = 1.');
 set(gca,'fontsize',12);
@@ -121,7 +121,7 @@ set(gca,'XTickLabels',tickLabels);
 set(gca, 'YScale', 'log');
 xlabel('\beta');
 ylabel('TNMSE');
-legend('N20,M100,k20','N20,M768,k32', 'True beta', 'location','NorthWest');
+legend('N20,M100,k20','N22,M768,k32', 'True beta', 'location','NorthWest');
 % legend('N100,M100,k100,Train', 'N100,M100,k100,Test', 'N100,M100,k20,Train', 'N100,M100,k20,Test', 'N100,M20,k20,Train','N100,M20,k20,Test','N20,M100,k20,Train','N20,M100,k20,Test');
 figure(2),hold off;
 
