@@ -49,7 +49,7 @@ for iter=1:iterations
 %         Phi = randn(N, numFuncs);
         
         model.w = zeros(timeSteps, numFuncs);
-        idx=sort(randperm(size(A,2),numActiveFuncs));
+        idx=sort(randperm(size(Phi,2),numActiveFuncs));
         model.w(idx) = normrnd(0,sqrt(1/model.alpha), [1 numActiveFuncs]);
         
         x=zeros(numFuncs, timeSteps);

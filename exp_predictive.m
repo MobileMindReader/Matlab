@@ -95,6 +95,7 @@ for iter=1:iterations
             s = RandStream('mt19937ar','Seed','shuffle');    
             RandStream.setGlobalStream(s);
             points = [2 10 20 100];
+            
             for startPoint=[1:4] %:numSamples 
                 
 %             Phi = forwardMatrix(1:startPoint,:);
@@ -140,7 +141,7 @@ for iter=1:iterations
                 phiX = PhiMatrix(functions, sortedSamples(count)); %predX(count)*randn(1, numFuncs);
                 predVar(count) = 1/beta + phiX*Sigma*phiX'; 
                 
-                predMean(count) = m_N'*PhiMatrix(functions, sortedSamples(count))';        % m_N' * x_N
+                predMean(count) = m_N'*phiX'; %PhiMatrix(functions, sortedSamples(count))';        % m_N' * x_N
 %                 predTargets(count) = normrnd(predMean, predVar);
             end            
             

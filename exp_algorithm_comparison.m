@@ -9,23 +9,27 @@ model.alpha=2;
 
 %% Fix seed
 randSeed = run*randi(100);
+% randSeed = 2178;
 s = RandStream('mt19937ar','Seed',randSeed);
 % s = RandStream('mt19937ar','Seed', randi(100*run)*run);
 RandStream.setGlobalStream(s);
-
+data.randSeed = randSeed;
 %% Experiment parameters
 iterations = 50;
 % [1 10 20 30 40 50 60 70 80 90 100 110 120 130 140];
 
-for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80]
+% for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80]
+for kIter = [5:1:40] %[1 5 10 15 20 25 30 35 40]
     
     fragments = 1;
+    
+    timeStepsIter = 40;
     fragmentSize = ceil(timeStepsIter/fragments);
     
-    timeSteps = timeStepsIter
+    timeSteps = timeStepsIter;
     numSamples = 22;
     numFuncs = 768;
-    numActiveFuncs = 32;
+    numActiveFuncs = kIter
     
 %     forwardModel = importdata('model/mBrainLeadfield.mat');
     % dataTitle = ['exp_algo_comp/' datestr(datetime('now')) 'beta_rand'];
@@ -35,7 +39,7 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80]
     else 
         data.description = ['Noisy_Sigmax10=' int2str(model.sigma*10) '_N=' int2str(numSamples) '_M=' int2str(numFuncs) '_k=' int2str(numActiveFuncs) '_L=' int2str(timeSteps)];
     end
-    dataTitle = ['exp_algo_com/' data.description '-run-' int2str(run)];
+    dataTitle = ['exp_algo_comp_k/' data.description '-run-' int2str(run)];
     
     data.L = timeSteps;
     data.N = numSamples;
@@ -99,7 +103,6 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80]
         end
         data.beta_init = beta_init;
 
-
         %% ARD ERM
         ard_convergence = 0;
         alphas_ard = []; betas_ard=[]; m_ard=[]; llh_ard=[];
@@ -120,7 +123,7 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80]
         data.time_ard(iter) = t_ard;
         
         ard_idx = find((mean(alphas_ard,2) < 1e6) == 1);
-        data.ard_fail(iter) = mean(ismember(idx, ard_idx)) < 1;
+        data.ard_fail(iter) = (floor(mean(ismember(idx, ard_idx))) && floor(mean(ismember(ard_idx,idx)))) < 1;
 % % %         norm_ard = err_ard./norm(x)
 % % %         norm_ard/timeSteps
         
@@ -139,8 +142,7 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80]
         data.mard_convergence(iter) = numel(llh_mard);
         
         mard_idx = find((alphas_mard < 1e6) == 1);
-        data.mard_fail(iter) = mean(ismember(idx, mard_idx)) < 1;
-        
+        data.mard_fail(iter) = (floor(mean(ismember(idx, mard_idx))) && floor(mean(ismember(mard_idx,idx)))) < 1;
         %% MFOCUSS
         lambda = 0.01;
         if data.SNR(iter) > 1000
@@ -160,10 +162,9 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80]
         data.err_mfocuss(iter) = sum((X_focuss(:)-x(:)).^2)/sum(x(:).^2); %err_mard_accum;
         data.time_mfocuss(iter) = t_mfocuss;
         data.mfocuss_norm(iter) = norm(X_focuss);
-        
+        data.mfocuss_convergence(iter) = count_focuss;
 %         mf_idx = find((alphas_mard < 1e6) == 1);
-        data.mfocuss_fail(iter) = mean(ismember(idx, gamma_ind_focuss)) < 1;
-        
+        data.mfocuss_fail(iter) = (floor(mean(ismember(idx, gamma_ind_focuss))) && floor(mean(ismember(gamma_ind_focuss, idx)))) < 1;
         %% T-MSBL (3rd party)
         % If no noise,            Weight = TMSBL(Phi, Y, 'noise','no');
         % If SNR >= 23 dB,        Weight = TMSBL(Phi, Y, 'noise','small');
@@ -186,19 +187,21 @@ for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80]
         
         data.err_tmsbl(iter) = sum((X_tmsbl(:)-x(:)).^2)/sum(x(:).^2); %err_mard_accum;
         data.tmsbl_norm(iter) = norm(X_tmsbl);
-        data.tmsbl_fail(iter) = mean(ismember(idx, gamma_ind)) < 1;
+        data.tmsbl_convergence(iter) = count;
         
-        %% Ridge for baseline
-        m_ridge = [];
-        t0 = tic();
-        for l=1:timeSteps
-            m_ridge(:,l) = (A'*A + 1e-2*eye(size(A, 2)))\(A'*targets(:,l));
-        end
-        t_ridge = toc(t0);
-%         err_ridge = mean((m_ridge(:) - x(:)).^2);
-
-        data.err_ridge(iter) = sum((m_ridge(:)-x(:)).^2)/sum(x(:).^2); 
-        data.time_ridge(iter) = t_ridge;
+        data.tmsbl_fail(iter) = (floor(mean(ismember(idx, gamma_ind))) && floor(mean(ismember(idx, gamma_ind)))) < 1;
+        
+%         %% Ridge for baseline
+%         m_ridge = [];
+%         t0 = tic();
+%         for l=1:timeSteps
+%             m_ridge(:,l) = (A'*A + 1e-2*eye(size(A, 2)))\(A'*targets(:,l));
+%         end
+%         t_ridge = toc(t0);
+% %         err_ridge = mean((m_ridge(:) - x(:)).^2);
+% 
+%         data.err_ridge(iter) = sum((m_ridge(:)-x(:)).^2)/sum(x(:).^2); 
+%         data.time_ridge(iter) = t_ridge;
         
         %% save data
         if mod(iter, 10) == 0

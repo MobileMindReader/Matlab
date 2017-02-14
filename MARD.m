@@ -1,6 +1,6 @@
 function [A, beta, M, llh] = MARD(alphas, beta, Phi, T)
 % ARD style M-SBL
-tolerance = 1e-4;
+tolerance = 1e-5;
 maxIterations = 300;
 alphaLowerBound = 1e-6;
 alphaUpperBound = 1e6;

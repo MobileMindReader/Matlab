@@ -9,8 +9,8 @@ for i = 1:length(fileIndex)
     fileName = files(fileIndex(i)).name;
     if fileName(1) == '.'       
         continue; 
-%     elseif fileName(1:8) == 'adaptive'        
-    elseif fileName(1:8) == 'sigmax20'
+    elseif fileName(1:8) == 'adaptive'        
+%     elseif fileName(1:8) == 'sigmax20'
         if fileName(end-4) == '1' || fileName(end-4) == '2' || fileName(end-4) == '5' || fileName(end-4) == '6' || fileName(end-4) == '8'
             continue;
         end
@@ -214,6 +214,8 @@ ylabel('TNMSE');
 set(gca,'fontsize',12);
 legend('M-ARD', 'MFOCUSS', 'T-MSBL', 'location','NorthWest');
 
+% errSNR = (std(allExp.SNR,0,2)./sqrt(500))./mean(allExp.SNR,2)
+% subplot(2,1,2), errorbar(mean(allExp.SNR,2),errSNR, 'k');
 subplot(2,1,2), plot(mean(allExp.SNR,2), 'k');
 grid on;
 set(gca,'XTick',[1:numel(exp)], 'XTickLabel',tickLabels);
@@ -225,6 +227,18 @@ ylabel('dB');
 
 
 hold off;
+
+%%
+
+temp = normc(allExp.true_norm);
+coher = ones(500, 500);
+for i=1:500
+    for j=1:500
+        coher(i,j) = temp(:,i)'*temp(:,j);
+    end
+end
+surf(coher)
+
 
 
 %%

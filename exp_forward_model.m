@@ -8,7 +8,7 @@ model.alpha=2;
 %% Fix seed
 % s = RandStream('mt19937ar','Seed','shuffle');
 randSeed = run*randi(100);
-s = RandStream('mt19937ar','Seed', randSeed);
+% s = RandStream('mt19937ar','Seed', randSeed);
 s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 forwardModel = importdata('model/mBrainLeadfield.mat');
