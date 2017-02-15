@@ -14,7 +14,7 @@ RandStream.setGlobalStream(s);
 forwardModel = importdata('model/mBrainLeadfield.mat');
 %% Experiment parameters
 iterations = 20;
-intraIterations = 100;
+intraIterations = 50;
 
 for iter=1:iterations
     
@@ -30,9 +30,10 @@ for iter=1:iterations
     model.sigma = 0.05*iter;
 %     model.sigma = 0.6;
     model.beta = (1/model.sigma.^2);
+    data.randSeed = randSeed;
     
     data.description = ['sigmax20=' int2str(model.sigma*20) '_N=' int2str(numSamples) '_M=' int2str(numFuncs) '_k=' int2str(numActiveFuncs) '_L=' int2str(timeSteps)];
-    dataTitle = ['exp_forward3/adaptive-' data.description '-run-' int2str(run)];
+    dataTitle = ['exp_forward4/adaptive-' data.description '-run-' int2str(run)];
     
     data.expIter = iter;
     
@@ -75,7 +76,9 @@ for iter=1:iterations
         noise = normrnd(0, sqrt(1/model.beta), [numSamples timeSteps]);
         targets = y + noise;
         
-        data.SNR(intraIter) = 10*log10(var(y)/var(noise));
+        data.SNRwrong(intraIter) = 10*log10(var(y)/var(noise));
+        data.SNR(intraIter) = 10*log10(mean(var(y)./var(noise)));
+        
         data.SNR;
         data.w_true_norm(intraIter) = norm(x);
         data.trueIdx{intraIter} = idx;

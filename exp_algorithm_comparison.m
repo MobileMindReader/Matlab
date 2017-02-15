@@ -19,7 +19,7 @@ iterations = 25;
 % [1 10 20 30 40 50 60 70 80 90 100 110 120 130 140];
 
 % for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80]
-for kIter = [5:1:40] %[1 5 10 15 20 25 30 35 40]
+for kIter = 32; [5:1:40]; %[1 5 10 15 20 25 30 35 40]
     
     fragments = 1;
     
@@ -83,7 +83,8 @@ for kIter = [5:1:40] %[1 5 10 15 20 25 30 35 40]
         if model.sigma == 0.0
             data.SNR(iter) = Inf;
         else
-            data.SNR(iter) = 10*log10(var(y)/var(noise));
+            data.SNRwrong(iter) = 10*log10(var(y)/var(noise));
+            data.SNR(iter) = 10*log10(mean(var(y)./var(noise)));
         end
         
         data.w_true_norm(iter) = norm(x);
@@ -208,7 +209,7 @@ for kIter = [5:1:40] %[1 5 10 15 20 25 30 35 40]
             disp(sprintf('Iter:%i', iter));
         end
 %         data.failure_rate
-        save(dataTitle, 'data');
+%         save(dataTitle, 'data');
     end
 end
 
