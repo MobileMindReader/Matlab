@@ -12,7 +12,7 @@ s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
 iterations = 40;
-intraIterations = 500;
+intraIterations = 10;
 
 data.beta = zeros(iterations, intraIterations);
 

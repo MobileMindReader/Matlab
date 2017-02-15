@@ -11,8 +11,8 @@ s = RandStream('mt19937ar','Seed','shuffle');
 % s = RandStream('mt19937ar','Seed','shuffle');
 RandStream.setGlobalStream(s);
 
-iterations = 40;
-intraIterations = 20;
+iterations = 20;
+intraIterations = 50;
 
 data.beta = zeros(iterations, intraIterations);
 
@@ -22,7 +22,7 @@ for iter=1:iterations
         N = 100;
         numFuncs = iter*10;
         
-        numActiveFuncs = 30;% floor(numFuncs/4);
+        numActiveFuncs = 100;% floor(numFuncs/4);
         model.alpha = 2;% zeros(1,numFuncs); %0.2*ones(1,numFuncs); % 2?
         
         A = randn(N, numFuncs);
@@ -70,6 +70,18 @@ for iter=1:iterations
         
         %%
         Phi=A;
+        
+        %% ML
+        data.w_ml_reg1{iter, intraIter} = (eye(size(Phi, 2))+Phi'*Phi)\(Phi'*targets);
+        data.w_ml_reg1_norm(iter, intraIter) = norm(data.w_ml_reg1{iter, intraIter});
+        invBeta_ml_reg1 = 0;
+        for i = 1:length(targets)
+            invBeta_ml_reg1 = invBeta_ml_reg1 + (targets(i)-(data.w_ml_reg1{iter, intraIter}'*Phi(i,:)'))^2;
+        end
+        data.beta_reg1(iter,intraIter) = 1/(invBeta_ml_reg1/length(targets));
+        
+        %% BL
+        
         
         beta = beta_init;
         alpha = alpha_init;
@@ -133,6 +145,7 @@ fignum = 4;
 figure(fignum);
 subplot(2,1,1);
 plot(mean(data.beta,2)), hold on;
+plot(mean(data.beta_reg1,2));
 % plot(mean(data.betaSparse,2));
 % plot(mean(data.beta_fixed,2));
 % plot(mean(data.betaSparse_fixed,2), '--');
@@ -145,13 +158,14 @@ xlabel('Number of basis functions');
 title('\beta_{EA} as a function of number of basis functions. N = 100.');
 ylabel('\beta_{EA}');
 % xlim([1 38]);
-legend('Evidence approximation', 'True');
+legend('Evidence approximation', 'ML', 'True');
 % legend('Evidence approximation', 'True', 'Dense model, fixed \beta', 'Sparse model, fixed \beta', 'True', 'location', 'NorthEast');
 % legend('lambda = 0.01', 'lambda = 0.1', 'lambda = 1', 'lambda = 10', 'lambda = 100', 'True', 'location', 'NorthWest');
 
 figure(fignum);
 subplot(2,1,2);
 plot(mean(data.w_bl_norm,2)); hold on;
+plot(mean(data.w_ml_reg1_norm,2), '*');
 % plot(mean(data.w_ard_norm,2)); hold on;
 % plot(mean(data.w_ard_sparse_norm,2))
 % plot(mean(data.w_ard_norm_fixed,2))

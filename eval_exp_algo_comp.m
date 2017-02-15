@@ -9,7 +9,8 @@ clear;
 % path=('exp_algo_comp/Noiseless/');
 % path2=('exp_algo_comp/Noisy/');
 
-path=('exp_algo_comp_adaptive/');
+% path=('exp_algo_comp_adaptive/');
+path=('exp_algo_comp_k/');
 
 % path=('exp_algo_mard_comp/');
 
@@ -52,11 +53,12 @@ end
 
 exp = {}; %{{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}};
 
-range = [0:5:80];
-range(1) = 1;
+% range = [0:5:80];
+range = [5:1:40];
+% range(1) = 1;
 
 for i=1:numel(range)
-    
+    exp{i}.randSeed = [];
     exp{i}.ard_err = [];
     exp{i}.mard_err = [];
     exp{i}.mfocuss_err = [];
@@ -90,46 +92,47 @@ for file=dataFiles
     if data.noiseVariance ~= 0.0
         continue;
     end
+%     currentExp = find(range == data.L);
+%     switch data.L
+%         case 1
+%             currentExp = 1;
+%         case 5
+%             currentExp = 2;
+%         case 10
+%             currentExp = 3;
+%         case 15
+%             currentExp = 4;
+%         case 20
+%             currentExp = 5;
+%         case 25
+%             currentExp = 6;
+%         case 30
+%             currentExp = 7;
+%         case 35
+%             currentExp = 8;
+%         case 40
+%             currentExp = 9;
+%         case 45
+%             currentExp = 10;
+%         case 50
+%             currentExp = 11;
+%         case 55
+%             currentExp = 12;
+%         case 60
+%             currentExp = 13;
+%         case 65
+%             currentExp = 14;
+%         case 70
+%             currentExp = 15;
+%         case 75
+%             currentExp = 16;
+%         case 80
+%             currentExp = 17;            
+%     end
     
-    currentExp = find(range == data.L);
-
-    switch data.L
-        case 1
-            currentExp = 1;
-        case 5
-            currentExp = 2;
-        case 10
-            currentExp = 3;
-        case 15
-            currentExp = 4;
-        case 20
-            currentExp = 5;
-        case 25
-            currentExp = 6;
-        case 30
-            currentExp = 7;
-        case 35
-            currentExp = 8;
-        case 40
-            currentExp = 9;
-        case 45
-            currentExp = 10;
-        case 50
-            currentExp = 11;
-        case 55
-            currentExp = 12;
-        case 60
-            currentExp = 13;
-        case 65
-            currentExp = 14;
-        case 70
-            currentExp = 15;
-        case 75
-            currentExp = 16;
-        case 80
-            currentExp = 17;            
-    end
+    currentExp = data.k-4;
     
+    exp{currentExp}.randSeed = [exp{currentExp}.randSeed data.randSeed];
     exp{currentExp}.sigma = [exp{currentExp}.sigma data.noiseVariance];
     exp{currentExp}.ard_err = [exp{currentExp}.ard_err data.err_ard];
     exp{currentExp}.mard_err = [exp{currentExp}.mard_err data.err_mard];
@@ -261,8 +264,8 @@ hold off;
 
 %% Failure rate
 
-range = [0:5:80]';
-range(1) = 1;
+% range = [0:5:80]';
+% range(1) = 1;
 
 sigmaIndex = 1;
 
@@ -275,18 +278,18 @@ figure(13)
 
 % range = ones(13,1);
 % ticks = range;
-tickLabels = strsplit(int2str(range'));
+tickLabels = strsplit(int2str(range));
 
-plot(meanARDErr,'*'); hold on;
-plot(meanMARDErr,'--');
-plot(meanMFOCUSSErr,'o');
-plot(meanTMBSLErr,'d');
+plot(meanARDErr); hold on;
+plot(meanMARDErr);
+plot(meanMFOCUSSErr);
+plot(meanTMBSLErr);
 % plot(meanRidgeErr);
 % plot(mean(allExp.mard_test_err,2));
 grid on;
 title(['TNMSE of parameters, \sigma = ' num2str(allExp.sigma(1))]);
 set(gca,'XTick',[1:numel(exp)], 'XTickLabel',tickLabels);
-set(gca, 'YScale', 'log');
+% set(gca, 'YScale', 'log');
 xlabel('Number of simultaneous responses (L)')
 ylabel('Failure rate');
 set(gca,'fontsize',12);

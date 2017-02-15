@@ -15,7 +15,7 @@ s = RandStream('mt19937ar','Seed',randSeed);
 RandStream.setGlobalStream(s);
 data.randSeed = randSeed;
 %% Experiment parameters
-iterations = 50;
+iterations = 25;
 % [1 10 20 30 40 50 60 70 80 90 100 110 120 130 140];
 
 % for timeStepsIter = [1 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80]
@@ -189,7 +189,7 @@ for kIter = [5:1:40] %[1 5 10 15 20 25 30 35 40]
         data.tmsbl_norm(iter) = norm(X_tmsbl);
         data.tmsbl_convergence(iter) = count;
         
-        data.tmsbl_fail(iter) = (floor(mean(ismember(idx, gamma_ind))) && floor(mean(ismember(idx, gamma_ind)))) < 1;
+        data.tmsbl_fail(iter) = (floor(mean(ismember(idx, gamma_ind))) && floor(mean(ismember(gamma_ind,idx)))) < 1;
         
 %         %% Ridge for baseline
 %         m_ridge = [];
